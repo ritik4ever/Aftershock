@@ -10,4 +10,5 @@ Read docs/PROJECT_SPEC.md, docs/THREAT_MODEL.md and docs/UPSTREAM.md before impl
 - Use bigint or hex for protocol quantities. Included does not mean execution succeeded. Missing evidence cannot pass an invariant.
 - Build CLI and genuine transaction evidence before UI. Distinguish implemented, tested, blocked and planned in docs.
 - New application code will use one npm workspace lockfile; the independent upstream workshop retains Yarn Classic and yarn.lock, and the sidecar retains Bun.
-- Keep implementation and integration builds in the WSL Linux filesystem. The initial Windows checkout contains research only; do not silently relocate the user's checkout.
+- Keep implementation and integration builds in the WSL Linux filesystem. The current build mirror is /home/ritik/aftershock-build; the Windows IDE checkout retains reviewed source for manual commits. Synchronize source before checks; do not silently relocate the user's checkout or copy node_modules/wallet state back.
+- Use npm ci --ignore-scripts with the tested Node version in .nvmrc. Run typecheck, Oxlint, formatting check, tests and npm audit before each implementation checkpoint.

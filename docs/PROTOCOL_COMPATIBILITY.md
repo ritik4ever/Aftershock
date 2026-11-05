@@ -20,12 +20,15 @@ The draft/landing comparisons above are summaries of the [documentation differen
 ## Wire and evidence boundaries
 
 - Configured gateway is https://altmempoolgateway.forshtat.com/rpc. The documented path is /rpc/; the configured /rpc responded successfully. No direct miner connectivity is assumed.
-- Sidecar eth_sendFrameTransaction takes signed JSON via the official encoder. Ethrex simulation takes raw type-0x06 RLP. They are different interfaces. Neither submission nor simulation was exercised in this checkpoint.
-- Do not implement ERC-4337 methods or privileged relay calls. Only eth_chainId, skandha_explorer_info and skandha_config were probed live.
+- Sidecar eth_sendFrameTransaction takes signed JSON via the official encoder. Ethrex simulation takes raw type-0x06 RLP. They are different interfaces. The pinned workshop successfully exercised normal sidecar submission; Aftershock's CLI remains read-only.
+- Do not implement ERC-4337 methods or privileged relay calls. Live read verification now also covers skandha_explorer_getTransaction, skandha_frameTransactionStatus and eth_getFrameTransactionReceipt. Only the official workshop invoked the faucet and normal transaction submission.
+- Sidecar receipt status is success/reverted; per-frame statuses also include skipped. Raw execution receipts use 0x1/0x0 instead. Confirmed in packages/types/src/executor/validation/frameTxReceipt.ts and ReceiptService/index.ts, and in the real successful response. The adapter must not compare sidecar status to 0x1.
 - Explorer requires enablement; history is bounded and volatile. Track bootId and sequence bounds, preserve cursors, limit pages to 200. Included is not execution success; skipped/waived reports do not independently prove enforcement.
 - Use bigint or hex for amounts, fees, sequences and nonce keys. Validate numeric metadata separately.
 - Live explorer returned version v4.1.1 and an empty commit. Source-dependent lifecycle claims remain unverified against that node. Manual bundling can delay mining; never invoke shared bundling controls to force progress.
 
 Source references for the confirmed structural gate: [validate()](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/services/UserOpValidation/validators/frameTx.ts#L310) and [validateStructuralRules()](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/services/UserOpValidation/utils/validationPrefix.ts#L282). This contradicts descriptions suggesting larger staked prefix budgets for this exact implementation; it is not a tested runtime exploit.
 
-Open: full mapping of documented families to returned checks, execution-client operator overrides, private stack readiness and deterministic fixture design. All method shapes beyond the three diagnostics still need execution against the target version.
+Private integration now verifies normal signed JSON admission, raw-RLP execution simulation, mempool lookup, explorer replacement outcomes and keyed conflicts against pinned processes. These local rejections returned -32602 for balance obligations, key conflict and fee bump; the runner checks the source-specific rejection family as well as the code, never treating every error as an expected rejection. The owned fixture is non-mining; block transitions/receipts for these original suites remain blocked.
+
+Open: full documentation-family mapping, operator overrides, mining/consensus provisioning, terminal/TTL exceptions and exact snapshot replay. No draft/implementation discrepancy is labeled an exploit.

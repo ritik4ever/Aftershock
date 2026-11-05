@@ -1,5 +1,7 @@
 # Environment, 2026-11-05
 
+The research/pre-commit sections below are historical snapshots. The latest implemented state and checks are recorded in the CLI/core integration checkpoint at the end.
+
 ## Observed tooling
 
 | Check | Result |
@@ -73,3 +75,68 @@ Run `node --test tests/probe-devnet.test.mjs`: 10 tests passed, 0 failed. These 
 Final review validation exited 0: all 14 repository files scanned for private-key blocks, 32-byte hex values, common provider tokens, JWTs, credentials in URLs and literal credential assignments; no matches found. Confirmed 33 private/generated paths ignored and five intended public/example paths allowed, including nested sample-report cases. Nine local Markdown links resolve; both captures parse and match the recorded successful observations; the prompt is byte-identical to the user's original. The index is empty and upstream source checkouts have no changes. These checks reduce accidental disclosure risk but cannot prove arbitrary text contains no secret.
 
 This is a complete research/diagnostic checkpoint, not a complete integration setup: compatible Linux tooling, an isolated node deployment, real transaction admission and the testing engine remain next-milestone work. No UI work has started.
+
+## CLI/core integration checkpoint
+
+Both research commits were manually made by the user (433d541 and a3d76a5). The prompt folder remains deliberately untracked. No agent staging, commits or pushes occurred.
+
+Found an existing /home/ritik/.nvm installation and provisioned Node 24.22.2/npm 11.19.1 using nvm install 24, with matching download checksum. Installed Yarn 1.22.22 in that Node installation. nvm's initial iojs release-list request stalled; terminated only that request, after which the Node download completed. Linux npm/yarn now resolve inside nvm rather than to Windows executables. These supersede the earlier unsourced-shell version observations.
+
+Created a local Linux build clone at /home/ritik/aftershock-build and a separate pinned workshop clone at /home/ritik/aftershock-upstream/workshop. Implementation files were synchronized back to the original Windows IDE checkout for manual review/commit. No node_modules or wallet state was copied back.
+
+The workspace installs Zod 4.6.7, TypeScript 5.9.3, tsx 4.23.15, @types/node 24.10.0, Prettier 3.9.10 and Oxlint 1.91.0, pinned in one npm lockfile. Initial older choices exposed a Zod advisory and a vulnerable minimatch dependency through ESLint/typescript-eslint. Updated Zod and selected the smaller Oxlint toolchain; removed the unused ESLint setup. This avoids a forced incompatible minimatch major override. Final npm audit and pinned-workshop yarn audit both report zero vulnerabilities. The [minimatch advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249) was inspected during the dependency decision.
+
+| Actual command / check | Outcome |
+| --- | --- |
+| Workshop yarn install --frozen-lockfile | exit 0; no source/lock changes |
+| Workshop yarn typecheck | exit 0 |
+| Workshop yarn test | exit 0; 57 tests passed |
+| Workshop yarn audit --json | exit 0; zero vulnerabilities |
+| Workshop yarn step_1_check --json | exit 0; fresh account funded by faucet |
+| Workshop yarn step_2_tx_first --json | exit 0; block 404438, two successful frames |
+| App npm ci --ignore-scripts | exit 0; clean locked installation |
+| App npm run typecheck | exit 0 |
+| App npm run lint | exit 0; zero warnings/errors |
+| App npm run format:check | exit 0 |
+| App npm test | exit 0; 13 core/RPC/CLI tests plus 10 bootstrap tests |
+| App npm audit | exit 0; zero vulnerabilities |
+| CLI doctor | exit 0; chain agreement, source commit unknown |
+| CLI inspect real hash --save | exit 0; consistent successful receipt/admission observation, ignored report created |
+| Explorer transaction route | HTTP 200; interactive browser view not tested |
+
+The first typecheck of artifact tests caught a too-narrow inferred UUID argument type. Broadened that input boundary to string and kept runtime UUID validation; the final clean-install typecheck passed. Test transports never submit transactions or write live evidence. Unit artifact tests leave only isolated /tmp/aftershock-* outputs; CLI --save writes under ignored reports/.
+
+Evidence: docs/evidence/workshop-admission-2026-11-05.json. It records the CLI's real gateway reads and derived consistency results. The later smoke observation is separately retained only in the Linux checkout's ignored reports directory. The sidecar still advertises an empty source commit, so no source-specific invariant PASS is claimed.
+
+Remaining blockers: Docker daemon is unavailable and Ubuntu Docker integration/Bun are absent. No isolated ethrex/sidecar stack exists yet, so original paymaster balance transitions and keyed-nonce replacement integration have not run. The scenario runner, complete report/replay features and UI remain planned. No web build or UI navigation applies to this checkpoint.
+
+Final source review covered all 35 repository files, found no credential-pattern matches or unexpected key/hash-shaped literals, resolved all 13 local Markdown links and confirmed normalized source parity with the tested Linux mirror. Public transaction hashes are expected evidence, not private keys. Evidence exports contain no signing fields. Rechecked private/generated-file ignores and the empty staging index. JavaScript syntax validation and git diff --check passed. MIT licensing was selected after the user delegated that decision; license metadata is included in the lockfile.
+
+## Isolated scenario-engine checkpoint
+
+The user explicitly requested continued implementation, using the OpenCode document only as a review checklist. Prior CLI work was still uncommitted; preserved it and continued on the same branch. No Git staging/commits/pushes were performed.
+
+Started the installed Docker Desktop hidden, then verified daemon/Ubuntu connectivity (29.7.2). Built the exact sidecar source through its Bun 1.2.23 Dockerfile and tested the tracked-source archive build helper. Pulled ethrex by immutable digest; OCI revision and --version match the source pin. A host Bun/Rust installation was unnecessary for this container path.
+
+First setup attempts correctly stopped at prerequisites: a Windows-CRLF genesis hash mismatch, then ethrex automatic P2P address discovery on an internal network. Verified LF-normalized source identity and disabled execution P2P explicitly. Docker's internal network did not publish host ports, so the final implementation uses no published ports at all and executes a fixed fetch program inside the owned sidecar container. Failed setup reports remain ignored; no failed prerequisite was counted as a passing node test.
+
+Final real runs verify shared-payer aggregate obligations/replacement and keyed-nonce conflicts/fee-bumped replacement. Both full suites return BLOCKED because a non-mining fixture cannot exercise mined balance changes, per-block eviction or included/dropped predecessors. Case timestamps, exact source rules, image/process IDs, genesis fingerprints, observed errors/hashes and remaining limitations are captured. No mock node was substituted.
+
+| Check | Actual outcome |
+| --- | --- |
+| npm install --ignore-scripts with official codec/viem | exit 0 |
+| npm run typecheck | exit 0 |
+| npm run lint | exit 0; no warnings/errors |
+| npm run format:check | exit 0 |
+| npm test | exit 0; 30 unit/bootstrap tests |
+| npm run test:integration | exit 0; two real isolated admission/replacement subsets passed, each full suite explicitly BLOCKED |
+| bash -n scripts/build-local-sidecar.sh | exit 0 |
+| build-local-sidecar.sh against pinned checkout | exit 0 |
+| npm audit | exit 0; zero application vulnerabilities |
+| Pinned upstream sidecar bun audit --json | exit nonzero; 49 package groups / 234 advisory records, including 11 critical and 115 high records |
+
+The upstream audit includes the pinned lockfile and does not establish which findings are reachable in production runtime. Its scope differs from the clean application npm audit. Do not deploy this experimental sidecar publicly or claim dependency security is resolved; preserve the pinned source for reproducible testing and track upstream remediation separately.
+
+The integration harness verifies complete run-owned container/network teardown. Ignored .local/ retains private mode-restricted keys/config/logs for diagnosis; no private state is copied to the reviewed evidence directory. Exact replay and mining infrastructure remain unfinished, and UI work has not started.
+
+Final review scanned 47 source/artifact files, resolved 17 local Markdown links, verified private-output ignore rules and confirmed parity with the tested Linux mirror. The credential-pattern check's only candidate was the explicit unit-test-placeholder used by the redaction test; no credentials were found. Both reviewed integration captures contain only public hashes/observations and show all implemented cases passing with the mined branch BLOCKED. Native report JSON/Markdown exports and scenarios CLI smoke checks passed. No run-owned containers/networks remain, and the staging index is empty. Shell/JavaScript syntax and git diff --check passed.

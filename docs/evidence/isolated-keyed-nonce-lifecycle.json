@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "runId": "32034660-980e-4920-9d66-9a81ba1cd9af",
+  "scenarioId": "keyed-nonce-lifecycle",
+  "seed": 0,
+  "endpointClass": "ISOLATED_LOCAL",
+  "startedAt": "2026-11-05T17:19:00.040Z",
+  "completedAt": "2026-11-05T17:19:08.879Z",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "environment": {
+    "network": "aftershock-32034660-980e-4920-9d66-9a81ba1cd9af-net",
+    "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
+    "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
+    "chainId": "0x9",
+    "networkInternal": "true",
+    "publishedPorts": "none",
+    "genesisSha256": "f0135f80251c9b387e74ba051a696524b5a493576c819275bb9d2cc677c2a42b",
+    "clientVersion": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1",
+    "useropsTTL": "300"
+  },
+  "steps": [
+    {
+      "id": "admit-base",
+      "at": "2026-11-05T17:19:06.279Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x5bec9a4803ee9eb8da567e02266d5c1bea2524bf285ecfd9dc28ae87daf949a5",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED"
+      }
+    },
+    {
+      "id": "admit-disjoint-key",
+      "at": "2026-11-05T17:19:06.393Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0xd57eb66d6dd5123bcf6db89eeb60c701ddd1cdfb1a04addf5e845dc7a03a5c8c",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED"
+      }
+    },
+    {
+      "id": "reject-overlapping-set",
+      "at": "2026-11-05T17:19:06.497Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x32c50469ea2018586911f76064f0d3c134c1aff2efd2f3f2693aad8fd8ea56f8",
+        "expected": "KEY_CONFLICT",
+        "actual": "KEY_CONFLICT",
+        "code": -32602
+      }
+    },
+    {
+      "id": "reject-low-fee-bump",
+      "at": "2026-11-05T17:19:06.621Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x0dcf9985a193ae6bbc688098023463dfc7fb0d1dfc644db4995ef0902a7d561e",
+        "expected": "FEE_BUMP",
+        "actual": "FEE_BUMP",
+        "code": -32602
+      }
+    },
+    {
+      "id": "accept-fee-bumped-replacement",
+      "at": "2026-11-05T17:19:06.853Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0xebb98eeecf6e65fb80268de8eb49bf6cc6ee00b67ec44393e0e8042d6e42e517",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED"
+      }
+    },
+    {
+      "id": "verify-replacement-lifecycle",
+      "at": "2026-11-05T17:19:07.445Z",
+      "result": "PASS",
+      "observed": {
+        "oldHash": "0x5bec9a4803ee9eb8da567e02266d5c1bea2524bf285ecfd9dc28ae87daf949a5",
+        "newHash": "0xebb98eeecf6e65fb80268de8eb49bf6cc6ee00b67ec44393e0e8042d6e42e517",
+        "oldOutcome": "replaced",
+        "oldEntryRemoved": true
+      }
+    },
+    {
+      "id": "explorer-continuity",
+      "at": "2026-11-05T17:19:07.603Z",
+      "result": "PASS",
+      "observed": {
+        "bootId": "a4098cfa69832419",
+        "gaps": ""
+      }
+    },
+    {
+      "id": "mined-state-transition",
+      "at": "2026-11-05T17:19:07.603Z",
+      "result": "BLOCKED",
+      "observed": {
+        "reason": "Pinned simple ethrex fixture does not produce Hegota blocks; mining stack required"
+      }
+    },
+    {
+      "id": "fixture-cleanup",
+      "at": "2026-11-05T17:19:08.879Z",
+      "result": "PASS",
+      "observed": {
+        "removedOwnedResources": true
+      }
+    }
+  ],
+  "result": "BLOCKED",
+  "definition": {
+    "id": "keyed-nonce-lifecycle",
+    "title": "Key conflicts and replacement lifecycle",
+    "sourceRule": "MempoolService/checkNonceKeyConflict; FrameTxMempoolEntry/canReplaceWithTTL",
+    "sourceCommit": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "expectedInvariant": "Disjoint keys coexist; overlapping other slots conflict; same-slot replacement must satisfy both fee thresholds.",
+    "preconditions": [
+      "Owned isolated pinned processes",
+      "Fresh funded sender with sequence zero",
+      "All replacements occur before TTL expiry"
+    ],
+    "actions": [
+      "admit-base",
+      "admit-disjoint-key",
+      "reject-overlapping-set",
+      "reject-low-fee-bump",
+      "accept-fee-bumped-replacement",
+      "verify-replacement-lifecycle",
+      "explorer-continuity",
+      "mined-state-transition"
+    ]
+  },
+  "limitations": [
+    "Non-mining genesis fixture. No block-production/state-transition claims.",
+    "Seed identifies action order, not private signing keys; fresh accounts are random.",
+    "Only observed admission/replacement behavior is checked."
+  ],
+  "reproducer": "npm run --silent aftershock -- run keyed-nonce-lifecycle --local"
+}

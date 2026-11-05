@@ -34,7 +34,11 @@ Read [AGENTS.md](https://github.com/forshtat/mempool-workshop/blob/bcfe02a196ca9
 
 Resolved in this snapshot's yarn.lock: hegota-support 0.0.1, viem 2.57.11, tsx 4.23.15, TypeScript 7.0.2, Vitest 5.0.5, Vite 7.3.7 and @types/node 26.6.5. These are inspected lockfile entries, not locally installed or validated dependency versions. Check registry availability, engine compatibility and install results before adopting them. Official JSON wire encoding comes from @forshtat/hegota-support/rpc.
 
-Source confirmation: src/lib/frameTx/codec.ts imports @forshtat/hegota-support/tx; build.ts binds toWire from /rpc; send.ts sends [toWire(tx)] to the configured gateway. src/lib/frameTx is a directory, not a single frameTx.ts file. These wrappers remain upstream; Aftershock has no codec or submission implementation yet.
+Source confirmation: src/lib/frameTx/codec.ts imports @forshtat/hegota-support/tx; build.ts binds toWire from /rpc; send.ts sends [toWire(tx)] to the configured gateway. src/lib/frameTx is a directory, not a single frameTx.ts file. Aftershock's local adapter now calls the same official library/profile directly; it does not import upstream built lib artifacts or implement another codec. The pinned workshop was installed with yarn install --frozen-lockfile under Linux Node 24.22.2; typecheck and all 57 tests passed, then steps 1 and 2 genuinely funded and mined a transaction. No upstream source or lock changes were needed.
+
+The private execution image is ghcr.io/forshtat/eip8141-devnet@sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6. Its OCI revision and --version identify ethrex 9aa3645d795945c64400f41a70aace0edfa7f383. Its genesis template matches the pinned source after LF normalization (SHA-256 5fe93acb7674db5d809aae4d66bff742121ed718bcddd327efcb8c1a9e631fb4). Only that genesis file is read from the image; bundled upstream key files are never used.
+
+The sidecar is built from its exact pinned Git archive with scripts/build-local-sidecar.sh and labeled with the source revision; no untracked private config enters the build context. The upstream Dockerfile uses Bun 1.2.23. Build inputs include distribution package repositories, so image bytes may differ across builds; actual process image IDs are recorded. Source IDs/image metadata are trusted local-build provenance, not cryptographic source attestation.
 
 ## Web references and limitations
 
@@ -42,7 +46,7 @@ Source confirmation: src/lib/frameTx/codec.ts imports @forshtat/hegota-support/t
 - Read [RPC reference](https://docs.altmempool.wtf/reference/rpc-methods/), [explorer API](https://docs.altmempool.wtf/reference/explorer-api/) and [quickstart](https://docs.altmempool.wtf/guides/quickstart/). The quickstart's npm/shared-key setup conflicts with the pinned workshop. Follow its current AGENTS.md, lockfile and faucet path instead.
 - [Public devnet guide](https://docs.altmempool.wtf/guides/devnet/) failed retrieval through the web tool. Inspected the pinned sidecar deploy/devnet/devnet-readme.md as fallback; its older direct endpoint differs from workshop gateway configuration. That document contains public operator credentials; none are retained here or used.
 - [EIP-8141](https://eips.ethereum.org/EIPS/eip-8141) is a draft. Its live text is not a pin for the running fork.
-- [ETHGlobal Mumbai prizes](https://ethglobal.com/events/mumbai/prizes) accepts a real admitted transaction link or submitting code for the Frame Transaction Alternative Mempool category. Neither exists in Aftershock yet; diagnostics are not qualification evidence.
+- [ETHGlobal Mumbai prizes](https://ethglobal.com/events/mumbai/prizes) accepts a real admitted transaction link or submitting code for the Frame Transaction Alternative Mempool category. A real baseline transaction link and filtered admission/receipt evidence now exist; this alone does not establish original lifecycle testing or overall sponsor readiness.
 
 ## Recreate source snapshots
 
