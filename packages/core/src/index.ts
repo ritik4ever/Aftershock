@@ -15,3 +15,5 @@ export {
   aggregateResults,
 } from './scenario.js';
 export { saveRun, readRun, markdownReport } from './report.js';
+
+export { replayPlan, compareRuns } from './replay.js';

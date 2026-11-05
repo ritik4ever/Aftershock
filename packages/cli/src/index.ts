@@ -11,6 +11,8 @@ import {
   saveRun,
   readRun,
   markdownReport,
+  replayPlan,
+  compareRuns,
 } from '@aftershock/core';
 
 const help = `Aftershock core integration
@@ -20,6 +22,8 @@ const help = `Aftershock core integration
   npm run aftershock -- scenarios
   npm run aftershock -- run <scenario-id> --local [--mine]
   npm run aftershock -- report <run-id> --format json|md
+  npm run aftershock -- replay <run-id> --plan
+  npm run aftershock -- replay <run-id> --local [--mine]
   npm run aftershock -- help
 
 Read-only public-devnet doctor/inspect commands. --save writes under reports/.
@@ -50,6 +54,42 @@ async function main(args: string[]): Promise<number> {
     await saveRun(process.cwd(), report);
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return report.result === 'PASS' ? 0 : report.result === 'BLOCKED' ? 3 : 1;
+  }
+  if (
+    command === 'replay' &&
+    ((rest.length === 2 && ['--plan', '--local'].includes(rest[1] ?? '')) ||
+      (rest.length === 3 && rest[1] === '--local' && rest[2] === '--mine'))
+  ) {
+    if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(rest[0] ?? ''))
+      return 2;
+    const baseline = await readRun(process.cwd(), rest[0]!);
+    const plan = replayPlan(baseline);
+    if (rest[1] === '--plan') {
+      process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`);
+      return 0;
+    }
+    if (plan.mining !== (rest[2] === '--mine')) {
+      process.stderr.write(
+        'Fixture mode must match the saved run; inspect replay --plan.\n',
+      );
+      return 2;
+    }
+    const rerun = await runScenario(
+      plan.scenarioId,
+      process.cwd(),
+      plan.seed,
+      plan.mining,
+    );
+    await saveRun(process.cwd(), rerun);
+    const comparison = compareRuns(baseline, rerun);
+    process.stdout.write(`${JSON.stringify(comparison, null, 2)}\n`);
+    return comparison.environmentDifferences.length
+      ? 1
+      : rerun.result === 'BLOCKED'
+        ? 3
+        : comparison.bothRunsPassed
+          ? 0
+          : 1;
   }
   if (
     command === 'report' &&

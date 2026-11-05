@@ -285,3 +285,93 @@ test('Markdown preserves honest result and escapes untrusted formatting', () => 
   assert.ok(!markdown.includes('<script>'));
   assert.ok(!markdown.includes('![external]'));
 });
+
+test('fresh-state rerun plans reject mocks, changed definitions and unsafe fixtures', async () => {
+  const { replayPlan, compareRuns } =
+    await import('../packages/core/src/replay.js');
+  const report = unitReport();
+  assert.throws(() => replayPlan(report), /isolated/);
+  report.endpointClass = 'ISOLATED_LOCAL';
+  assert.throws(() => replayPlan(report), /requirements/);
+  report.environment = {
+    executionImage: 'unit-image',
+    sidecarImage: 'unit-sidecar',
+    genesisSha256: 'unit-genesis',
+    fixtureMode: 'admission',
+    chainId: '0x9',
+    networkInternal: 'true',
+    publishedPorts: 'none',
+    bundlingMode: 'manual',
+  };
+  const mined = structuredClone(report);
+  mined.environment.fixtureMode = 'mining';
+  assert.throws(() => replayPlan(mined), /requirements/);
+  mined.environment.consensusImage = 'unit-consensus';
+  mined.environment.genesisGeneratorImage = 'unit-generator';
+  assert.equal(replayPlan(mined).mining, true);
+  assert.match(replayPlan(mined).command, /--local --mine$/);
+  const plan = replayPlan(report);
+  assert.equal(plan.exactHistoricalReplay, false);
+  assert.equal(plan.mining, false);
+  assert.throws(
+    () =>
+      replayPlan({
+        ...report,
+        definition: { ...report.definition, title: 'changed' },
+      }),
+    /definition/,
+  );
+  assert.throws(
+    () =>
+      replayPlan({
+        ...report,
+        environment: { ...report.environment, publishedPorts: '8545' },
+      }),
+    /requirements/,
+  );
+  assert.throws(() => compareRuns(report, report), /identity/);
+  const rerun = { ...structuredClone(report), runId: randomUUID() };
+  let comparison = compareRuns(report, rerun);
+  assert.equal(comparison.comparison, 'VERDICTS_MATCH');
+  assert.equal(comparison.bothRunsPassed, false);
+  rerun.environment.sidecarImage = 'other-image';
+  comparison = compareRuns(report, rerun);
+  assert.equal(comparison.comparison, 'ENVIRONMENT_DIFFERENT');
+  assert.deepEqual(comparison.environmentDifferences, ['sidecarImage']);
+  rerun.environment = {
+    ...report.environment,
+    genesisSha256: 'fresh-genesis',
+    network: 'fresh-network',
+  };
+  rerun.steps[0]!.result = 'INCONCLUSIVE';
+  rerun.result = 'INCONCLUSIVE';
+  comparison = compareRuns(report, rerun);
+  assert.equal(comparison.comparison, 'VERDICTS_DIFFER');
+  assert.equal(comparison.verdictsMatch, false);
+  // Schema/comparator-only inputs; never saved or published as node evidence.
+  const complete = structuredClone(report);
+  complete.steps = [...complete.definition.actions, 'fixture-cleanup'].map(
+    (id) => ({
+      id,
+      at: complete.startedAt,
+      result: 'PASS' as const,
+      observed: { scope: 'UNIT_COMPARATOR_ONLY' },
+    }),
+  );
+  complete.result = 'PASS';
+  const repeated = { ...structuredClone(complete), runId: randomUUID() };
+  assert.equal(compareRuns(complete, repeated).bothRunsPassed, true);
+  repeated.steps.unshift({
+    id: 'prerequisites-or-evidence',
+    at: repeated.startedAt,
+    result: 'PASS',
+    observed: { scope: 'UNIT_COMPARATOR_ONLY' },
+  });
+  assert.equal(compareRuns(complete, repeated).bothRunsPassed, false);
+  assert.throws(
+    () => compareRuns(report, { ...rerun, seed: 1 }),
+    /requirements/,
+  );
+  rerun.environment = {};
+  assert.equal(compareRuns(report, rerun).comparison, 'ENVIRONMENT_DIFFERENT');
+});

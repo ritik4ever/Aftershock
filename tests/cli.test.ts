@@ -24,6 +24,11 @@ test('help and versions work offline and versions emits JSON', () => {
 
 test('invalid commands, arguments and paths are rejected before network work', () => {
   for (const args of [
+    ['replay'],
+    ['replay', '../escape', '--plan'],
+    ['replay', 'invalid', '--local'],
+    ['replay', 'invalid', '--mine'],
+    ['replay', 'invalid', '--local', '--mine', '--extra'],
     ['run'],
     ['run', 'keyed-nonce-lifecycle', '--mine'],
     ['run', 'unknown', '--local', '--mine'],
