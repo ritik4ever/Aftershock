@@ -1,6 +1,6 @@
 # Upstream research
 
-Inspected 2026-11-05. Source snapshots were cloned outside the project under the Windows temporary directory `aftershock-upstream`. They are research checkouts, not dependencies or vendored code. Clone again at the exact pins if temporary files disappear.
+Inspected 2026-11-05 and rechecked 2026-11-06; source pins are unchanged. Source snapshots were cloned outside the project under the Windows temporary directory `aftershock-upstream`. They are research checkouts, not dependencies or vendored code. Clone again at the exact pins if temporary files disappear.
 
 | Project | Inspected commit | Dependency policy |
 | --- | --- | --- |
@@ -48,7 +48,9 @@ The fork schedule, single-participant setup and EIP-8282 deposit-inhibitor worka
 - Beacon and validator image: ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0. Actual binary identifies Lighthouse v8.1.3-52e5197; image labels identify the focil ref. The immutable image digest is the pin; the mutable focil tag is not used at runtime.
 - The existing execution image/source pin is unchanged. Mining explicitly selects full sync; its default snap mode did not produce payloads in the private prototype. All accounts and the validator mnemonic/JWT are fresh for each run. Source-defined one-wei low-address allocations are retained, never used as signing accounts.
 
-This smoke fixture is infrastructure and ordinary inclusion coverage. It is not an original consensus implementation, a completed paymaster/keyed lifecycle suite or exact replay.
+The smoke fixture is infrastructure and ordinary inclusion coverage, not an original consensus implementation. The separate --mine suites now exercise actual payer eviction and keyed lifecycle transitions. Exact replay remains unfinished.
+
+The recheck confirmed [restartCron/tryBundle](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/services/BundlingService/service.ts#L497) reconciles blocks before checking manual/auto mode. A comment in the older inclusion test claiming auto mode is required for reconciliation is stale. The implementation and genuine manual-mode runs take precedence. The payer checker follows enforceBalances' submittedTime/lastUpdatedTime fallback and verifies its source-specific cancellation marker; earlier revalidation failures are not evidence of that enforcement stage. Native stale keyed sequences use ethrex VM's Nonce mismatch error and sidecar VALIDATION_FAILED (-32500).
 
 ## Web references and limitations
 

@@ -1,6 +1,6 @@
 # Reproducing the baseline
 
-This guide covers ordinary workshop admission, Aftershock's read/evidence integration and the original private admission/replacement sequences. The full original suites remain incomplete while mined-state branches and exact replay are unfinished.
+This guide covers the workshop baseline, Aftershock's read/evidence integration and private admission/mined lifecycle commands. Exact historical replay remains unfinished. Verified case results are listed in TEST_SCENARIOS.md.
 
 ## Environment
 
@@ -70,7 +70,7 @@ npm run --silent aftershock -- report <run-id> --format json
 npm run --silent aftershock -- report <run-id> --format md
 ```
 
-The report command validates schema, containment and checksum before export. No exact replay command is provided yet: each rerun uses fresh private keys and a new genesis fingerprint. The seed identifies action order only. These CLI suites still select the non-mining fixture. The separate mining smoke test below does not complete their balance-change or included/dropped-predecessor branches.
+The report command validates schema, containment, checksum and verdict/action consistency before export. No exact replay command is provided yet: each rerun uses fresh private keys and a new genesis fingerprint. The seed identifies action order only. Add --mine to select the mined lifecycle branches; otherwise the run retains the explicit blocked mining step.
 
 ## Private mining fixture
 
@@ -85,8 +85,16 @@ npm run test:mining
 
 This test creates chain 9 with 32 fresh validators, six-second slots, Fulu at genesis, Gloas at epoch 1 and Heze at epoch 2. Genesis is scheduled 60 seconds after generation begins. Readiness requires a non-genesis execution block at least 396 seconds after the genesis timestamp. Allow several minutes; a running container alone is insufficient. It then submits an ordinary signed Frame Transaction to the private sidecar and requires transaction success and two successful frame receipts.
 
-The generator runs offline with network=none. It uses a fresh validator mnemonic, disables derived EOA premine and funds only the five generated fixture accounts. Source-defined one-wei reserved low-address allocations and protocol contracts remain. The builder deposit inhibitor is armed before generating the consensus genesis. Runtime configuration uses full execution sync, disabled EL P2P/CL discovery, an internal four-process network, no published ports and automatic sidecar bundling. Aftershock never invokes a privileged relay method; the pinned sidecar's own relayer handles its internal submission path.
+The generator runs offline with network=none. It uses a fresh validator mnemonic, disables derived EOA premine and funds only the five generated fixture accounts. Source-defined one-wei reserved low-address allocations and protocol contracts remain. The builder deposit inhibitor is armed before generating the consensus genesis. Runtime configuration uses full execution sync, disabled EL P2P/CL discovery, an internal four-process network and no published ports. test:mining uses automatic bundling; original --mine suites use manual bundling. Reconciliation still runs in manual mode at the pinned source. Keyed transactions are then submitted through ordinary eth_sendRawTransaction; the payer test uses ordinary EIP-1559 transfers. Aftershock never invokes a privileged relay method or bundling-control RPC.
 
-Generator logs, mnemonic-containing metadata, JWT and validator keystores stay in private ignored .local/. Generator output directories/files use modes 700/600 and are assigned to the WSL user. The generator container is tracked for teardown even if generation fails. The final filtered mining capture is written under .local/mining-results/ after normal teardown; review it separately before publishing. This proves mining readiness and an ordinary inclusion path, not either full original suite or deterministic replay. Kurtosis is not required by this direct Docker fixture.
+Generator logs, mnemonic-containing metadata, JWT and validator keystores stay in private ignored .local/. Generator output directories/files use modes 700/600 and are assigned to the WSL user. The generator container is tracked for teardown even if generation fails. The smoke capture is written under .local/mining-results/; lifecycle test captures go under .local/lifecycle-results/. Review these separately before publishing. Scenario exceptions also write a private diagnostic file when possible; arbitrary error text is not exported. Kurtosis is not required.
+
+```sh
+npm run --silent aftershock -- run paymaster-solvency --local --mine
+npm run --silent aftershock -- run keyed-nonce-lifecycle --local --mine
+npm run test:lifecycle
+```
+
+Each suite starts its own fresh chain, so the sequential lifecycle test takes two fork warmups. Independent suites can be selected with the installed tsx test runner's --test-name-pattern option. Fixture creation uses --pull never; missing images produce a blocked prerequisite instead of downloading dependencies. Obtain approval before any package installation or external deployment. No reinstall was performed for the 2026-11-06 checkpoint; the existing tree was checked with npm ls --all.
 
 Teardown runs on ordinary completion and handled exceptions. A hard process kill can interrupt it; inspect the exact aftershock.run label from that run's report before removing any leftover resources. Never use global Docker pruning or remove other runs' containers/networks. .gitattributes keeps shell helpers LF-terminated when checked out on Windows.

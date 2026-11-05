@@ -2,7 +2,7 @@
 
 Find the failures before they reach Ethereum.
 
-Aftershock is a stateful scenario runner for Ethereum Frame Transactions and alternative-mempool lifecycle rules. It runs original shared-payer and keyed-nonce admission/replacement sequences against private ethrex/sidecar processes, separately verifies real private mining and inspects public admission/receipt evidence. The original suites' mined lifecycle branches remain unfinished; there is no UI yet.
+Aftershock is a stateful scenario runner for Ethereum Frame Transactions and alternative-mempool lifecycle rules. It runs original shared-payer and keyed-nonce scenarios against private ethrex/sidecar processes and inspects public admission/receipt evidence. Use `--local --mine` for mined lifecycle checks; there is no UI yet. Current verified coverage and remaining limits are recorded in [TEST_SCENARIOS](docs/TEST_SCENARIOS.md).
 
 ## Run the CLI
 
@@ -54,9 +54,17 @@ npm run test:integration
 
 Each run creates its own internal network, fresh genesis-funded accounts and pinned processes; no shared genesis keys or public transactions are used. No RPC/P2P ports are published. A fixed Docker-exec transport reads the owned private network. Containers and network are removed afterwards; ignored `.local/` retains private keys/logs and `reports/` retains filtered reports. Do not publish either directory wholesale.
 
-The current suites report **BLOCKED**, with individual admission/replacement checks passing, because mined predecessor/balance changes are not implemented in their non-mining fixture. Native CLI exit 3 communicates BLOCKED. The two integration tests pass only when those real subsets pass and the remaining branch is explicitly blocked; they do not claim full-suite completion.
+Without `--mine`, suites report **BLOCKED** because the selected fixture does not produce blocks. Native CLI exit 3 communicates BLOCKED. Those two integration tests verify the admission/replacement subset and the explicit blocked branch.
 
-A separate `npm run test:mining` test starts a fresh private ethrex/Lighthouse/validator/sidecar stack, waits beyond the staged Hegota fork and requires an ordinary Frame Transaction to execute successfully. It needs two additional pinned images and several minutes of startup; use the exact commands in [Reproducibility](docs/REPRODUCIBILITY.md#private-mining-fixture). This fixture is the prerequisite for adding mined lifecycle branches, not completion of those branches. No Kurtosis runtime is needed.
+A separate `npm run test:mining` checks automatic sidecar inclusion. The original suites use manual sidecar bundling with block reconciliation and ordinary execution-client submissions:
+
+```sh
+npm run --silent aftershock -- run paymaster-solvency --local --mine
+npm run --silent aftershock -- run keyed-nonce-lifecycle --local --mine
+npm run test:lifecycle
+```
+
+These commands use fresh private ethrex/Lighthouse/validator/sidecar stacks and wait several minutes for staged forks. They require cached images from the commands in [Reproducibility](docs/REPRODUCIBILITY.md#private-mining-fixture). Image pulls are disabled during fixture startup. No Kurtosis runtime is required. Agents must obtain approval before installing dependencies or deploying externally; existing disposable local tests are authorized.
 
 ```sh
 npm run --silent aftershock -- report <run-id> --format json
@@ -83,6 +91,6 @@ The probe needs Node >=20.12 and no installed packages. It only reads the config
 - [Current architecture](docs/ARCHITECTURE.md)
 - [Reproducing the baseline](docs/REPRODUCIBILITY.md)
 
-Current blockers: the original suites still need balance-change/eviction and included/dropped predecessor assertions connected to the separate mining fixture. Public node source commit remains unknown. UI work will wait for the core lifecycle integration.
+Remaining work: exact replay, fuller redacted evidence and additional terminal/TTL/submitted-entry cases. Public node source commit remains unknown. UI work follows the core engine checkpoints.
 
 The upstream workshop, sidecar and codec are existing projects credited in UPSTREAM.md. No upstream protocol implementation is vendored. The mining fork schedule and builder-predeploy workaround are adapted from the attributed upstream fixtures. Aftershock is [MIT licensed](LICENSE).
