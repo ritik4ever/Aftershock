@@ -18,6 +18,7 @@ export async function fixtureTransaction(
   payerKey: Hex,
   keys: bigint[],
   fee = 2_000_000_000n,
+  priorityFee = fee,
 ) {
   const sender = privateKeyToAccount(senderKey).address;
   const payer = privateKeyToAccount(payerKey).address;
@@ -55,11 +56,13 @@ export async function fixtureTransaction(
     signatures: selfPay
       ? [secp256k1Placeholder(profile)]
       : [secp256k1Placeholder(profile), secp256k1Placeholder(profile, payer)],
-    fees: { maxFeePerGas: fee, maxPriorityFeePerGas: fee },
+    fees: { maxFeePerGas: fee, maxPriorityFeePerGas: priorityFee },
   });
   let signed = await signTx(profile, tx, senderKey);
   if (!selfPay) signed = await signTx(profile, signed, payerKey, 1);
   return {
+    maximumFee: fee.toString(),
+    priorityFee: priorityFee.toString(),
     hash: txHash(profile, signed),
     wire: toWire(signed),
     raw: encodeTx(profile, signed),

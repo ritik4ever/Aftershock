@@ -14,8 +14,9 @@
   "scripts": {
     "aftershock": "tsx packages/cli/src/index.ts",
     "test:integration": "tsx --test tests/local.integration.ts",
+    "test:mining": "tsx --test tests/mining.integration.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/core.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts && node --test tests/probe-devnet.test.mjs",
+    "test": "tsx --test tests/core.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts tests/mining.test.ts && node --test tests/probe-devnet.test.mjs",
     "lint": "oxlint --deny-warnings packages tests scripts",
     "format": "prettier --write packages tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json",
     "format:check": "prettier --check packages tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json"

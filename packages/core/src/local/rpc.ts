@@ -16,8 +16,10 @@ const methodSchema = z.enum([
   'eth_chainId',
   'web3_clientVersion',
   'eth_getBalance',
+  'eth_getBlockByNumber',
   'eth_sendFrameTransaction',
   'eth_getFrameTransactionByHash',
+  'eth_getFrameTransactionReceipt',
   'ethrex_simulateFrameTransaction',
   'skandha_explorer_info',
   'skandha_explorer_getTransaction',
@@ -76,7 +78,15 @@ export async function localRpc<T>(
         ? 'KEY_CONFLICT'
         : /cannot be replaced: fee too low/.test(message)
           ? 'FEE_BUMP'
-          : 'OTHER';
+          : /Frame transaction already known/.test(message)
+            ? 'DUPLICATE'
+            : method === 'eth_getFrameTransactionReceipt' &&
+                envelope.error.code === -32000 &&
+                typeof params[0] === 'string' &&
+                /^0x[0-9a-f]{64}$/i.test(params[0]) &&
+                message === `transaction receipt not found for ${params[0]}`
+              ? 'RECEIPT_UNAVAILABLE'
+              : 'OTHER';
     throw new LocalRpcError(envelope.error.code, reason);
   }
   if (!Object.hasOwn(envelope, 'result')) throw new Error('Missing RPC result');

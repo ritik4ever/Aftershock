@@ -86,6 +86,7 @@ export const scenarioCatalogue = [
       'disjoint keys',
       'overlapping conflict',
       'low/high fee bumps',
+      'independent maximum/priority fee thresholds and duplicate rejection',
       'predecessor replacement evidence',
     ],
     blocked: ['included/dropped predecessor with a mined state transition'],
@@ -129,9 +130,11 @@ export const definitions = {
     ],
     actions: [
       'admit-base',
+      'reject-duplicate',
       'admit-disjoint-key',
       'reject-overlapping-set',
       'reject-low-fee-bump',
+      'reject-low-priority-fee-bump',
       'accept-fee-bumped-replacement',
       'verify-replacement-lifecycle',
       'explorer-continuity',
@@ -233,6 +236,8 @@ export async function runScenario(
           hash: tx.hash,
           expected,
           actual: 'ACCEPTED',
+          maximumFee: tx.maximumFee,
+          priorityFee: tx.priorityFee,
         });
         return ok;
       } catch (error) {
@@ -242,12 +247,22 @@ export async function runScenario(
           expected,
           actual: error.reason,
           code: error.code,
+          maximumFee: tx.maximumFee,
+          priorityFee: tx.priorityFee,
         });
         return expected === error.reason;
       }
     };
     const payer = id === 'paymaster-solvency' ? keys[3]! : keys[0]!;
-    const base = await fixtureTransaction(keys[0]!, payer, [1n]);
+    const priorityFee =
+      id === 'keyed-nonce-lifecycle' ? 1_000_000_000n : 2_000_000_000n;
+    const base = await fixtureTransaction(
+      keys[0]!,
+      payer,
+      [1n],
+      2_000_000_000n,
+      priorityFee,
+    );
     if (!(await submit('admit-base', base, 'ACCEPTED')))
       throw new Error('Baseline admission unavailable');
     if (id === 'paymaster-solvency') {
@@ -279,6 +294,7 @@ export async function runScenario(
         'BALANCE_OBLIGATIONS',
       );
     } else {
+      await submit('reject-duplicate', base, 'DUPLICATE');
       await submit(
         'admit-disjoint-key',
         await fixtureTransaction(keys[0]!, payer, [2n]),
@@ -296,7 +312,24 @@ export async function runScenario(
         throw new Error('Replacement TTL precondition expired');
       await submit(
         'reject-low-fee-bump',
-        await fixtureTransaction(keys[0]!, payer, [1n], 2_100_000_000n),
+        await fixtureTransaction(
+          keys[0]!,
+          payer,
+          [1n],
+          2_100_000_000n,
+          1_100_000_000n,
+        ),
+        'FEE_BUMP',
+      );
+      await submit(
+        'reject-low-priority-fee-bump',
+        await fixtureTransaction(
+          keys[0]!,
+          payer,
+          [1n],
+          2_200_000_000n,
+          1_050_000_000n,
+        ),
         'FEE_BUMP',
       );
     }
@@ -305,6 +338,7 @@ export async function runScenario(
       payer,
       [1n],
       2_200_000_000n,
+      (priorityFee * 11n) / 10n,
     );
     await submit('accept-fee-bumped-replacement', replacement, 'ACCEPTED');
     const predecessor = await localRpc(

@@ -6,6 +6,11 @@ import { resolve, relative } from 'node:path';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { z } from 'zod';
 import { UPSTREAM } from '../inspect.js';
+import {
+  generateMiningGenesis,
+  LIGHTHOUSE_IMAGE,
+  GENESIS_IMAGE,
+} from './mining.js';
 
 const execute = promisify(execFile);
 export const ETHREX_IMAGE =
@@ -28,14 +33,22 @@ export async function docker(...args: string[]): Promise<string> {
 
 type Genesis = {
   config: { chainId: number };
-  alloc: Record<string, { code?: string; balance: string; nonce?: string }>;
+  alloc: Record<
+    string,
+    { code?: string | undefined; balance: string; nonce?: string | undefined }
+  >;
 };
 
-export async function startFixture(root: string, runId: string = randomUUID()) {
+export async function startFixture(
+  root: string,
+  runId: string = randomUUID(),
+  mining = false,
+) {
   z.uuid().parse(runId);
   const prefix = `aftershock-${runId}`;
   const directory = resolve(root, '.local', runId);
-  await mkdir(directory, { recursive: true, mode: 0o700 });
+  await mkdir(resolve(root, '.local'), { recursive: true, mode: 0o700 });
+  await mkdir(directory, { mode: 0o700 });
   if (
     relative(await realpath(root), await realpath(directory)) !==
     `.local/${runId}`
@@ -125,7 +138,7 @@ export async function startFixture(root: string, runId: string = randomUUID()) {
       '5fe93acb7674db5d809aae4d66bff742121ed718bcddd327efcb8c1a9e631fb4'
     )
       throw new Error('Genesis template differs from pinned source');
-    const genesis = JSON.parse(template) as Genesis;
+    let genesis = JSON.parse(template) as Genesis;
     if (genesis.config.chainId !== 9)
       throw new Error('Unexpected fixture chain');
     const keys = Array.from({ length: 5 }, () => generatePrivateKey());
@@ -140,6 +153,14 @@ export async function startFixture(root: string, runId: string = randomUUID()) {
         balance: index === 3 ? '1000000000000000' : '1000000000000000000',
       };
     });
+    if (mining) {
+      stage = 'mining-genesis';
+      genesis = (
+        await generateMiningGenesis(directory, keys, runId, docker, (name) =>
+          owned.push(name),
+        )
+      ).genesis;
+    }
     await writeFile(`${directory}/genesis.json`, JSON.stringify(genesis), {
       mode: 0o600,
     });
@@ -193,18 +214,84 @@ export async function startFixture(root: string, runId: string = randomUUID()) {
       ...common,
       '-v',
       `${directory}/genesis.json:/aftershock/genesis.json:ro`,
+      ...(mining ? ['-v', `${directory}/jwt:/aftershock/jwt:ro`] : []),
       ETHREX_IMAGE,
       '--network',
       '/aftershock/genesis.json',
       '--p2p.disabled',
+      '--syncmode',
+      'full',
       '--p2p.addr',
       '127.0.0.1',
       '--http.addr',
       '0.0.0.0',
       '--http.api',
-      'eth,net,web3,ethrex',
+      mining ? 'eth,net,web3,ethrex,debug' : 'eth,net,web3,ethrex',
+      ...(mining
+        ? [
+            '--authrpc.addr',
+            '0.0.0.0',
+            '--authrpc.jwtsecret',
+            '/aftershock/jwt',
+          ]
+        : []),
     );
     owned.push(execution);
+    if (mining) {
+      stage = 'consensus-start';
+      const beacon = `${prefix}-beacon`;
+      const validator = `${prefix}-validator`;
+      const feeRecipient = privateKeyToAccount(keys[4]!).address;
+      await docker(
+        'run',
+        '-d',
+        '--name',
+        beacon,
+        ...common,
+        '-v',
+        `${directory}/consensus:/aftershock/consensus:ro`,
+        '-v',
+        `${directory}/jwt:/aftershock/jwt:ro`,
+        LIGHTHOUSE_IMAGE,
+        'lighthouse',
+        'beacon_node',
+        '--testnet-dir=/aftershock/consensus',
+        '--datadir=/tmp/beacon',
+        '--http',
+        '--http-address=0.0.0.0',
+        '--http-port=4000',
+        '--disable-discovery',
+        '--disable-upnp',
+        '--enable-private-discovery',
+        '--allow-insecure-genesis-sync',
+        '--supernode',
+        `--execution-endpoints=http://${execution}:8551`,
+        '--jwt-secrets=/aftershock/jwt',
+        `--suggested-fee-recipient=${feeRecipient}`,
+      );
+      owned.push(beacon);
+      await docker(
+        'run',
+        '-d',
+        '--name',
+        validator,
+        ...common,
+        '-v',
+        `${directory}/consensus:/aftershock/consensus:ro`,
+        '-v',
+        `${directory}/validators:/aftershock/validators`,
+        LIGHTHOUSE_IMAGE,
+        'lighthouse',
+        'vc',
+        '--testnet-dir=/aftershock/consensus',
+        '--validators-dir=/aftershock/validators/keys',
+        '--secrets-dir=/aftershock/validators/secrets',
+        '--init-slashing-protection',
+        `--beacon-nodes=http://${beacon}:4000`,
+        `--suggested-fee-recipient=${feeRecipient}`,
+      );
+      owned.push(validator);
+    }
     const executionUrl: LocalEndpoint = {
       executor: sidecar,
       url: `http://${execution}:8545`,
@@ -239,7 +326,7 @@ export async function startFixture(root: string, runId: string = randomUUID()) {
       '--p2p.enrPort',
       '4337',
       '--executor.bundlingMode',
-      'manual',
+      mining ? 'auto' : 'manual',
       '--explorer.enable',
     );
     owned.push(sidecar);
@@ -256,7 +343,7 @@ export async function startFixture(root: string, runId: string = randomUUID()) {
         }),
       )
       .parse(JSON.parse(await docker('network', 'inspect', network)))[0]!;
-    if (Object.keys(networkInfo.Containers).length !== 2)
+    if (Object.keys(networkInfo.Containers).length !== (mining ? 4 : 2))
       throw new Error('Unexpected peer in isolated network');
     const processes = z
       .array(
@@ -273,7 +360,16 @@ export async function startFixture(root: string, runId: string = randomUUID()) {
           State: z.object({ Running: z.literal(true) }),
         }),
       )
-      .parse(JSON.parse(await docker('inspect', execution, sidecar)));
+      .parse(
+        JSON.parse(
+          await docker(
+            'inspect',
+            ...owned.filter(
+              (name) => name !== reader && !name.endsWith('-generator'),
+            ),
+          ),
+        ),
+      );
     for (const process of processes) {
       if (
         process.Config.Labels['aftershock.run'] !== runId ||
@@ -298,6 +394,13 @@ export async function startFixture(root: string, runId: string = randomUUID()) {
       genesisSha256: createHash('sha256')
         .update(JSON.stringify(genesis))
         .digest('hex'),
+      ...(mining
+        ? {
+            consensusImage: LIGHTHOUSE_IMAGE,
+            genesisGeneratorImage: GENESIS_IMAGE,
+            fixtureMode: 'mining',
+          }
+        : { fixtureMode: 'admission' }),
     };
     return { runId, keys, executionUrl, sidecarUrl, fingerprint, cleanup };
   } catch (error) {

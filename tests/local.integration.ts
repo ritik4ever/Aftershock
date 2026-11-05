@@ -20,8 +20,10 @@ for (const [id, expected] of [
     [
       'admit-base',
       'admit-disjoint-key',
+      'reject-duplicate',
       'reject-overlapping-set',
       'reject-low-fee-bump',
+      'reject-low-priority-fee-bump',
       'accept-fee-bumped-replacement',
       'verify-replacement-lifecycle',
     ],
@@ -43,6 +45,18 @@ for (const [id, expected] of [
       assert.equal(report.result, 'BLOCKED');
       assert.equal(report.environment.networkInternal, 'true');
       assert.equal(report.environment.publishedPorts, 'none');
+      if (id === 'keyed-nonce-lifecycle') {
+        const maximumOnly = report.steps.find(
+          (step) => step.id === 'reject-low-priority-fee-bump',
+        )!;
+        const priorityOnly = report.steps.find(
+          (step) => step.id === 'reject-low-fee-bump',
+        )!;
+        assert.equal(maximumOnly.observed.maximumFee, '2200000000');
+        assert.equal(maximumOnly.observed.priorityFee, '1050000000');
+        assert.equal(priorityOnly.observed.maximumFee, '2100000000');
+        assert.equal(priorityOnly.observed.priorityFee, '1100000000');
+      }
       for (const action of [
         ...expected,
         'explorer-continuity',
