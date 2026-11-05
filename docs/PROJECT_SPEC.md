@@ -36,7 +36,7 @@ Completed: compatible tooling, genuine workshop baseline, read-only inspector, b
 
 ## Current scope state
 
-- Implemented: CLI doctor/inspect/versions/help/scenarios/run --local [--mine]/report/replay --plan or --local [--mine]; original admission/replacement/mined sequences, private fixtures, official signing, filtered evidence and JSON/Markdown reports with checksum and cross-field consistency checks.
+- Implemented: CLI doctor/inspect/versions/help/scenarios/run --local [--mine]/report/replay --plan or --local [--mine]/offline compare; original admission/replacement/mined sequences, private fixtures, official signing, filtered evidence and JSON/Markdown reports with checksum and cross-field consistency checks.
 - Tested at the prior mined checkpoint: 40 unit/bootstrap tests, two private admission/replacement tests, both mined lifecycle tests and the automatic-relaying smoke test. Application audit is clean; pinned sidecar advisories remain unresolved. See ENVIRONMENT.md.
 - Blocked: a run without --mine omits mined checks and remains BLOCKED. Public node commit is unknown. Exact replay is not implemented.
 - Verified baseline: real workshop transaction on chain 1337, block 404438, two successful frames. This is upstream functionality, not Aftershock originality.
@@ -44,3 +44,7 @@ Completed: compatible tooling, genuine workshop baseline, read-only inspector, b
 - License: MIT, selected after the user delegated the choice to Codex.
 
 Fresh-state rerun checkpoint: replay validates a saved private report and current scenario definition before running a new fixture. It compares action verdicts and stable environment fields, preserves BLOCKED and saves the new run separately. It does not restore snapshots, execute saved scripts, compare raw observations or authenticate evidence authorship. See REPRODUCIBILITY.md for commands and scope.
+
+Offline comparisons reconstruct verdict/environment differences from two immutable saved reports without contacting Docker or RPC. Export success is separate from the runs' invariant verdicts. Report reads reject non-regular files, bound actual reads, avoid following replaced leaf symlinks on Linux, and do not create a missing report directory. Actual mined replay validation is recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
+
+Latest verified checkpoint: 43 unit/bootstrap tests, one real non-mining replay integration case and both genuine mined replay cases passed. Both new mined runs matched baseline action verdicts and stable environment fields while using fresh genesis/accounts. This verifies fresh-state reruns only; snapshot restoration and fuller raw evidence remain planned.

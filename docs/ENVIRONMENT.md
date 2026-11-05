@@ -1,6 +1,6 @@
 # Environment, 2026-11-05
 
-The research/pre-commit sections below are historical snapshots. The latest implemented state and checks are recorded in the CLI/core integration checkpoint at the end.
+The research/pre-commit sections below are historical snapshots. The latest implemented state and checks are recorded in the latest checkpoint at the end. Current repository name: ritik4ever/Aftershock (uppercase A); older entries retain their historical spelling.
 
 ## Observed tooling
 
@@ -187,3 +187,23 @@ Using the existing Linux-home dependency tree (Node 24.22.2, npm 11.19.1), typec
 npm run test:replay passed its one real integration test (26.1 seconds): the keyed baseline bff66099-2628-4d41-a007-24c55acb8f2c and fresh rerun 80e27c50-6021-44c1-8169-19498be33de2 both retained BLOCKED for omitted mining, with matching action verdicts and stable environment fields. Genesis fingerprints differed. Both saved envelopes were read back and compared with CLI output; --plan succeeded and an incorrect --mine mode returned native 2 before fixture creation. Per-run Docker checks and the final global aftershock.run label inventory showed no remaining owned containers/networks.
 
 The offline plan also validated the saved mined keyed report 3b2d8dee-6870-4ce3-9e83-af75ef4e5a4f and selected --mine. The new mined replay command was not integration-tested at this checkpoint; earlier genuine mined-suite coverage remains recorded above. No new mined PASS or exact snapshot replay is claimed. Comparison stdout is not a third persisted artifact, and the existing reports remain filtered projections rather than full raw traces. Pinned upstream sidecar advisories remain unresolved.
+
+
+## Mined rerun and offline comparison checkpoint, 2026-11-06 local time
+
+No packages/dependencies were installed and no images were pulled or external services deployed. The existing Node 24.22.2/npm 11.19.1 Linux-home tree passed typecheck, Oxlint, formatting, all 43 unit/bootstrap tests, npm ls --all and npm audit (zero application vulnerabilities). Both .mjs syntax checks and bash -n passed. New report regressions confirm FIFO rejection without a writer and no directory creation during missing-report reads; Linux opens are nonblocking/no-follow and regular-file reads remain bounded even after file growth. Pinned sidecar dependency advisories remain unresolved.
+
+The two real mined replay cases were selected independently and executed concurrently with the installed runner:
+
+```sh
+./node_modules/.bin/tsx --test --test-name-pattern=keyed-nonce-lifecycle tests/replay-mining.integration.ts
+./node_modules/.bin/tsx --test --test-name-pattern=paymaster-solvency tests/replay-mining.integration.ts
+```
+
+Both exited 0. The keyed test took 453.3 seconds and payer test 463.0 seconds; these are observed test durations, not performance benchmarks. The sequential npm run test:replay:mining script contains the same cases but was not separately executed. npm run test:replay also passed its real non-mining case (25.7 seconds), retaining BLOCKED and verifying offline comparison. The compare command validates both saved envelopes and exits 0 when it successfully exports a comparison, regardless of historical invariant verdicts.
+
+Keyed baseline 3b2d8dee-6870-4ce3-9e83-af75ef4e5a4f reran as 7c3f9985-d997-45cb-a676-2c4cd750ca70: PASS, 18 steps, matching verdicts/stable environment and a different genesis. Replacement 0x925d5dca86867d283ae81cdd5cc9510f810411f0c7677fd7450e60ce2ea072f9 executed in block 67 and next sequence 0xa8a3d3d325ea8351efd73ce27ab00c8e462fc77f9506ce90bb1501b3cc256440 in block 68, both with two successful frames. No explorer-history gaps were reported.
+
+Payer baseline acc1216e-0374-48a8-b4f0-5e724d264979 reran as d83300ca-8089-4c41-9c5e-c047228bb268: PASS, 16 steps, matching verdicts/stable environment and a different genesis. The fresh base maximum cost was 662898000000000 wei, differing from the old 662874000000000 wei observation. The newest entry was Cancelled by balance enforcement and the older remained New. This demonstrates matching asserted behavior, not identical raw execution or exact replay.
+
+Both tests read and validate immutable saved reports and compare the offline CLI output with the replay output. Reviewed comparison-plus-rerun captures were copied byte-for-byte from private test outputs into docs/evidence/replay-keyed-nonce-lifecycle.json and replay-paymaster-solvency.json after checksum/schema/comparison validation. Exact fresh keys, mnemonic and JWT were checked for absence. Both test-level teardown checks and the final global aftershock.run inventory showed no remaining owned containers or networks. No new public-devnet transaction was sent. Captures remain filtered private-chain projections, not raw complete traces or independent attestations.

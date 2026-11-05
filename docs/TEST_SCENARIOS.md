@@ -2,7 +2,7 @@
 
 Both suites use real pinned private ethrex and sidecar processes, the official codec, a fresh genesis and fresh private accounts. Their results are not generated from a local mempool model. Current fixture chain is 9. Public chain 1337 remains a separate baseline observation.
 
-| Suite | Implemented and observed | Still BLOCKED |
+| Suite | Implemented and observed | Outside current coverage |
 | --- | --- | --- |
 | paymaster-solvency | Sponsored EOA admission, aggregate rejection, replacement accounting, mined top-up/control/drain, distinct New-entry order, newest cancellation by balance enforcement and covered survivor | Submitted/Pending eviction exceptions, exact replay |
 | keyed-nonce-lifecycle | Disjoint keys, overlapping/duplicate rejection, independent fee components, replacement, successful canonical inclusion, stale-sequence rejection, next-sequence inclusion and disjoint survivor | Terminal/TTL exceptions, exact replay |
@@ -26,3 +26,6 @@ Verified original mined captures: [payer lifecycle](evidence/mined-paymaster-sol
 In the keyed run, replacement 0x63872db0dcc2a3242916629d16a4cf14e737f37b7d48cc0a7cba8ec3c0cfd7fa executed in block 67. A fresh higher-fee stale sequence was rejected with -32500/NONCE_MISMATCH; sequence 1 was then admitted and executed in block 68. Both inclusions had two successful frames, and the disjoint key remained New. History continuity and report action completeness were checked. These are private local transaction hashes, not public-explorer links.
 
 Mempool entry timestamps are hex on the actual RPC wire. Ordering uses BigInt(submittedTime ?? lastUpdatedTime), matching the inspected fallback without losing precision. Reports preserve those fields as hex. State assertions remain non-atomic observations; no exact snapshot replay or complete raw RPC trace is claimed.
+
+
+Fresh-state mined regression reruns now cover both suites through the native replay command, with all declared actions passing and stable environment fields matching their reviewed baselines. [Keyed comparison and fresh report](evidence/replay-keyed-nonce-lifecycle.json) and [payer comparison and fresh report](evidence/replay-paymaster-solvency.json) retain the actual new runs and checksum links. The tests also reconstruct the same comparison with the offline compare command and verify cleanup. New hashes, genesis fingerprints and some gas/cost observations differ; VERDICTS_MATCH does not mean identical execution. Exact snapshot replay and broader protocol edges remain outside this coverage.

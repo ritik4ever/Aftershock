@@ -2,6 +2,8 @@
 
 Find the failures before they reach Ethereum.
 
+[GitHub repository](https://github.com/ritik4ever/Aftershock)
+
 Aftershock is a stateful scenario runner for Ethereum Frame Transactions and alternative-mempool lifecycle rules. It runs original shared-payer and keyed-nonce scenarios against private ethrex/sidecar processes and inspects public admission/receipt evidence. Use `--local --mine` for mined lifecycle checks; there is no UI yet. Current verified coverage and remaining limits are recorded in [TEST_SCENARIOS](docs/TEST_SCENARIOS.md).
 
 ## Run the CLI
@@ -71,9 +73,10 @@ npm run --silent aftershock -- report <run-id> --format json
 npm run --silent aftershock -- report <run-id> --format md
 npm run --silent aftershock -- replay <run-id> --plan
 npm run --silent aftershock -- replay <run-id> --local [--mine]
+npm run --silent aftershock -- compare <baseline-run-id> <rerun-run-id>
 ```
 
-Reports use exclusive writes, validated IDs and SHA-256 integrity checks. Integrity detects accidental changes; it does not authenticate a report's author. `replay --plan` reads a saved report offline. `replay --local` reruns its current built-in scenario in fresh isolated state; `--mine` must match the original fixture mode. It saves a new run and prints linked checksums, action verdicts and stable environment differences. Matching BLOCKED results remain BLOCKED. This is a fresh-state rerun, not exact historical replay; no snapshot is restored. See [scenario coverage](docs/TEST_SCENARIOS.md).
+Reports use exclusive writes, validated IDs and SHA-256 integrity checks. Integrity detects accidental changes; it does not authenticate a report's author. `replay --plan` reads a saved report offline. `replay --local` reruns its current built-in scenario in fresh isolated state; `--mine` must match the original fixture mode. It saves a new run and prints linked checksums, action verdicts and stable environment differences. Matching BLOCKED results remain BLOCKED. The offline `compare` command reconstructs a comparison from two saved reports without Docker or RPC; its exit 0 means the export succeeded, regardless of the recorded verdicts. This is a fresh-state rerun, not exact historical replay; no snapshot is restored. See [scenario coverage](docs/TEST_SCENARIOS.md).
 
 The original dependency-free bootstrap probe is also available:
 
