@@ -30,6 +30,8 @@ Ethrex `crates/common/types/transaction.rs` defines keyed fields, strictly incre
 
 ## Workshop baseline and locked versions
 
+The Version 2 [contract audit](CONTRACT_FIXTURES.md) inventories actual interfaces, creation artifacts, builders, licenses and the main vanilla-solc/Foundry path. No custom Solidity is required for the current EOA suites. Workshop contract deployment, compilation and contract-specific sponsorship are not claimed by that audit.
+
 Read [AGENTS.md](https://github.com/forshtat/mempool-workshop/blob/bcfe02a196ca97b6fb0d1044db9d0b4c673831fc/AGENTS.md), README, package.json, workshop.config.json5 and yarn.lock. The checkout has steps 1 through 13. Use the package scripts directly, keep config in workshop.config.json5 and generated private state in .workshop-state.json. Funding uses the faucet. Do not run the reputation mutation steps on shared endpoints under Aftershock's stricter boundary.
 
 Resolved in this snapshot's yarn.lock: hegota-support 0.0.1, viem 2.57.11, tsx 4.23.15, TypeScript 7.0.2, Vitest 5.0.5, Vite 7.3.7 and @types/node 26.6.5. These are inspected lockfile entries, not locally installed or validated dependency versions. Check registry availability, engine compatibility and install results before adopting them. Official JSON wire encoding comes from @forshtat/hegota-support/rpc.

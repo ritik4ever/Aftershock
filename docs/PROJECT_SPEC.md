@@ -2,6 +2,8 @@
 
 Status: core CLI, both declared private mined suites, fresh-state reruns, projected RPC evidence and selected offline consistency checks are implemented. UI and exact snapshot replay remain planned. PASS covers the declared live checks, not every protocol edge case. Non-mining runs remain BLOCKED for omitted mined actions.
 
+Requirements now follow the user-approved Version 2 master specification. The source-based [contract audit](CONTRACT_FIXTURES.md) maps every declared action and records why no new Solidity is required for current coverage. A future contract-based sponsorship predicate needs its own justified scenario and integration evidence; contract count is not a milestone.
+
 Aftershock will run reproducible multi-step Frame Transaction scenarios, check version-specific invariants and export evidence through a CLI. A local read-only report UI comes last. The contribution is lifecycle automation, explicit assertions and reproducible reports; transaction sending, admission debugging, keyed nonces and recent roots already exist upstream.
 
 ## Proposed source-backed invariants
@@ -39,7 +41,7 @@ Offline check-evidence rechecks selected saved outputs and explicitly lists unsu
 ## Current scope
 
 - Implemented: doctor, inspect, versions, scenarios, run --local [--mine], report JSON/Markdown, replay planning/reruns, offline compare, evidence export and selected evidence consistency checks.
-- Verified: both original mined suites and fresh-state reruns have genuine scoped passing captures. The latest offline checkpoint passed 58 unit/bootstrap tests and checked the existing mined journals through the native CLI. Current commands/results and historical live executions are recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
+- Verified: both original mined suites and fresh-state reruns have genuine scoped passing captures. Current commands/results and historical live executions are recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
 - Baseline: the real upstream workshop transaction on chain 1337 executed in block 404438 with two successful frames. This is upstream functionality, not Aftershock originality.
 - Contract scope: no custom Solidity contracts or deployed contract-based paymaster fixture. Current scenarios use fresh EOAs and attributed upstream protocol predeploys; the shared payer has a separate payment signature. The declared suites work without custom contract deployment, and do not establish contract-based paymaster coverage.
 - Remaining: terminal/TTL/submitted-entry edges, exact snapshot/reset replay, fuller raw evidence where safely exportable, local read-only UI, independent review and judge demo/submission documents. Existing sidecar dependency advisories remain unresolved.

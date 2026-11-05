@@ -64,9 +64,12 @@ A separate `npm run test:mining` checks automatic sidecar inclusion. The origina
 npm run --silent aftershock -- run paymaster-solvency --local --mine
 npm run --silent aftershock -- run keyed-nonce-lifecycle --local --mine
 npm run test:lifecycle
+npm run test:fixtures
 ```
 
 These commands use fresh private ethrex/Lighthouse/validator/sidecar stacks and wait several minutes for staged forks. They require cached images from the commands in [Reproducibility](docs/REPRODUCIBILITY.md#private-mining-fixture). Image pulls are disabled during fixture startup. No Kurtosis runtime is required. Agents must obtain approval before installing dependencies or deploying externally; existing disposable local tests are authorized.
+
+`test:fixtures` additionally checks native nonce-manager runtime/storage, keyed inclusion and a real EOA balance decrease. It does not deploy workshop contracts. The [contract decision](docs/CONTRACT_FIXTURES.md) explains why the current suites need no new Solidity and identifies coverage limits.
 
 ```sh
 npm run --silent aftershock -- report <run-id> --format json

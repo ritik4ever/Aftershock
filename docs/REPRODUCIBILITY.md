@@ -147,3 +147,11 @@ Current coverage is two keyed inclusion checks (successful two-frame receipts, b
 Global CONSISTENT/native 0 requires a recorded PASS with complete evidence, the expected private chain/client-pin assertions/current definition, and all selected checks consistent. A contradiction returns 1. Missing records, historical journals, non-passing runs or incompatible saved context return INSUFFICIENT/native 3. Invalid CLI arguments return 2; file/schema/integrity errors fail rather than infer a verdict. The original run is never rewritten.
 
 This is not full scenario revalidation. Signatures, key/nonce/fee semantics, transfer values, account-query targets, simulation-to-transaction association, fixture cleanup and other unlisted actions cannot be reconstructed from redacted request digests. Coordinated falsification of both journal and summaries remains possible. No independent audit, exact replay or new live finding is implied. Regression tests deliberately alter copies of actual captures and never publish those copies as node evidence.
+
+## Native fixture capability regression
+
+```sh
+npm run test:fixtures
+```
+
+Use the existing Linux-home dependency tree and cached mining images under the same prerequisites as the mined suites. This disposable internal-network test reads code and keyed storage, admits/mines a real keyed transaction, checks the resulting state/lifecycle and mines a native-balance transfer. Only a passing test with complete filtered recording and verified owned-resource cleanup writes `.local/fixture-capabilities-results/<run-id>.json`. This standalone infrastructure capture is not a RunReport; the CLI report/check-evidence commands do not accept it. Review and secret-check it separately before copying a filtered sample into docs/evidence. No Foundry installation or new Solidity is needed; see [contract decisions](CONTRACT_FIXTURES.md).
