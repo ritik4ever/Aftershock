@@ -69,9 +69,11 @@ These commands use fresh private ethrex/Lighthouse/validator/sidecar stacks and 
 ```sh
 npm run --silent aftershock -- report <run-id> --format json
 npm run --silent aftershock -- report <run-id> --format md
+npm run --silent aftershock -- replay <run-id> --plan
+npm run --silent aftershock -- replay <run-id> --local [--mine]
 ```
 
-Reports use exclusive writes, validated IDs and SHA-256 integrity checks. Integrity detects accidental changes; it does not authenticate a report's author. Exact historical replay remains unimplemented. See [scenario coverage](docs/TEST_SCENARIOS.md).
+Reports use exclusive writes, validated IDs and SHA-256 integrity checks. Integrity detects accidental changes; it does not authenticate a report's author. `replay --plan` reads a saved report offline. `replay --local` reruns its current built-in scenario in fresh isolated state; `--mine` must match the original fixture mode. It saves a new run and prints linked checksums, action verdicts and stable environment differences. Matching BLOCKED results remain BLOCKED. This is a fresh-state rerun, not exact historical replay; no snapshot is restored. See [scenario coverage](docs/TEST_SCENARIOS.md).
 
 The original dependency-free bootstrap probe is also available:
 

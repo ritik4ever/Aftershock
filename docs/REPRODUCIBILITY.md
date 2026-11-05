@@ -45,7 +45,7 @@ npm run --silent aftershock -- inspect 0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c4
 
 The committed docs/evidence/workshop-admission-2026-11-05.json is a filtered observation captured by the CLI, not fixture output. The command also passed after a clean install and wrote a separate ignored report. Numeric observations, node identity, events and receipts came from the real gateway. Derived consistency/check counts are labeled as derived result fields. No synthetic balances, hashes or timestamps were inserted.
 
-Public histories are mutable and bounded; future inspection can fail after restart, expiry or reset. Running the workshop again creates a new transaction, not deterministic historical replay. No snapshot reset strategy or replay command is implemented. Unknown source commit means source-specific invariant conclusions remain INCONCLUSIVE.
+Public histories are mutable and bounded; future inspection can fail after restart, expiry or reset. Running the workshop again creates a new transaction, not deterministic historical replay. No snapshot reset strategy is implemented. The fresh-state rerun command below supports private reports only. Unknown source commit means source-specific invariant conclusions remain INCONCLUSIVE.
 
 ## Original private admission/replacement sequences
 
@@ -70,7 +70,7 @@ npm run --silent aftershock -- report <run-id> --format json
 npm run --silent aftershock -- report <run-id> --format md
 ```
 
-The report command validates schema, containment, checksum and verdict/action consistency before export. No exact replay command is provided yet: each rerun uses fresh private keys and a new genesis fingerprint. The seed identifies action order only. Add --mine to select the mined lifecycle branches; otherwise the run retains the explicit blocked mining step.
+The report command validates schema, containment, checksum and verdict/action consistency before export. Fresh-state reruns use fresh private keys and a new genesis fingerprint; they do not restore a snapshot. The seed identifies action order only. Add --mine to select the mined lifecycle branches; otherwise the run retains the explicit blocked mining step.
 
 ## Private mining fixture
 
@@ -98,3 +98,20 @@ npm run test:lifecycle
 Each suite starts its own fresh chain, so the sequential lifecycle test takes two fork warmups. Independent suites can be selected with the installed tsx test runner's --test-name-pattern option. Fixture creation uses --pull never; missing images produce a blocked prerequisite instead of downloading dependencies. Obtain approval before any package installation or external deployment. No reinstall was performed for the 2026-11-06 checkpoint; the existing tree was checked with npm ls --all.
 
 Teardown runs on ordinary completion and handled exceptions. A hard process kill can interrupt it; inspect the exact aftershock.run label from that run's report before removing any leftover resources. Never use global Docker pruning or remove other runs' containers/networks. .gitattributes keeps shell helpers LF-terminated when checked out on Windows.
+
+
+## Fresh-state rerun and comparison
+
+```sh
+npm run --silent aftershock -- replay <run-id> --plan
+npm run --silent aftershock -- replay <run-id> --local
+# For a baseline originally run with --mine:
+npm run --silent aftershock -- replay <run-id> --local --mine
+npm run test:replay
+```
+
+Use a run ID saved under the current Linux checkout's reports directory, not an arbitrary path or the plain docs/evidence captures. The plan command is offline and verifies the immutable envelope before checking source pins, the exact current scenario definition and private fixture requirements. Mock/public reports, altered definitions and unsupported fixtures are refused. Execution uses the built-in runner only; saved reproducer text and observations are never executed. Fixture mode must match before Docker starts. Missing cached images do not trigger downloads.
+
+The new run is saved independently. Standard output links both run IDs and report checksums and compares action verdicts and stable environment fields (images, chain, isolation, client version, TTL and fixture/bundling modes). Genesis, keys, hashes, network names and timings intentionally change. Raw observations are not compared; VERDICTS_MATCH is not proof of identical execution. A changed environment is reported separately and returns native exit 1. Matching BLOCKED runs return 3; matching conclusive PASS runs with the same stable environment return 0. Other outcomes return 1. A report/plan export returns 0 when valid regardless of its historical verdict.
+
+The comparison itself is printed, not persisted as a third artifact; retain stdout if needed. Both underlying reports remain immutable. Checksums are not authorship attestations. Exact historical replay still requires a pinned snapshot/reset strategy and remains unfinished. The integration test exercises two genuine non-mining fixtures, mode rejection, report checksums and teardown; it does not claim a mined rerun test.

@@ -32,13 +32,15 @@ Current layout: packages/core, packages/cli, tests, scripts and docs. Strict Typ
 
 Every run needs unique ID, seed, pinned source versions, actual node identity, chain ID, endpoint class, ordered actions, raw redacted responses, history continuity, receipts, expected/observed assertions and a reproducer. Verdicts: PASS, FAIL, INCONCLUSIVE, BLOCKED, SPEC_DIFFERENCE. FAIL means the defined invariant failed in that environment; it is not an automatic exploit claim. A version mismatch or missing history prevents a conclusive source-specific PASS.
 
-Completed: compatible tooling, genuine workshop baseline, read-only inspector, both declared private mined lifecycle suites and the automatic-relaying smoke test. Next: replay and fuller evidence features, then UI. Current reports are filtered projections, not complete raw execution traces.
+Completed: compatible tooling, genuine workshop baseline, read-only inspector, both declared private mined lifecycle suites and the automatic-relaying smoke test. Next: fuller evidence and snapshot replay features, then UI. Fresh-state rerun/comparison is now implemented separately from exact historical replay. Current reports are filtered projections, not complete raw execution traces.
 
 ## Current scope state
 
-- Implemented: CLI doctor/inspect/versions/help/scenarios/run --local [--mine]/report; original admission/replacement/mined sequences, private fixtures, official signing, filtered evidence and JSON/Markdown reports with checksum and cross-field consistency checks.
-- Tested: 40 unit/bootstrap tests, two private admission/replacement tests, both mined lifecycle tests and the automatic-relaying smoke test. Application audit is clean; pinned sidecar advisories remain unresolved. See ENVIRONMENT.md.
+- Implemented: CLI doctor/inspect/versions/help/scenarios/run --local [--mine]/report/replay --plan or --local [--mine]; original admission/replacement/mined sequences, private fixtures, official signing, filtered evidence and JSON/Markdown reports with checksum and cross-field consistency checks.
+- Tested at the prior mined checkpoint: 40 unit/bootstrap tests, two private admission/replacement tests, both mined lifecycle tests and the automatic-relaying smoke test. Application audit is clean; pinned sidecar advisories remain unresolved. See ENVIRONMENT.md.
 - Blocked: a run without --mine omits mined checks and remains BLOCKED. Public node commit is unknown. Exact replay is not implemented.
 - Verified baseline: real workshop transaction on chain 1337, block 404438, two successful frames. This is upstream functionality, not Aftershock originality.
 - Planned: terminal/TTL/submitted-entry exceptions, fuller redacted evidence/replay, UI, independent audit and judge demo.
 - License: MIT, selected after the user delegated the choice to Codex.
+
+Fresh-state rerun checkpoint: replay validates a saved private report and current scenario definition before running a new fixture. It compares action verdicts and stable environment fields, preserves BLOCKED and saves the new run separately. It does not restore snapshots, execute saved scripts, compare raw observations or authenticate evidence authorship. See REPRODUCIBILITY.md for commands and scope.
