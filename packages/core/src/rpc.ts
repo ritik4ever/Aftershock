@@ -78,6 +78,11 @@ export class GatewayReader {
       })
       .safeParse(decoded);
     if (!envelope.success) throw new RpcFailure('FORMAT');
+    if (
+      Object.hasOwn(envelope.data, 'result') ===
+      Object.hasOwn(envelope.data, 'error')
+    )
+      throw new RpcFailure('FORMAT');
     if (envelope.data.error)
       throw new RpcFailure('RPC', envelope.data.error.code);
     if (!Object.hasOwn(envelope.data, 'result')) throw new RpcFailure('FORMAT');

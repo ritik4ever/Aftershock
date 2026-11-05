@@ -18,14 +18,14 @@ const help = `Aftershock core integration
   npm run aftershock -- inspect <transaction-hash> [--save]
   npm run aftershock -- versions
   npm run aftershock -- scenarios
-  npm run aftershock -- run <scenario-id> --local
+  npm run aftershock -- run <scenario-id> --local [--mine]
   npm run aftershock -- report <run-id> --format json|md
   npm run aftershock -- help
 
 Read-only public-devnet doctor/inspect commands. --save writes under reports/.
 run --local creates owned isolated Docker fixtures and never contacts public nodes.
 Receipt absence is unavailable evidence, not proof that execution failed.
-Mining-dependent branches and exact replay remain blocked.
+--mine uses cached mining images and waits for staged forks. Exact replay remains unimplemented.
 `;
 
 async function main(args: string[]): Promise<number> {
@@ -34,10 +34,19 @@ async function main(args: string[]): Promise<number> {
     process.stdout.write(`${JSON.stringify(scenarioCatalogue, null, 2)}\n`);
     return 0;
   }
-  if (command === 'run' && rest.length === 2 && rest[1] === '--local') {
+  if (
+    command === 'run' &&
+    (rest.length === 2 || (rest.length === 3 && rest[2] === '--mine')) &&
+    rest[1] === '--local'
+  ) {
     const selected = scenarioId.safeParse(rest[0]);
     if (!selected.success) return 2;
-    const report = await runScenario(selected.data, process.cwd());
+    const report = await runScenario(
+      selected.data,
+      process.cwd(),
+      0,
+      rest[2] === '--mine',
+    );
     await saveRun(process.cwd(), report);
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return report.result === 'PASS' ? 0 : report.result === 'BLOCKED' ? 3 : 1;

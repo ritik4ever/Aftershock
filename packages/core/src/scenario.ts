@@ -1,10 +1,14 @@
 import { randomUUID } from 'node:crypto';
+import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { z } from 'zod';
 import { UPSTREAM, historyGaps } from './inspect.js';
 import { hash, quantity, explorerInfo } from './schema.js';
 import { fixtureTransaction } from './local/codec.js';
 import { startFixture, FixtureSetupError } from './local/fixture.js';
 import { localRpc, LocalRpcError, waitForRpc } from './local/rpc.js';
+import { waitForMining } from './local/lifecycle.js';
+import { minedKeyedLifecycle, minedPayerLifecycle } from './local/scenarios.js';
 
 export const scenarioId = z.enum([
   'paymaster-solvency',
@@ -18,6 +22,7 @@ export const verdict = z.enum([
   'BLOCKED',
   'SPEC_DIFFERENCE',
 ]);
+export type Verdict = z.infer<typeof verdict>;
 export const scenarioDefinition = z
   .object({
     id: scenarioId,
@@ -63,7 +68,49 @@ export const runReport = z
     limitations: z.array(z.string()),
     reproducer: z.string(),
   })
-  .strict();
+  .strict()
+  .superRefine((report, context) => {
+    const issue = (message: string) =>
+      context.addIssue({ code: 'custom', message });
+    if (report.definition.id !== report.scenarioId)
+      issue('Scenario definition mismatch');
+    if (
+      report.result !==
+      aggregateResults(report.steps.map((step) => step.result))
+    )
+      issue('Inconsistent aggregate verdict');
+    const seen = new Set<string>();
+    let previousAction = -1;
+    let previousTime = Date.parse(report.startedAt);
+    for (const step of report.steps) {
+      if (seen.has(step.id)) issue('Duplicate step ID');
+      seen.add(step.id);
+      const index = report.definition.actions.indexOf(step.id);
+      if (
+        index === -1 &&
+        !['fixture-cleanup', 'prerequisites-or-evidence'].includes(step.id)
+      )
+        issue('Undeclared action');
+      if (index !== -1) {
+        if (index <= previousAction) issue('Actions are out of order');
+        previousAction = index;
+      }
+      const at = Date.parse(step.at);
+      if (at < previousTime || at > Date.parse(report.completedAt))
+        issue('Invalid action chronology');
+      previousTime = at;
+    }
+    if (Date.parse(report.completedAt) < previousTime)
+      issue('Invalid completion time');
+    if (
+      report.result === 'PASS' &&
+      (report.definition.actions.some((id) => !seen.has(id)) ||
+        !report.steps.some(
+          (step) => step.id === 'fixture-cleanup' && step.result === 'PASS',
+        ))
+    )
+      issue('PASS requires every declared action and verified cleanup');
+  });
 export type RunReport = z.infer<typeof runReport>;
 
 export const scenarioCatalogue = [
@@ -75,8 +122,11 @@ export const scenarioCatalogue = [
       'fitting admission',
       'aggregate overspend rejection',
       'replacement excludes old obligation',
+      'mined balance control and newest-first solvency eviction (--mine)',
     ],
-    blocked: ['mined balance change and per-block eviction'],
+    blocked: [
+      'mined checks require --mine; submitted-entry exceptions remain outside this suite',
+    ],
   },
   {
     id: 'keyed-nonce-lifecycle',
@@ -88,8 +138,11 @@ export const scenarioCatalogue = [
       'low/high fee bumps',
       'independent maximum/priority fee thresholds and duplicate rejection',
       'predecessor replacement evidence',
+      'canonical inclusion, stale-sequence rejection and next sequence (--mine)',
     ],
-    blocked: ['included/dropped predecessor with a mined state transition'],
+    blocked: [
+      'mined checks require --mine; terminal/TTL exceptions remain outside this suite',
+    ],
   },
 ] as const;
 
@@ -104,7 +157,7 @@ export const definitions = {
     preconditions: [
       'Owned isolated pinned processes',
       'One transaction fits the fresh payer balance but two do not',
-      'No mining during pending-accounting observations',
+      'Manual bundling preserves pending entries during accounting observations',
     ],
     actions: [
       'admit-base',
@@ -112,6 +165,14 @@ export const definitions = {
       'reject-aggregate-overspend',
       'accept-fee-bumped-replacement',
       'verify-replacement-lifecycle',
+      'top-up-payer',
+      'admit-second-obligation',
+      'confirm-pending-order',
+      'balance-control',
+      'verify-control-survival',
+      'drain-payer',
+      'verify-solvency-eviction',
+      'verify-survivor-obligations',
       'explorer-continuity',
       'mined-state-transition',
     ],
@@ -137,15 +198,20 @@ export const definitions = {
       'reject-low-priority-fee-bump',
       'accept-fee-bumped-replacement',
       'verify-replacement-lifecycle',
+      'canonical-submit-predecessor',
+      'observe-inclusion',
+      'reject-stale-sequence',
+      'admit-next-sequence',
+      'canonical-submit-next-sequence',
+      'observe-next-inclusion',
+      'verify-disjoint-survivor',
       'explorer-continuity',
       'mined-state-transition',
     ],
   }),
 };
 
-export function aggregateResults(
-  results: RunReport['steps'][number]['result'][],
-): RunReport['result'] {
+export function aggregateResults(results: Verdict[]): Verdict {
   if (results.includes('FAIL')) return 'FAIL';
   if (results.includes('INCONCLUSIVE')) return 'INCONCLUSIVE';
   if (results.includes('BLOCKED')) return 'BLOCKED';
@@ -157,6 +223,7 @@ export async function runScenario(
   id: ScenarioId,
   root: string,
   seed = 0,
+  mining = false,
 ): Promise<RunReport> {
   scenarioId.parse(id);
   z.number().int().nonnegative().parse(seed);
@@ -174,11 +241,13 @@ export async function runScenario(
     result: 'INCONCLUSIVE',
     definition: definitions[id],
     limitations: [
-      'Non-mining genesis fixture. No block-production/state-transition claims.',
+      mining
+        ? 'Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.'
+        : 'Non-mining genesis fixture. No block-production/state-transition claims.',
       'Seed identifies action order, not private signing keys; fresh accounts are random.',
-      'Only observed admission/replacement behavior is checked.',
+      'Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run.',
     ],
-    reproducer: `npm run --silent aftershock -- run ${id} --local`,
+    reproducer: `npm run --silent aftershock -- run ${id} --local${mining ? ' --mine' : ''}`,
   };
   let fixture: Awaited<ReturnType<typeof startFixture>> | undefined;
   const add = (
@@ -188,12 +257,17 @@ export async function runScenario(
   ) =>
     report.steps.push({ id, at: new Date().toISOString(), result, observed });
   try {
-    fixture = await startFixture(root, report.runId);
+    fixture = await startFixture(root, report.runId, mining, 'manual');
     report.runId = fixture.runId;
     report.environment = fixture.fingerprint;
     const { keys, executionUrl, sidecarUrl } = fixture;
     await waitForRpc(executionUrl);
     await waitForRpc(sidecarUrl);
+    if (mining) {
+      const ready = await waitForMining(executionUrl);
+      report.environment.readyBlock = ready.number;
+      report.environment.readyBlockHash = ready.hash;
+    }
     const before = await localRpc(
       sidecarUrl,
       'skandha_explorer_info',
@@ -377,6 +451,11 @@ export async function runScenario(
         oldEntryRemoved: oldEntry === null,
       },
     );
+    if (mining) {
+      if (id === 'keyed-nonce-lifecycle')
+        await minedKeyedLifecycle(fixture, replacement, add, submit);
+      else await minedPayerLifecycle(fixture, replacement, add, submit);
+    }
     const after = await localRpc(
       sidecarUrl,
       'skandha_explorer_info',
@@ -388,12 +467,32 @@ export async function runScenario(
       bootId: after.bootId,
       gaps: gaps.join(','),
     });
-    add('mined-state-transition', 'BLOCKED', {
-      reason:
-        'Pinned simple ethrex fixture does not produce Hegota blocks; mining stack required',
-    });
+    if (mining)
+      add(
+        'mined-state-transition',
+        report.steps.every((step) => step.result === 'PASS')
+          ? 'PASS'
+          : 'INCONCLUSIVE',
+        { fixtureMode: 'mining', scope: id },
+      );
+    else
+      add('mined-state-transition', 'BLOCKED', {
+        reason:
+          'This run selected the non-mining fixture; rerun with --local --mine for staged mining',
+      });
   } catch (error) {
+    const diagnosticStored = fixture
+      ? await writeFile(
+          resolve(root, '.local', report.runId, 'scenario-error.log'),
+          String(error),
+          { mode: 0o600, flag: 'wx' },
+        ).then(
+          () => true,
+          () => false,
+        )
+      : false;
     add('prerequisites-or-evidence', 'BLOCKED', {
+      diagnosticStored,
       reason:
         error instanceof FixtureSetupError
           ? error.stage

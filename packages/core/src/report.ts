@@ -35,15 +35,20 @@ export async function readRun(root: string, id: string): Promise<RunReport> {
   const text = await readFile(real, 'utf8');
   if (Buffer.byteLength(text) > 1_048_576) throw new Error('Report too large');
   const envelope = z
-    .object({ report: runReport, sha256: z.string().regex(/^[a-f0-9]{64}$/) })
+    .object({
+      report: z.record(z.string(), z.unknown()),
+      sha256: z.string().regex(/^[a-f0-9]{64}$/),
+    })
     .strict()
     .parse(JSON.parse(text));
   if (
     envelope.report.runId !== id ||
-    digest(envelope.report) !== envelope.sha256
+    createHash('sha256')
+      .update(JSON.stringify(envelope.report))
+      .digest('hex') !== envelope.sha256
   )
     throw new Error('Report integrity mismatch');
-  return envelope.report;
+  return runReport.parse(envelope.report);
 }
 
 export function markdownReport(report: RunReport): string {

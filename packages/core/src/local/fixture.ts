@@ -43,11 +43,17 @@ export async function startFixture(
   root: string,
   runId: string = randomUUID(),
   mining = false,
+  bundlingMode: 'auto' | 'manual' = mining ? 'auto' : 'manual',
 ) {
   z.uuid().parse(runId);
   const prefix = `aftershock-${runId}`;
   const directory = resolve(root, '.local', runId);
   await mkdir(resolve(root, '.local'), { recursive: true, mode: 0o700 });
+  if (
+    relative(await realpath(root), await realpath(resolve(root, '.local'))) !==
+    '.local'
+  )
+    throw new Error('Fixture directory must stay inside workspace');
   await mkdir(directory, { mode: 0o700 });
   if (
     relative(await realpath(root), await realpath(directory)) !==
@@ -116,6 +122,8 @@ export async function startFixture(
     stage = 'genesis-template';
     await docker(
       'create',
+      '--pull',
+      'never',
       '--network',
       'none',
       '--label',
@@ -208,6 +216,8 @@ export async function startFixture(
     stage = 'execution-start';
     await docker(
       'run',
+      '--pull',
+      'never',
       '-d',
       '--name',
       execution,
@@ -244,6 +254,8 @@ export async function startFixture(
       const feeRecipient = privateKeyToAccount(keys[4]!).address;
       await docker(
         'run',
+        '--pull',
+        'never',
         '-d',
         '--name',
         beacon,
@@ -272,6 +284,8 @@ export async function startFixture(
       owned.push(beacon);
       await docker(
         'run',
+        '--pull',
+        'never',
         '-d',
         '--name',
         validator,
@@ -299,6 +313,8 @@ export async function startFixture(
     stage = 'sidecar-start';
     await docker(
       'run',
+      '--pull',
+      'never',
       '-d',
       '--name',
       sidecar,
@@ -326,7 +342,7 @@ export async function startFixture(
       '--p2p.enrPort',
       '4337',
       '--executor.bundlingMode',
-      mining ? 'auto' : 'manual',
+      bundlingMode,
       '--explorer.enable',
     );
     owned.push(sidecar);
@@ -391,6 +407,7 @@ export async function startFixture(
       chainId: '0x9',
       networkInternal: 'true',
       publishedPorts: 'none',
+      bundlingMode,
       genesisSha256: createHash('sha256')
         .update(JSON.stringify(genesis))
         .digest('hex'),

@@ -17,6 +17,9 @@ const methodSchema = z.enum([
   'web3_clientVersion',
   'eth_getBalance',
   'eth_getBlockByNumber',
+  'eth_getTransactionCount',
+  'eth_sendRawTransaction',
+  'eth_getTransactionReceipt',
   'eth_sendFrameTransaction',
   'eth_getFrameTransactionByHash',
   'eth_getFrameTransactionReceipt',
@@ -24,6 +27,7 @@ const methodSchema = z.enum([
   'skandha_explorer_info',
   'skandha_explorer_getTransaction',
   'skandha_config',
+  'skandha_frameTransactionStatus',
 ]);
 type Method = z.infer<typeof methodSchema>;
 
@@ -60,6 +64,15 @@ export async function localRpc<T>(
     ],
     { timeout: 15_000, maxBuffer: 1_048_576 },
   );
+  return decodeLocalResponse(JSON.parse(stdout), method, params, schema);
+}
+
+export function decodeLocalResponse<T>(
+  input: unknown,
+  method: Method,
+  params: unknown[],
+  schema: z.ZodType<T>,
+): T {
   const envelope = z
     .object({
       jsonrpc: z.literal('2.0'),
@@ -69,24 +82,33 @@ export async function localRpc<T>(
         .object({ code: z.number().int(), message: z.string() })
         .optional(),
     })
-    .parse(JSON.parse(stdout));
+    .parse(input);
+  if (Object.hasOwn(envelope, 'result') === Object.hasOwn(envelope, 'error'))
+    throw new Error('RPC response must contain exactly one result or error');
   if (envelope.error) {
     const message = envelope.error.message;
-    const reason = /cannot cover its pending frame transactions/.test(message)
-      ? 'BALANCE_OBLIGATIONS'
-      : /nonce key .*already held/.test(message)
-        ? 'KEY_CONFLICT'
-        : /cannot be replaced: fee too low/.test(message)
-          ? 'FEE_BUMP'
-          : /Frame transaction already known/.test(message)
-            ? 'DUPLICATE'
-            : method === 'eth_getFrameTransactionReceipt' &&
-                envelope.error.code === -32000 &&
-                typeof params[0] === 'string' &&
-                /^0x[0-9a-f]{64}$/i.test(params[0]) &&
-                message === `transaction receipt not found for ${params[0]}`
-              ? 'RECEIPT_UNAVAILABLE'
-              : 'OTHER';
+    const admission =
+      method === 'eth_sendFrameTransaction' && envelope.error.code === -32602;
+    const reason =
+      admission && /cannot cover its pending frame transactions/.test(message)
+        ? 'BALANCE_OBLIGATIONS'
+        : admission && /nonce key .*already held/.test(message)
+          ? 'KEY_CONFLICT'
+          : admission && /cannot be replaced: fee too low/.test(message)
+            ? 'FEE_BUMP'
+            : admission && /Frame transaction already known/.test(message)
+              ? 'DUPLICATE'
+              : method === 'eth_getFrameTransactionReceipt' &&
+                  envelope.error.code === -32000 &&
+                  typeof params[0] === 'string' &&
+                  /^0x[0-9a-f]{64}$/i.test(params[0]) &&
+                  message === `transaction receipt not found for ${params[0]}`
+                ? 'RECEIPT_UNAVAILABLE'
+                : method === 'eth_sendFrameTransaction' &&
+                    envelope.error.code === -32500 &&
+                    /Nonce mismatch: expected \d+, got \d+/.test(message)
+                  ? 'NONCE_MISMATCH'
+                  : 'OTHER';
     throw new LocalRpcError(envelope.error.code, reason);
   }
   if (!Object.hasOwn(envelope, 'result')) throw new Error('Missing RPC result');

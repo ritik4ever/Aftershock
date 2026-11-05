@@ -72,6 +72,8 @@ export async function generateMiningGenesis(
   // Redirect all generator output inside the private mount, including shell tracing.
   await docker(
     'create',
+    '--pull',
+    'never',
     '--network',
     'none',
     '--label',

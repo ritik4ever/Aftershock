@@ -19,6 +19,7 @@ export async function fixtureTransaction(
   keys: bigint[],
   fee = 2_000_000_000n,
   priorityFee = fee,
+  sequence = 0n,
 ) {
   const sender = privateKeyToAccount(senderKey).address;
   const payer = privateKeyToAccount(payerKey).address;
@@ -27,7 +28,7 @@ export async function fixtureTransaction(
     chainId: 9n,
     sender,
     nonceKeys: keys,
-    nonceSeq: 0n,
+    nonceSeq: sequence,
     frames: selfPay
       ? [
           frame(profile, 'VERIFY', {
