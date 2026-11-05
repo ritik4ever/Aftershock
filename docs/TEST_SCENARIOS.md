@@ -32,3 +32,6 @@ Fresh-state mined regression reruns now cover both suites through the native rep
 
 
 The fuller projected RPC captures are [keyed lifecycle journal](evidence/rpc-keyed-nonce-lifecycle.json) and [payer lifecycle journal](evidence/rpc-paymaster-solvency.json). They are genuine new private runs with actual receipt bodies, per-frame gas/statuses, lifecycle projections, RPC channels/outcomes and per-step evidence cursors. The 127/136-entry journals have zero omissions; their recovered startup failures remain visible. These are filtered projections, not complete raw traces or exact snapshot replay. Earlier captures remain historical evidence and are not retroactively populated with journals.
+
+
+Offline selected-output consistency checks now cover two keyed inclusion assertions and seven payer receipt/order/eviction/arithmetic assertions from the existing RPC journals. Covered output fields and source sequence IDs are listed by check-evidence; 16 keyed and nine payer steps are explicitly not reevaluated. Transfer amounts, signing, fee/nonce rules, account-query targets and simulation-input identities remain outside this offline check because request bodies are redacted. Contradictory unit-test copies are never published as live findings. Real stateful coverage is unchanged.

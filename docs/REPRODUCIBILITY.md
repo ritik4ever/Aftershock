@@ -132,3 +132,18 @@ Each step's evidenceThrough cursor references entries accumulated since the prec
 The collector is scoped to one asynchronous run, bounded at 256 entries and 65,536 compact entry bytes, and records omitted/unavailable counts explicitly. On overflow it preserves the prefix and counts all later omissions. Projection failures and unrecovered scenario transport/schema failures prevent PASS. Only readiness eth_chainId failures can recover, and only after a later successful readiness response of 0x9 on the same channel; the failed attempts remain in the journal. Missing required scenario responses still block the runner. Complete means the declared filtered recording is complete under those rules; it does not mean every raw node field, pre-capture history or fixture operation is recorded.
 
 Old reports remain unchanged and readable without this optional journal. evidence exports null with native 3 for them. Existing reports are never upgraded by inventing observations. JSON contains the projected response bodies; Markdown shows recording completeness/counts and points to JSON. Export exit 0 means the journal was exported, not that its run passed. Final pretty JSON writes and reads both enforce a 1 MiB report limit. SHA-256 detects changes, not malicious evidence authorship.
+
+
+## Offline selected-output consistency checks
+
+```sh
+npm run --silent aftershock -- check-evidence <run-id>
+```
+
+This command reads the existing UUID-scoped immutable report, verifies its checksum/schema and compares selected asserted output fields with its projected RPC journal. It makes no RPC calls and does not start Docker. The requirements output reports private endpoint class, chain/version assertions, current built-in definition, journal presence/completeness and the saved run verdict. Saved metadata is not binary or operator attestation.
+
+Current coverage is two keyed inclusion checks (successful two-frame receipts, block/status summary and included lifecycle evidence) and seven payer checks: canonical receipt status/block/gas for three transfers, the initial cost/balance boundary, distinct pending-entry timestamps, eviction statuses/enforcement marker/dropped admission, and recorded simulation-cost multiset plus post-drain balance arithmetic. Simulations are compared as a multiset because completion order does not identify their redacted transaction inputs. Each check lists its source RPC sequence IDs. Supported checks for non-PASS steps remain insufficient; unsupported steps are explicitly not reevaluated.
+
+Global CONSISTENT/native 0 requires a recorded PASS with complete evidence, the expected private chain/client-pin assertions/current definition, and all selected checks consistent. A contradiction returns 1. Missing records, historical journals, non-passing runs or incompatible saved context return INSUFFICIENT/native 3. Invalid CLI arguments return 2; file/schema/integrity errors fail rather than infer a verdict. The original run is never rewritten.
+
+This is not full scenario revalidation. Signatures, key/nonce/fee semantics, transfer values, account-query targets, simulation-to-transaction association, fixture cleanup and other unlisted actions cannot be reconstructed from redacted request digests. Coordinated falsification of both journal and summaries remains possible. No independent audit, exact replay or new live finding is implied. Regression tests deliberately alter copies of actual captures and never publish those copies as node evidence.

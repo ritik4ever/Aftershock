@@ -1,6 +1,6 @@
 # Aftershock project spec
 
-Status: scoped mined lifecycle checkpoint, 2026-11-06. Both original suites have passing real private --local --mine runs using the official codec. This completes their currently declared actions, not every protocol edge case or exact replay. Non-mining runs remain BLOCKED for their omitted mined branches.
+Status: core CLI, both declared private mined suites, fresh-state reruns, projected RPC evidence and selected offline consistency checks are implemented. UI and exact snapshot replay remain planned. PASS covers the declared live checks, not every protocol edge case. Non-mining runs remain BLOCKED for omitted mined actions.
 
 Aftershock will run reproducible multi-step Frame Transaction scenarios, check version-specific invariants and export evidence through a CLI. A local read-only report UI comes last. The contribution is lifecycle automation, explicit assertions and reproducible reports; transaction sending, admission debugging, keyed nonces and recent roots already exist upstream.
 
@@ -28,28 +28,19 @@ Verified sequence: admit disjoint keys, reject overlaps/duplicates and independe
 
 ## Delivery and evidence
 
-Current layout: packages/core, packages/cli, tests, scripts and docs. Strict TypeScript, Zod scenario/RPC/report schemas, an official-codec signing adapter, private Docker fixture orchestration and one npm lockfile are implemented. The application has no alternate codec. CLI --mine runs the mined branches; test:mining separately checks automatic relaying. apps/web remains planned.
+Current layout: packages/core, packages/cli, tests, scripts and docs. Strict TypeScript, Zod schemas, the official-codec signing adapter, private Docker orchestration and one npm lockfile are implemented. No alternate codec or web UI exists.
 
-Every run needs unique ID, seed, pinned source versions, actual node identity, chain ID, endpoint class, ordered actions, raw redacted responses, history continuity, receipts, expected/observed assertions and a reproducer. Verdicts: PASS, FAIL, INCONCLUSIVE, BLOCKED, SPEC_DIFFERENCE. FAIL means the defined invariant failed in that environment; it is not an automatic exploit claim. A version mismatch or missing history prevents a conclusive source-specific PASS.
+Run reports record unique ID, seed, pinned source versions, observed environment/image identity, chain, ordered actions, assertions, verdicts and a reproducer. New reports also retain bounded allowlisted RPC projections with actual receipts, lifecycle fields, normalized failures and per-step completion-order cursors. Node observations remain separate from derived summaries. Payloads, signatures, logs and arbitrary server text are omitted; full raw transcripts and private-state snapshot restoration are unfinished. Historical reports are not retroactively populated.
 
-Completed: compatible tooling, genuine workshop baseline, read-only inspector, both declared private mined lifecycle suites and the automatic-relaying smoke test. Next: fuller evidence and snapshot replay features, then UI. Fresh-state rerun/comparison is now implemented separately from exact historical replay. Current reports are filtered projections, not complete raw execution traces.
+Verdicts are PASS, FAIL, INCONCLUSIVE, BLOCKED and SPEC_DIFFERENCE. FAIL means a defined check failed in that environment, not an automatic exploit finding. Missing required evidence, history gaps or incompatible versions prevent conclusive source-specific PASS. Private image/source provenance is trusted local-build metadata, not cryptographic attestation. Public node source commit remains unknown.
 
-## Current scope state
+Offline check-evidence rechecks selected saved outputs and explicitly lists unsupported steps. CONSISTENT is scoped file consistency, never a new live PASS or full scenario revalidation. Redacted signatures, transfer values, account-query targets, fee/nonce semantics and simulation-to-transaction associations cannot be reconstructed. Fresh-state replay uses new keys/genesis; it is not exact historical replay.
 
-- Implemented: CLI doctor/inspect/versions/help/scenarios/run --local [--mine]/report/replay --plan or --local [--mine]/offline compare; original admission/replacement/mined sequences, private fixtures, official signing, filtered evidence and JSON/Markdown reports with checksum and cross-field consistency checks.
-- Tested at the prior mined checkpoint: 40 unit/bootstrap tests, two private admission/replacement tests, both mined lifecycle tests and the automatic-relaying smoke test. Application audit is clean; pinned sidecar advisories remain unresolved. See ENVIRONMENT.md.
-- Blocked: a run without --mine omits mined checks and remains BLOCKED. Public node commit is unknown. Exact replay is not implemented.
-- Verified baseline: real workshop transaction on chain 1337, block 404438, two successful frames. This is upstream functionality, not Aftershock originality.
-- Planned: terminal/TTL/submitted-entry exceptions, fuller redacted evidence/replay, UI, independent audit and judge demo.
-- License: MIT, selected after the user delegated the choice to Codex.
+## Current scope
 
-Fresh-state rerun checkpoint: replay validates a saved private report and current scenario definition before running a new fixture. It compares action verdicts and stable environment fields, preserves BLOCKED and saves the new run separately. It does not restore snapshots, execute saved scripts, compare raw observations or authenticate evidence authorship. See REPRODUCIBILITY.md for commands and scope.
-
-Offline comparisons reconstruct verdict/environment differences from two immutable saved reports without contacting Docker or RPC. Export success is separate from the runs' invariant verdicts. Report reads reject non-regular files, bound actual reads, avoid following replaced leaf symlinks on Linux, and do not create a missing report directory. Actual mined replay validation is recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
-
-At the preceding rerun checkpoint: 43 unit/bootstrap tests, one real non-mining replay integration case and both genuine mined replay cases passed. Both new mined runs matched baseline action verdicts and stable environment fields while using fresh genesis/accounts. This verifies fresh-state reruns only; snapshot restoration and fuller raw evidence remain planned.
-
-
-The projected RPC evidence milestone adds bounded per-run journals and offline evidence export. New reports retain actual receipt gas/statuses, lifecycle projections and normalized RPC errors separately from derived assertions, with per-step completion-order cursors. Missing journals in historical reports stay absent. Captures still omit payloads/logs/arbitrary text and are not full raw transcripts; snapshot replay remains unfinished. Current validation outcomes are recorded in ENVIRONMENT.md.
-
-Current verified checkpoint: 51 unit/bootstrap tests, both private admission/replacement cases, one non-mining replay/export case and both full mined CLI suites passed. New mined journals contain actual projected receipts and lifecycle evidence with zero omissions. Recorded startup failures are retained and explicitly recovered; no required scenario evidence is waived. See TEST_SCENARIOS.md for the genuine captures.
+- Implemented: doctor, inspect, versions, scenarios, run --local [--mine], report JSON/Markdown, replay planning/reruns, offline compare, evidence export and selected evidence consistency checks.
+- Verified: both original mined suites and fresh-state reruns have genuine scoped passing captures. The latest offline checkpoint passed 58 unit/bootstrap tests and checked the existing mined journals through the native CLI. Current commands/results and historical live executions are recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
+- Baseline: the real upstream workshop transaction on chain 1337 executed in block 404438 with two successful frames. This is upstream functionality, not Aftershock originality.
+- Contract scope: no custom Solidity contracts or deployed contract-based paymaster fixture. Current scenarios use fresh EOAs and attributed upstream protocol predeploys; the shared payer has a separate payment signature. The declared suites work without custom contract deployment, and do not establish contract-based paymaster coverage.
+- Remaining: terminal/TTL/submitted-entry edges, exact snapshot/reset replay, fuller raw evidence where safely exportable, local read-only UI, independent review and judge demo/submission documents. Existing sidecar dependency advisories remain unresolved.
+- License: MIT, selected after the user delegated the choice.
