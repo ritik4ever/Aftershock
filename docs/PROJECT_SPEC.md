@@ -1,6 +1,6 @@
 # Aftershock project spec
 
-Status: isolated admission/replacement engine checkpoint, 2026-11-05. Both original suites now exercise real private nodes using the official signing/wire codec. Mining-dependent branches remain blocked; neither full suite is claimed complete.
+Status: private mining fixture checkpoint, 2026-11-05. Both original suites exercise real private nodes using the official signing/wire codec, and a separate mining smoke test verifies ordinary inclusion. Original mined-state branches remain blocked; neither full suite is claimed complete.
 
 Aftershock will run reproducible multi-step Frame Transaction scenarios, check version-specific invariants and export evidence through a CLI. A local read-only report UI comes last. The contribution is lifecycle automation, explicit assertions and reproducible reports; transaction sending, admission debugging, keyed nonces and recent roots already exist upstream.
 
@@ -14,7 +14,7 @@ With the balance callback enabled, admission must reject a candidate whose per-a
 
 After a controlled balance decrease, the enforceBalances stage cancels eligible New entries newest first until its obligation total fits or no eligible entries remain. Earlier reconciliation stages can already cancel or include entries; assert ordering only among entries still present when enforceBalances starts, not across the entire block pass. Pending and Submitted obligations count but are not evictable by this stage; do not assert universal post-block solvency when non-evictable entries alone exceed the balance. Equal timestamps require additional investigation before asserting an exact eviction order.
 
-Test sequence: create independently valid funded payer transactions; admit a fitting set; reject an over-budget candidate; replace one entry and verify the old obligation is excluded; perform a normal fixture-authorized balance change locally; observe block reconciliation, cancellations and the surviving set. Include a balance-preserving control. Fixture contract and deterministic mining setup are not implemented.
+Test sequence: create independently valid funded payer transactions; admit a fitting set; reject an over-budget candidate; replace one entry and verify the old obligation is excluded; perform a normal fixture-authorized balance change locally; observe block reconciliation, cancellations and the surviving set. Include a balance-preserving control. A separate fresh-account mining smoke fixture is implemented; the balance-change fixture and exact reset/replay strategy remain unfinished.
 
 ### Keyed nonce identity and replacement
 
@@ -28,16 +28,16 @@ Test sequence: admit disjoint keys; attempt an overlapping different slot; attem
 
 ## Delivery and evidence
 
-Current layout: packages/core, packages/cli, tests, scripts and docs. Strict TypeScript, Zod scenario/RPC/report schemas, an official-codec signing adapter, private Docker fixture orchestration and one npm lockfile are implemented. The application has no alternate codec. Mining fixtures and apps/web remain planned.
+Current layout: packages/core, packages/cli, tests, scripts and docs. Strict TypeScript, Zod scenario/RPC/report schemas, an official-codec signing adapter, private Docker fixture orchestration and one npm lockfile are implemented. The application has no alternate codec. A separate mining smoke fixture is available through test:mining; integration of mined lifecycle assertions and apps/web remain planned.
 
 Every run needs unique ID, seed, pinned source versions, actual node identity, chain ID, endpoint class, ordered actions, raw redacted responses, history continuity, receipts, expected/observed assertions and a reproducer. Verdicts: PASS, FAIL, INCONCLUSIVE, BLOCKED, SPEC_DIFFERENCE. FAIL means the defined invariant failed in that environment; it is not an automatic exploit claim. A version mismatch or missing history prevents a conclusive source-specific PASS.
 
-Completed: compatible tooling, genuine workshop baseline, read-only inspector and real isolated admission/replacement subsets for both original suites. Next: add pinned mining/consensus infrastructure for actual balance transitions/evictions and included/dropped predecessors, then exact replay and remaining evidence features. UI remains last.
+Completed: compatible tooling, genuine workshop baseline, read-only inspector, real isolated admission/replacement subsets for both original suites and a separately verified private mining/inclusion smoke fixture. Next: connect mined balance transitions/evictions and included/dropped predecessor assertions to that fixture, then exact replay and remaining evidence features. UI remains last.
 
 ## Current scope state
 
 - Implemented: CLI doctor/inspect/versions/help/scenarios/run --local/report; original admission/replacement sequences, source-backed definitions, private fixtures, official-codec signing, filtered case evidence and JSON/Markdown scenario reports with integrity checks.
-- Tested: 30 unit/bootstrap tests plus two real private admission/replacement integration tests; typecheck, lint and formatting passed. Application npm audit is clean; the separately pinned sidecar has upstream advisories. See ENVIRONMENT.md.
+- Tested: 34 unit/bootstrap tests, two real private admission/replacement integration tests and one real private mining/inclusion test; typecheck, lint and formatting passed. Application npm audit is clean; the separately pinned sidecar has upstream advisories. See ENVIRONMENT.md.
 - Blocked: mining-dependent branches keep each full suite BLOCKED. Public node commit is unknown. Exact replay is not implemented.
 - Verified baseline: real workshop transaction on chain 1337, block 404438, two successful frames. This is upstream functionality, not Aftershock originality.
 - Planned: mining/state-transition coverage, terminal/TTL exception integration, complete raw redacted evidence/replay, UI, independent audit and judge demo. Current reports are filtered projections, not complete raw execution traces.

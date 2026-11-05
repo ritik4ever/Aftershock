@@ -1,91 +1,98 @@
 {
   "schemaVersion": 1,
-  "runId": "fa51c042-40f1-4ec6-8fcb-ba808c9e1012",
+  "runId": "d17a01dd-8aea-4dda-8098-d0b629de9eec",
   "scenarioId": "paymaster-solvency",
   "seed": 0,
   "endpointClass": "ISOLATED_LOCAL",
-  "startedAt": "2026-11-05T17:18:48.085Z",
-  "completedAt": "2026-11-05T17:18:59.350Z",
+  "startedAt": "2026-11-05T17:48:10.945Z",
+  "completedAt": "2026-11-05T17:48:23.244Z",
   "sourcePins": {
     "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
     "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
     "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
   },
   "environment": {
-    "network": "aftershock-fa51c042-40f1-4ec6-8fcb-ba808c9e1012-net",
+    "network": "aftershock-d17a01dd-8aea-4dda-8098-d0b629de9eec-net",
     "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
     "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
     "chainId": "0x9",
     "networkInternal": "true",
     "publishedPorts": "none",
-    "genesisSha256": "db4b97a4e05cd6282401324a1ef18559b1c35c85f0705c6764572efd2e0ba66b",
+    "genesisSha256": "0a57a6071593ba6003f29e271607a5a3ec9d74439a639b5e2f43f8f23dd29013",
+    "fixtureMode": "admission",
     "clientVersion": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1",
     "useropsTTL": "300"
   },
   "steps": [
     {
       "id": "admit-base",
-      "at": "2026-11-05T17:18:54.595Z",
+      "at": "2026-11-05T17:48:20.231Z",
       "result": "PASS",
       "observed": {
-        "hash": "0xd542166b2781f0f4f368fc2ef24b411619ad36a44d551670c7a31cfce80a45fd",
+        "hash": "0xa3ab3438c3b19bbb29bf8b601bd041ed1535e4c2b1c0ce4c5a821e7106226b7a",
         "expected": "ACCEPTED",
-        "actual": "ACCEPTED"
+        "actual": "ACCEPTED",
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
       }
     },
     {
       "id": "confirm-solvency-boundary",
-      "at": "2026-11-05T17:18:56.801Z",
+      "at": "2026-11-05T17:48:20.535Z",
       "result": "PASS",
       "observed": {
-        "maximumCost": "662874000000000",
+        "maximumCost": "662922000000000",
         "payerBalance": "1000000000000000"
       }
     },
     {
       "id": "reject-aggregate-overspend",
-      "at": "2026-11-05T17:18:57.087Z",
+      "at": "2026-11-05T17:48:20.748Z",
       "result": "PASS",
       "observed": {
-        "hash": "0x2642c11aaded1c47312eda98d0bbe0db4375c2e030c4e05b8c9a0a37675f863d",
+        "hash": "0xf710d14bf5c20d7274f5b04cabc851e6a74f7df550a9f6b0fed2a134bc0843e7",
         "expected": "BALANCE_OBLIGATIONS",
         "actual": "BALANCE_OBLIGATIONS",
-        "code": -32602
+        "code": -32602,
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
       }
     },
     {
       "id": "accept-fee-bumped-replacement",
-      "at": "2026-11-05T17:18:57.283Z",
+      "at": "2026-11-05T17:48:20.936Z",
       "result": "PASS",
       "observed": {
-        "hash": "0x1b29e78fa4f59a5d55e799e3369715c0249f0808fe35b21d42f2c1a03586bcc1",
+        "hash": "0x484922616e883cb1bdf895d0f7603817a048a0c3e3d495c238b06c0e034744c8",
         "expected": "ACCEPTED",
-        "actual": "ACCEPTED"
+        "actual": "ACCEPTED",
+        "maximumFee": "2200000000",
+        "priorityFee": "2200000000"
       }
     },
     {
       "id": "verify-replacement-lifecycle",
-      "at": "2026-11-05T17:18:57.842Z",
+      "at": "2026-11-05T17:48:21.435Z",
       "result": "PASS",
       "observed": {
-        "oldHash": "0xd542166b2781f0f4f368fc2ef24b411619ad36a44d551670c7a31cfce80a45fd",
-        "newHash": "0x1b29e78fa4f59a5d55e799e3369715c0249f0808fe35b21d42f2c1a03586bcc1",
+        "oldHash": "0xa3ab3438c3b19bbb29bf8b601bd041ed1535e4c2b1c0ce4c5a821e7106226b7a",
+        "newHash": "0x484922616e883cb1bdf895d0f7603817a048a0c3e3d495c238b06c0e034744c8",
         "oldOutcome": "replaced",
         "oldEntryRemoved": true
       }
     },
     {
       "id": "explorer-continuity",
-      "at": "2026-11-05T17:18:58.034Z",
+      "at": "2026-11-05T17:48:21.572Z",
       "result": "PASS",
       "observed": {
-        "bootId": "50dfe1bffcdb6186",
+        "bootId": "562aa21b5eb97481",
         "gaps": ""
       }
     },
     {
       "id": "mined-state-transition",
-      "at": "2026-11-05T17:18:58.034Z",
+      "at": "2026-11-05T17:48:21.572Z",
       "result": "BLOCKED",
       "observed": {
         "reason": "Pinned simple ethrex fixture does not produce Hegota blocks; mining stack required"
@@ -93,7 +100,7 @@
     },
     {
       "id": "fixture-cleanup",
-      "at": "2026-11-05T17:18:59.349Z",
+      "at": "2026-11-05T17:48:23.244Z",
       "result": "PASS",
       "observed": {
         "removedOwnedResources": true

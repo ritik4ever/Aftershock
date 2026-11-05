@@ -1,6 +1,6 @@
 # Protocol compatibility
 
-Source inspection and public observation are separate evidence classes. Pins and implementation paths: [UPSTREAM](UPSTREAM.md). No local node behavior has been verified.
+Source inspection, public observation and private integration are separate evidence classes. Pins and implementation paths: [UPSTREAM](UPSTREAM.md). Private admission/replacement behavior is verified; public source identity remains unknown.
 
 | Topic | Draft / website description | Pinned implementation / observation |
 | --- | --- | --- |
@@ -20,8 +20,8 @@ The draft/landing comparisons above are summaries of the [documentation differen
 ## Wire and evidence boundaries
 
 - Configured gateway is https://altmempoolgateway.forshtat.com/rpc. The documented path is /rpc/; the configured /rpc responded successfully. No direct miner connectivity is assumed.
-- Sidecar eth_sendFrameTransaction takes signed JSON via the official encoder. Ethrex simulation takes raw type-0x06 RLP. They are different interfaces. The pinned workshop successfully exercised normal sidecar submission; Aftershock's CLI remains read-only.
-- Do not implement ERC-4337 methods or privileged relay calls. Live read verification now also covers skandha_explorer_getTransaction, skandha_frameTransactionStatus and eth_getFrameTransactionReceipt. Only the official workshop invoked the faucet and normal transaction submission.
+- Sidecar eth_sendFrameTransaction takes signed JSON via the official encoder. Ethrex simulation takes raw type-0x06 RLP. They are different interfaces. The pinned workshop and Aftershock's private scenarios exercise normal sidecar submission. Public CLI doctor/inspect commands remain read-only.
+- Do not implement ERC-4337 methods or privileged relay calls. Live read verification also covers skandha_explorer_getTransaction, skandha_frameTransactionStatus and eth_getFrameTransactionReceipt. Only the separate official workshop invoked the public faucet and public transaction submission. Aftershock submits scenario transactions only to owned private fixtures.
 - Sidecar receipt status is success/reverted; per-frame statuses also include skipped. Raw execution receipts use 0x1/0x0 instead. Confirmed in packages/types/src/executor/validation/frameTxReceipt.ts and ReceiptService/index.ts, and in the real successful response. The adapter must not compare sidecar status to 0x1.
 - Explorer requires enablement; history is bounded and volatile. Track bootId and sequence bounds, preserve cursors, limit pages to 200. Included is not execution success; skipped/waived reports do not independently prove enforcement.
 - Use bigint or hex for amounts, fees, sequences and nonce keys. Validate numeric metadata separately.
@@ -29,6 +29,8 @@ The draft/landing comparisons above are summaries of the [documentation differen
 
 Source references for the confirmed structural gate: [validate()](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/services/UserOpValidation/validators/frameTx.ts#L310) and [validateStructuralRules()](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/services/UserOpValidation/utils/validationPrefix.ts#L282). This contradicts descriptions suggesting larger staked prefix budgets for this exact implementation; it is not a tested runtime exploit.
 
-Private integration now verifies normal signed JSON admission, raw-RLP execution simulation, mempool lookup, explorer replacement outcomes and keyed conflicts against pinned processes. These local rejections returned -32602 for balance obligations, key conflict and fee bump; the runner checks the source-specific rejection family as well as the code, never treating every error as an expected rejection. The owned fixture is non-mining; block transitions/receipts for these original suites remain blocked.
+Private integration verifies normal signed JSON admission, raw-RLP execution simulation, mempool lookup, explorer replacement outcomes and keyed conflicts against pinned processes. These local rejections returned -32602 for balance obligations, key conflict and fee bump; the runner checks the source-specific rejection family as well as the code, never treating every error as an expected rejection. The original suites' fixture is non-mining; their mined-state assertions remain blocked.
 
-Open: full documentation-family mapping, operator overrides, mining/consensus provisioning, terminal/TTL exceptions and exact snapshot replay. No draft/implementation discrepancy is labeled an exploit.
+Separate private mining verification now covers a successful ordinary Frame Transaction after staged Fulu/Gloas/Heze activation. The pinned ReceiptService throws -32000 with transaction receipt not found for the requested hash while no receipt exists, rather than returning null; the mining poll recognizes only that exact response as unavailable and retries within its bound. This behavior does not establish that an unknown hash is pending.
+
+Open: full documentation-family mapping, operator overrides, original mined lifecycle assertions, terminal/TTL exceptions and exact snapshot replay. No draft/implementation discrepancy is labeled an exploit.

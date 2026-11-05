@@ -40,6 +40,16 @@ The private execution image is ghcr.io/forshtat/eip8141-devnet@sha256:c9a7770f89
 
 The sidecar is built from its exact pinned Git archive with scripts/build-local-sidecar.sh and labeled with the source revision; no untracked private config enters the build context. The upstream Dockerfile uses Bun 1.2.23. Build inputs include distribution package repositories, so image bytes may differ across builds; actual process image IDs are recorded. Source IDs/image metadata are trusted local-build provenance, not cryptographic source attestation.
 
+## Mining fixture provenance
+
+The fork schedule, single-participant setup and EIP-8282 deposit-inhibitor workaround follow the pinned sidecar's [mining configuration](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/test/e2e/kurtosis/eip8141-single-node.yaml). The associated [ethereum-package pin](https://github.com/ethpandaops/ethereum-package/tree/b5b3af65248f11702216e377d0377bcd8ccf4caf) was inspected for EL/CL/validator launch arguments. Aftershock instead orchestrates Docker directly so its generator is offline and its runtime network internal, with no published ports or shared funded keys.
+
+- Genesis generator: [v6.1.6 source](https://github.com/ethpandaops/ethereum-genesis-generator/tree/1e01e5d2a15704c22794f6450a7233e97399ee04), image ethpandaops/ethereum-genesis-generator@sha256:51decce4284d8498dabfa38ae13ddce84cbf8c7be4f33a32b798ce10c9868e77. Its bundled eth2-val-tools generates fresh validator keystores. No protocol implementation is copied into Aftershock.
+- Beacon and validator image: ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0. Actual binary identifies Lighthouse v8.1.3-52e5197; image labels identify the focil ref. The immutable image digest is the pin; the mutable focil tag is not used at runtime.
+- The existing execution image/source pin is unchanged. Mining explicitly selects full sync; its default snap mode did not produce payloads in the private prototype. All accounts and the validator mnemonic/JWT are fresh for each run. Source-defined one-wei low-address allocations are retained, never used as signing accounts.
+
+This smoke fixture is infrastructure and ordinary inclusion coverage. It is not an original consensus implementation, a completed paymaster/keyed lifecycle suite or exact replay.
+
 ## Web references and limitations
 
 - [Documentation home](https://docs.altmempool.wtf/) warns that content is AI-generated; [differences](https://docs.altmempool.wtf/project/differences/) marks unresolved source discrepancies. Treat these as unverified descriptions until checked against implementation.

@@ -1,6 +1,6 @@
 # Reproducing the baseline
 
-This checkpoint proves ordinary workshop admission and Aftershock's read/evidence integration. It does not reproduce an original local lifecycle scenario.
+This guide covers ordinary workshop admission, Aftershock's read/evidence integration and the original private admission/replacement sequences. The full original suites remain incomplete while mined-state branches and exact replay are unfinished.
 
 ## Environment
 
@@ -70,6 +70,23 @@ npm run --silent aftershock -- report <run-id> --format json
 npm run --silent aftershock -- report <run-id> --format md
 ```
 
-The report command validates schema, containment and checksum before export. No exact replay command is provided yet: each rerun uses fresh private keys and a new genesis fingerprint. The seed identifies action order only. Mining-dependent state transitions require the separate pinned consensus/execution setup described by upstream test/e2e/ethrex-mining-devnet.sh; that stack is not provisioned here.
+The report command validates schema, containment and checksum before export. No exact replay command is provided yet: each rerun uses fresh private keys and a new genesis fingerprint. The seed identifies action order only. These CLI suites still select the non-mining fixture. The separate mining smoke test below does not complete their balance-change or included/dropped-predecessor branches.
+
+## Private mining fixture
+
+With the sidecar/execution images already prepared, pull the two additional immutable images and run the explicitly separate test:
+
+```sh
+nvm use
+docker pull ethpandaops/ethereum-genesis-generator@sha256:51decce4284d8498dabfa38ae13ddce84cbf8c7be4f33a32b798ce10c9868e77
+docker pull ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0
+npm run test:mining
+```
+
+This test creates chain 9 with 32 fresh validators, six-second slots, Fulu at genesis, Gloas at epoch 1 and Heze at epoch 2. Genesis is scheduled 60 seconds after generation begins. Readiness requires a non-genesis execution block at least 396 seconds after the genesis timestamp. Allow several minutes; a running container alone is insufficient. It then submits an ordinary signed Frame Transaction to the private sidecar and requires transaction success and two successful frame receipts.
+
+The generator runs offline with network=none. It uses a fresh validator mnemonic, disables derived EOA premine and funds only the five generated fixture accounts. Source-defined one-wei reserved low-address allocations and protocol contracts remain. The builder deposit inhibitor is armed before generating the consensus genesis. Runtime configuration uses full execution sync, disabled EL P2P/CL discovery, an internal four-process network, no published ports and automatic sidecar bundling. Aftershock never invokes a privileged relay method; the pinned sidecar's own relayer handles its internal submission path.
+
+Generator logs, mnemonic-containing metadata, JWT and validator keystores stay in private ignored .local/. Generator output directories/files use modes 700/600 and are assigned to the WSL user. The generator container is tracked for teardown even if generation fails. The final filtered mining capture is written under .local/mining-results/ after normal teardown; review it separately before publishing. This proves mining readiness and an ordinary inclusion path, not either full original suite or deterministic replay. Kurtosis is not required by this direct Docker fixture.
 
 Teardown runs on ordinary completion and handled exceptions. A hard process kill can interrupt it; inspect the exact aftershock.run label from that run's report before removing any leftover resources. Never use global Docker pruning or remove other runs' containers/networks. .gitattributes keeps shell helpers LF-terminated when checked out on Windows.
