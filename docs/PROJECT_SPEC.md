@@ -47,4 +47,9 @@ Fresh-state rerun checkpoint: replay validates a saved private report and curren
 
 Offline comparisons reconstruct verdict/environment differences from two immutable saved reports without contacting Docker or RPC. Export success is separate from the runs' invariant verdicts. Report reads reject non-regular files, bound actual reads, avoid following replaced leaf symlinks on Linux, and do not create a missing report directory. Actual mined replay validation is recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
 
-Latest verified checkpoint: 43 unit/bootstrap tests, one real non-mining replay integration case and both genuine mined replay cases passed. Both new mined runs matched baseline action verdicts and stable environment fields while using fresh genesis/accounts. This verifies fresh-state reruns only; snapshot restoration and fuller raw evidence remain planned.
+At the preceding rerun checkpoint: 43 unit/bootstrap tests, one real non-mining replay integration case and both genuine mined replay cases passed. Both new mined runs matched baseline action verdicts and stable environment fields while using fresh genesis/accounts. This verifies fresh-state reruns only; snapshot restoration and fuller raw evidence remain planned.
+
+
+The projected RPC evidence milestone adds bounded per-run journals and offline evidence export. New reports retain actual receipt gas/statuses, lifecycle projections and normalized RPC errors separately from derived assertions, with per-step completion-order cursors. Missing journals in historical reports stay absent. Captures still omit payloads/logs/arbitrary text and are not full raw transcripts; snapshot replay remains unfinished. Current validation outcomes are recorded in ENVIRONMENT.md.
+
+Current verified checkpoint: 51 unit/bootstrap tests, both private admission/replacement cases, one non-mining replay/export case and both full mined CLI suites passed. New mined journals contain actual projected receipts and lifecycle evidence with zero omissions. Recorded startup failures are retained and explicitly recovered; no required scenario evidence is waived. See TEST_SCENARIOS.md for the genuine captures.

@@ -207,3 +207,25 @@ Keyed baseline 3b2d8dee-6870-4ce3-9e83-af75ef4e5a4f reran as 7c3f9985-d997-45cb-
 Payer baseline acc1216e-0374-48a8-b4f0-5e724d264979 reran as d83300ca-8089-4c41-9c5e-c047228bb268: PASS, 16 steps, matching verdicts/stable environment and a different genesis. The fresh base maximum cost was 662898000000000 wei, differing from the old 662874000000000 wei observation. The newest entry was Cancelled by balance enforcement and the older remained New. This demonstrates matching asserted behavior, not identical raw execution or exact replay.
 
 Both tests read and validate immutable saved reports and compare the offline CLI output with the replay output. Reviewed comparison-plus-rerun captures were copied byte-for-byte from private test outputs into docs/evidence/replay-keyed-nonce-lifecycle.json and replay-paymaster-solvency.json after checksum/schema/comparison validation. Exact fresh keys, mnemonic and JWT were checked for absence. Both test-level teardown checks and the final global aftershock.run inventory showed no remaining owned containers or networks. No new public-devnet transaction was sent. Captures remain filtered private-chain projections, not raw complete traces or independent attestations.
+
+
+## Projected RPC journal checkpoint, 2026-11-06 local time
+
+The existing Linux-home Node 24.22.2/npm 11.19.1 installation was used without package installation, image pulls or external deployment. Typecheck, Oxlint, formatting and all 51 unit/bootstrap tests passed. npm ls --all, application npm audit (zero vulnerabilities), both .mjs syntax checks and bash -n passed. The pinned sidecar advisories remain unresolved. No UI or new public-devnet transaction was created.
+
+Initial live admission runs ec4f7427-eed9-4187-8351-b61649e21996 and e8dcb9ed-7585-4d5e-99ea-d3575cfaed57 were genuinely INCONCLUSIVE because the first journal design treated recovered startup failures as missing scenario evidence. They were not edited into passing results. The collector now labels readiness separately and accepts recovery only after a later same-channel readiness chain-ID response of 0x9; all failed attempts remain visible. Projection failures, omitted entries and unrecovered required scenario failures still prevent PASS.
+
+After that fix, npm run test:integration passed both real admission/replacement cases (9.1/9.5 seconds), retaining BLOCKED for omitted mining while recording complete filtered journals. npm run test:replay passed its real non-mining comparison/export case (24.3 seconds). It verifies offline evidence export equals the saved journal. A separate unit test imports an unchanged historical capture into a temporary report store and verifies evidence export returns null/native 3, not fabricated data.
+
+Both actual mined CLI cases were selected independently with the installed runner and executed concurrently:
+
+```sh
+./node_modules/.bin/tsx --test --test-name-pattern=keyed-nonce-lifecycle tests/lifecycle.integration.ts
+./node_modules/.bin/tsx --test --test-name-pattern=paymaster-solvency tests/lifecycle.integration.ts
+```
+
+Both exited 0. Keyed run 60751072-f5ff-4752-ae54-de7370829a2c took 455.7 seconds and recorded 127 entries / 56,380 compact entry bytes, including two actual successful Frame Transaction receipts. Payer run b407dc18-99a8-46bb-a248-89d4c47c6e00 took 465.8 seconds and recorded 136 entries / 57,870 compact entry bytes, including three successful canonical transfer receipts. Both were PASS with zero omissions and complete recording. Their unavailable counts (8/9) are retained startup failures, all recovered under the same-channel readiness rule; they are not hidden or reclassified as successful RPC calls. These are test durations, not throughput benchmarks.
+
+The final validator read both immutable checksum envelopes, validated journal fields/counters/identities/step references, exported each journal through the native evidence command and compared it deeply to the saved data. It confirmed projected receipts and compared action verdicts/stable environments with the earlier historical mined baselines: both remained PASS with matching verdicts. The filtered reports were copied byte-for-byte into docs/evidence/rpc-keyed-nonce-lifecycle.json and rpc-paymaster-solvency.json after checking exact fresh keys, mnemonic and JWT and forbidden payload fields for absence. Runtime projection normalizations are not raw byte-for-byte node transcripts. Full raw traces, private-state snapshot restoration and independent audit remain unfinished.
+
+Both integration-level cleanup checks and a final global aftershock.run label inventory showed no remaining owned containers or networks. Private logs and wallets remain ignored in Linux .local/. Historical committed evidence was not rewritten, and Codex did not stage, commit or push.

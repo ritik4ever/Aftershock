@@ -74,6 +74,7 @@ npm run --silent aftershock -- report <run-id> --format md
 npm run --silent aftershock -- replay <run-id> --plan
 npm run --silent aftershock -- replay <run-id> --local [--mine]
 npm run --silent aftershock -- compare <baseline-run-id> <rerun-run-id>
+npm run --silent aftershock -- evidence <run-id>
 ```
 
 Reports use exclusive writes, validated IDs and SHA-256 integrity checks. Integrity detects accidental changes; it does not authenticate a report's author. `replay --plan` reads a saved report offline. `replay --local` reruns its current built-in scenario in fresh isolated state; `--mine` must match the original fixture mode. It saves a new run and prints linked checksums, action verdicts and stable environment differences. Matching BLOCKED results remain BLOCKED. The offline `compare` command reconstructs a comparison from two saved reports without Docker or RPC; its exit 0 means the export succeeded, regardless of the recorded verdicts. This is a fresh-state rerun, not exact historical replay; no snapshot is restored. See [scenario coverage](docs/TEST_SCENARIOS.md).
@@ -99,3 +100,8 @@ The probe needs Node >=20.12 and no installed packages. It only reads the config
 Remaining work: exact replay, fuller redacted evidence and additional terminal/TTL/submitted-entry cases. Public node source commit remains unknown. UI work follows the core engine checkpoints.
 
 The upstream workshop, sidecar and codec are existing projects credited in UPSTREAM.md. No upstream protocol implementation is vendored. The mining fork schedule and builder-predeploy workaround are adapted from the attributed upstream fixtures. Aftershock is [MIT licensed](LICENSE).
+
+
+New private runs include a bounded, allowlisted RPC journal: node response fields, normalized rejection codes, lifecycle checks/events, gas use and actual receipts. Steps reference the journal's completion-order sequence through evidenceThrough. The evidence command exports this journal offline after validating the saved envelope. Historical runs without a journal return evidence: null and native exit 3; they are never retroactively filled in. A successful export exits 0 even for a BLOCKED run; inspect the report verdict separately.
+
+The journal omits request payloads, signatures, calldata, receipt logs and arbitrary server text. Requests retain only a SHA-256 digest and a transaction hash for supported hash reads. Recording is capped at 256 entries and 64 KiB of compact entry JSON; omissions or projection failures prevent PASS. Recovered readiness failures remain visible and are accepted only after a later successful chain-9 response on the same channel. This is a filtered evidence trace, not a complete raw RPC transcript, exact replay or independent attestation.
