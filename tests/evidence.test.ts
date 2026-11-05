@@ -205,3 +205,21 @@ test('legacy evidence export is explicitly unavailable and does not fabricate a 
     evidence: null,
   });
 });
+
+test('native code reads export a digest and size while storage words stay exact', async () => {
+  await withRpcEvidence(async () => {
+    recordRpc('eth_getCode', 'EXECUTION', [], { result: '0x60016000' });
+    recordRpc('eth_getStorageAt', 'EXECUTION', [], {
+      result: `0x${'0'.repeat(63)}1`,
+    });
+    const journal = rpcEvidence.parse(evidenceSnapshot());
+    assert.equal(journal.complete, true);
+    assert.deepEqual(journal.entries[0]!.result, {
+      bytes: 4,
+      sha256:
+        '33d34248ed4f2b6266d6fc2f4fa6be82f843c439534b3ac929e88f252292e23a',
+    });
+    assert.ok(!JSON.stringify(journal).includes('60016000'));
+    assert.equal(journal.entries[1]!.result, `0x${'0'.repeat(63)}1`);
+  });
+});

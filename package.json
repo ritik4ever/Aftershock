@@ -13,6 +13,7 @@
   "packageManager": "npm@11.19.1",
   "scripts": {
     "aftershock": "tsx packages/cli/src/index.ts",
+    "test:fixtures": "tsx --test tests/fixture-capabilities.integration.ts",
     "test:integration": "tsx --test tests/local.integration.ts",
     "test:mining": "tsx --test tests/mining.integration.ts",
     "test:replay:mining": "tsx --test tests/replay-mining.integration.ts",

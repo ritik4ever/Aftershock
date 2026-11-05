@@ -15,6 +15,8 @@ export const rpcMethod = z.enum([
   'eth_chainId',
   'web3_clientVersion',
   'eth_getBalance',
+  'eth_getCode',
+  'eth_getStorageAt',
   'eth_getBlockByNumber',
   'eth_getTransactionCount',
   'eth_sendRawTransaction',
@@ -74,6 +76,11 @@ const projections = {
     .max(256)
     .regex(/^[a-z0-9/._+:-]+$/i),
   eth_getBalance: quantity,
+  eth_getCode: z.object({
+    bytes: integer,
+    sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  }),
+  eth_getStorageAt: hash,
   eth_getBlockByNumber: z
     .object({ number: quantity, timestamp: quantity, hash })
     .nullable(),
@@ -278,6 +285,18 @@ export function recordRpc(
   if ('result' in response) {
     try {
       let value = response.result;
+      if (method === 'eth_getCode') {
+        const code = z
+          .string()
+          .max(131074)
+          .regex(/^0x(?:[0-9a-f]{2})*$/i)
+          .parse(value);
+        const bytes = Buffer.from(code.slice(2), 'hex');
+        value = {
+          bytes: bytes.length,
+          sha256: createHash('sha256').update(bytes).digest('hex'),
+        };
+      }
       if (method === 'skandha_explorer_getTransaction')
         value = explorerTransaction.parse(value);
       if (method === 'eth_getFrameTransactionByHash' && value !== null) {
