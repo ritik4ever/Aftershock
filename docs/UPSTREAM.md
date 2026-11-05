@@ -74,3 +74,6 @@ git -C sidecar checkout --detach 2e22ff0a2898e69ea4bf5275bce1be8581a8582a
 git clone --branch eip8141-tracer https://github.com/forshtat/ethrex.git ethrex
 git -C ethrex checkout --detach 9aa3645d795945c64400f41a70aace0edfa7f383
 ```
+
+
+The keyed TTL case follows FrameTxMempoolEntry.ts:175-201 and MempoolService/service.ts:480-512 at the same sidecar pin. The strict comparison uses the candidate lastUpdatedTime minus the predecessor lastUpdatedTime, greater than useropsTTL * 1000. The duplicate guard precedes that exemption and includes OnChain. useropsTTL configuration is exposed by skandha_config; it is a replacement grace period, not automatic expiry/removal of a live entry in the inspected implementation. Aftershock verifies source-specific outcomes on its own node; it does not alter timestamps or inject terminal statuses.

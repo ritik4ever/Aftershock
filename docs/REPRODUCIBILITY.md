@@ -155,3 +155,14 @@ npm run test:fixtures
 ```
 
 Use the existing Linux-home dependency tree and cached mining images under the same prerequisites as the mined suites. This disposable internal-network test reads code and keyed storage, admits/mines a real keyed transaction, checks the resulting state/lifecycle and mines a native-balance transfer. Only a passing test with complete filtered recording and verified owned-resource cleanup writes `.local/fixture-capabilities-results/<run-id>.json`. This standalone infrastructure capture is not a RunReport; the CLI report/check-evidence commands do not accept it. Review and secret-check it separately before copying a filtered sample into docs/evidence. No Foundry installation or new Solidity is needed; see [contract decisions](CONTRACT_FIXTURES.md).
+
+## Keyed replacement TTL case
+
+```sh
+npm run --silent aftershock -- run keyed-replacement-ttl --local
+npm run test:ttl
+```
+
+Uses the existing two-process isolated cached-image fixture with a verified 30-second TTL; the original suites retain 300 seconds. A bounded wait is computed from the actual lastUpdatedTime with a scheduling margin; accepted replacement timestamps must differ by strictly more than the configured TTL. Missing/changed entries, clock preconditions or unrelated RPC errors cannot pass. No timestamps, chain state or sidecar status are edited. This case can PASS without --mine because its definition covers admission only. Exact boundary and terminal-status cases remain open.
+
+The integration test checks the native CLI verdict and immutable report, evidence export equality, replay planning and cleanup. Offline check-evidence currently has no TTL-specific checker: it must return INSUFFICIENT/native 3 with every step unreevaluated even for a live PASS. The redacted journal cannot reconstruct signed fee/nonce parameters. Actual results and the filtered capture are recorded in ENVIRONMENT.md.
