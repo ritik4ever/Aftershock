@@ -1,3 +1,9 @@
+import {
+  withRpcEvidence,
+  evidenceSnapshot,
+  evidencePosition,
+  rpcEvidence,
+} from './evidence.js';
 import { randomUUID } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -39,6 +45,7 @@ const step = z
     id: z.string().regex(/^[a-z0-9-]+$/),
     at: z.iso.datetime(),
     result: verdict,
+    evidenceThrough: z.number().int().nonnegative().optional(),
     observed: z.record(
       z.string(),
       z.union([z.string(), z.boolean(), z.number().finite()]),
@@ -62,6 +69,7 @@ export const runReport = z
       })
       .strict(),
     environment: z.record(z.string(), z.string()),
+    evidence: rpcEvidence.optional(),
     steps: z.array(step),
     result: verdict,
     definition: scenarioDefinition,
@@ -79,6 +87,31 @@ export const runReport = z
       aggregateResults(report.steps.map((step) => step.result))
     )
       issue('Inconsistent aggregate verdict');
+    if (report.evidence) {
+      let cursor = 0;
+      for (const step of report.steps) {
+        if (
+          step.evidenceThrough === undefined ||
+          step.evidenceThrough < cursor ||
+          step.evidenceThrough > report.evidence.attempts
+        )
+          issue('Invalid evidence reference');
+        cursor = step.evidenceThrough ?? cursor;
+      }
+      if (cursor !== report.evidence.attempts)
+        issue('Unreferenced RPC evidence');
+      if (
+        report.evidence.entries.some(
+          (entry) =>
+            Date.parse(entry.at) < Date.parse(report.startedAt) ||
+            Date.parse(entry.at) > Date.parse(report.completedAt),
+        )
+      )
+        issue('Invalid evidence chronology');
+      if (!report.evidence.complete && report.result === 'PASS')
+        issue('Incomplete evidence cannot PASS');
+    } else if (report.steps.some((step) => step.evidenceThrough !== undefined))
+      issue('Missing referenced evidence');
     const seen = new Set<string>();
     let previousAction = -1;
     let previousTime = Date.parse(report.startedAt);
@@ -219,7 +252,16 @@ export function aggregateResults(results: Verdict[]): Verdict {
   return results.length > 0 ? 'PASS' : 'INCONCLUSIVE';
 }
 
-export async function runScenario(
+export function runScenario(
+  id: ScenarioId,
+  root: string,
+  seed = 0,
+  mining = false,
+): Promise<RunReport> {
+  return withRpcEvidence(() => executeScenario(id, root, seed, mining));
+}
+
+async function executeScenario(
   id: ScenarioId,
   root: string,
   seed = 0,
@@ -255,7 +297,13 @@ export async function runScenario(
     result: RunReport['result'],
     observed: RunReport['steps'][number]['observed'],
   ) =>
-    report.steps.push({ id, at: new Date().toISOString(), result, observed });
+    report.steps.push({
+      id,
+      at: new Date().toISOString(),
+      result,
+      observed,
+      evidenceThrough: evidencePosition(),
+    });
   try {
     fixture = await startFixture(root, report.runId, mining, 'manual');
     report.runId = fixture.runId;
@@ -513,6 +561,17 @@ export async function runScenario(
       }
     }
   }
+  report.evidence = evidenceSnapshot();
+  if (
+    report.evidence &&
+    !report.evidence.complete &&
+    !report.steps.some((step) => step.id === 'prerequisites-or-evidence')
+  )
+    add('prerequisites-or-evidence', 'INCONCLUSIVE', {
+      reason: 'RPC_EVIDENCE_INCOMPLETE',
+      omitted: report.evidence.omitted,
+      unavailable: report.evidence.unavailable,
+    });
   report.result = aggregateResults(report.steps.map((step) => step.result));
   report.completedAt = new Date().toISOString();
   return runReport.parse(report);

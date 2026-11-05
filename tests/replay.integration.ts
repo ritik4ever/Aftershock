@@ -37,6 +37,12 @@ test(
     assert.equal(comparison.comparison, 'VERDICTS_MATCH');
     assert.equal(comparison.bothRunsPassed, false);
     assert.equal(rerun.result, 'BLOCKED');
+    const evidence = cli('evidence', rerun.runId);
+    assert.equal(evidence.status, 0, evidence.stderr);
+    assert.deepEqual(JSON.parse(evidence.stdout), {
+      runId: rerun.runId,
+      evidence: rerun.evidence,
+    });
     const offline = cli('compare', baseline.runId, rerun.runId);
     assert.equal(offline.status, 0, offline.stderr);
     assert.deepEqual(JSON.parse(offline.stdout), comparison);

@@ -283,6 +283,7 @@ test('Markdown preserves honest result and escapes untrusted formatting', () => 
   ];
   const markdown = markdownReport(report);
   assert.match(markdown, /Result: BLOCKED/);
+  assert.match(markdown, /No RPC journal was captured/);
   assert.ok(!markdown.includes('<script>'));
   assert.ok(!markdown.includes('![external]'));
 });
@@ -396,5 +397,14 @@ test(
 test('reading a missing report does not create a report directory', async () => {
   const root = await mkdtemp(join(tmpdir(), 'aftershock-report-readonly-'));
   await assert.rejects(readRun(root, randomUUID()), { code: 'ENOENT' });
+  await assert.rejects(stat(join(root, 'reports')), { code: 'ENOENT' });
+});
+
+test('oversized report writes fail before creating an artifact directory', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'aftershock-report-write-limit-'));
+  await assert.rejects(
+    saveRun(root, { ...unitReport(), limitations: ['x'.repeat(1_048_576)] }),
+    /too large/,
+  );
   await assert.rejects(stat(join(root, 'reports')), { code: 'ENOENT' });
 });

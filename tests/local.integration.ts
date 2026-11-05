@@ -43,6 +43,32 @@ for (const [id, expected] of [
       const report = runReport.parse(JSON.parse(child.stdout));
       assert.equal(report.endpointClass, 'ISOLATED_LOCAL');
       assert.equal(report.result, 'BLOCKED');
+      assert.equal(
+        report.evidence?.complete,
+        true,
+        JSON.stringify(
+          report.evidence?.entries.filter(
+            (entry) => entry.outcome === 'UNAVAILABLE',
+          ),
+        ),
+      );
+      assert.ok(
+        report.evidence.entries.some(
+          (entry) =>
+            entry.method === 'eth_sendFrameTransaction' &&
+            entry.outcome === 'RPC_ERROR',
+        ),
+      );
+      assert.ok(
+        report.evidence.entries.some(
+          (entry) =>
+            entry.method === 'skandha_explorer_getTransaction' &&
+            entry.outcome === 'RESULT',
+        ),
+      );
+      assert.ok(
+        report.steps.every((step) => step.evidenceThrough !== undefined),
+      );
       assert.equal(report.environment.networkInternal, 'true');
       assert.equal(report.environment.publishedPorts, 'none');
       if (id === 'keyed-nonce-lifecycle') {

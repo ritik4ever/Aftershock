@@ -50,6 +50,26 @@ for (const id of ['paymaster-solvency', 'keyed-nonce-lifecycle'] as const) {
         `${stderr}\n${JSON.stringify(report.steps.filter((step) => step.result !== 'PASS'))}`,
       );
       assert.equal(report.result, 'PASS');
+      assert.equal(report.evidence?.complete, true);
+      assert.ok(
+        report.evidence.entries.some(
+          (entry) =>
+            entry.method ===
+              (id === 'keyed-nonce-lifecycle'
+                ? 'eth_getFrameTransactionReceipt'
+                : 'eth_getTransactionReceipt') &&
+            entry.outcome === 'RESULT' &&
+            entry.result !== null,
+        ),
+      );
+      assert.ok(
+        report.evidence.entries.some(
+          (entry) => entry.method === 'skandha_explorer_getTransaction',
+        ),
+      );
+      assert.ok(
+        report.steps.every((step) => step.evidenceThrough !== undefined),
+      );
       assert.equal(report.environment.fixtureMode, 'mining');
       assert.equal(report.environment.bundlingMode, 'manual');
       assert.equal(report.environment.networkInternal, 'true');

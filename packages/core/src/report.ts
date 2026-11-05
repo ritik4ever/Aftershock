@@ -18,15 +18,13 @@ const digest = (report: RunReport) =>
 
 export async function saveRun(root: string, input: RunReport): Promise<string> {
   const report = runReport.parse(input);
+  const body = `${JSON.stringify({ report, sha256: digest(report) }, null, 2)}\n`;
+  if (Buffer.byteLength(body) > 1_048_576) throw new Error('Report too large');
   const path = resolve(
     await directory(root, true),
     `${report.runId}.scenario.json`,
   );
-  await writeFile(
-    path,
-    `${JSON.stringify({ report, sha256: digest(report) }, null, 2)}\n`,
-    { flag: 'wx', mode: 0o600 },
-  );
+  await writeFile(path, body, { flag: 'wx', mode: 0o600 });
   return path;
 }
 
@@ -95,6 +93,10 @@ export function markdownReport(report: RunReport): string {
     `Result: ${report.result}`,
     `Environment: ${report.endpointClass}`,
     `Run: ${report.runId}`,
+    `RPC evidence: ${report.evidence ? `${report.evidence.entries.length} projected responses; ${report.evidence.complete ? 'recording complete' : 'recording incomplete'}; ${report.evidence.omitted} omitted; ${report.evidence.unavailable} unavailable` : 'not captured in this historical report'}`,
+    report.evidence
+      ? 'Projected receipts and lifecycle responses are available in the JSON export; this is not a full raw trace.'
+      : 'No RPC journal was captured for this historical report.',
     '',
     '| Step | Result | Observed |',
     '| --- | --- | --- |',
