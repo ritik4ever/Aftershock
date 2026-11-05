@@ -1,13 +1,14 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, realpath, writeFile, stat } from 'node:fs/promises';
+import { mkdir, open, realpath, writeFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { z } from 'zod';
 import { runReport } from './scenario.js';
 import type { RunReport } from './scenario.js';
 
-async function directory(root: string) {
+async function directory(root: string, create = false) {
   const path = resolve(root, 'reports');
-  await mkdir(path, { recursive: true, mode: 0o700 });
+  if (create) await mkdir(path, { recursive: true, mode: 0o700 });
   if (relative(await realpath(root), await realpath(path)) !== 'reports')
     throw new Error('Unsafe report directory');
   return path;
@@ -17,7 +18,10 @@ const digest = (report: RunReport) =>
 
 export async function saveRun(root: string, input: RunReport): Promise<string> {
   const report = runReport.parse(input);
-  const path = resolve(await directory(root), `${report.runId}.scenario.json`);
+  const path = resolve(
+    await directory(root, true),
+    `${report.runId}.scenario.json`,
+  );
   await writeFile(
     path,
     `${JSON.stringify({ report, sha256: digest(report) }, null, 2)}\n`,
@@ -31,9 +35,37 @@ export async function readRun(root: string, id: string): Promise<RunReport> {
   const path = resolve(await directory(root), `${id}.scenario.json`);
   const real = await realpath(path);
   if (real !== path) throw new Error('Report file must not be a symlink');
-  if ((await stat(real)).size > 1_048_576) throw new Error('Report too large');
-  const text = await readFile(real, 'utf8');
-  if (Buffer.byteLength(text) > 1_048_576) throw new Error('Report too large');
+  // Open without following a replaced leaf symlink. Nonblocking open lets us
+  // reject FIFOs/devices rather than waiting for a writer before checking type.
+  const file = await open(
+    real,
+    constants.O_RDONLY |
+      (constants.O_NOFOLLOW ?? 0) |
+      (constants.O_NONBLOCK ?? 0),
+  );
+  let text: string;
+  try {
+    const metadata = await file.stat();
+    if (!metadata.isFile()) throw new Error('Report must be a regular file');
+    if (metadata.size > 1_048_576) throw new Error('Report too large');
+    // Bound allocation and reads even if the file grows after stat().
+    const buffer = Buffer.alloc(1_048_577);
+    let length = 0;
+    while (length < buffer.length) {
+      const { bytesRead } = await file.read(
+        buffer,
+        length,
+        buffer.length - length,
+        null,
+      );
+      if (bytesRead === 0) break;
+      length += bytesRead;
+    }
+    if (length > 1_048_576) throw new Error('Report too large');
+    text = buffer.toString('utf8', 0, length);
+  } finally {
+    await file.close();
+  }
   const envelope = z
     .object({
       report: z.record(z.string(), z.unknown()),

@@ -37,6 +37,9 @@ test(
     assert.equal(comparison.comparison, 'VERDICTS_MATCH');
     assert.equal(comparison.bothRunsPassed, false);
     assert.equal(rerun.result, 'BLOCKED');
+    const offline = cli('compare', baseline.runId, rerun.runId);
+    assert.equal(offline.status, 0, offline.stderr);
+    assert.deepEqual(JSON.parse(offline.stdout), comparison);
     assert.notEqual(
       rerun.environment.genesisSha256,
       baseline.environment.genesisSha256,

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtemp, readFile, writeFile, symlink } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, readFile, writeFile, symlink, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
@@ -374,4 +375,26 @@ test('fresh-state rerun plans reject mocks, changed definitions and unsafe fixtu
   );
   rerun.environment = {};
   assert.equal(compareRuns(report, rerun).comparison, 'ENVIRONMENT_DIFFERENT');
+});
+
+test(
+  'report reads reject a FIFO without waiting for a writer',
+  { timeout: 3000 },
+  async (context) => {
+    if (process.platform !== 'linux')
+      return context.skip('Linux private report store');
+    const root = await mkdtemp(join(tmpdir(), 'aftershock-report-fifo-'));
+    const report = unitReport();
+    await saveRun(root, report);
+    const id = randomUUID();
+    const fifo = join(root, 'reports', `${id}.scenario.json`);
+    execFileSync('mkfifo', [fifo]);
+    await assert.rejects(readRun(root, id), /regular file/);
+  },
+);
+
+test('reading a missing report does not create a report directory', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'aftershock-report-readonly-'));
+  await assert.rejects(readRun(root, randomUUID()), { code: 'ENOENT' });
+  await assert.rejects(stat(join(root, 'reports')), { code: 'ENOENT' });
 });

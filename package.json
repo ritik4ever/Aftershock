@@ -15,6 +15,7 @@
     "aftershock": "tsx packages/cli/src/index.ts",
     "test:integration": "tsx --test tests/local.integration.ts",
     "test:mining": "tsx --test tests/mining.integration.ts",
+    "test:replay:mining": "tsx --test tests/replay-mining.integration.ts",
     "test:replay": "tsx --test tests/replay.integration.ts",
     "test:lifecycle": "tsx --test tests/lifecycle.integration.ts",
     "typecheck": "tsc --noEmit",

@@ -24,6 +24,7 @@ const help = `Aftershock core integration
   npm run aftershock -- report <run-id> --format json|md
   npm run aftershock -- replay <run-id> --plan
   npm run aftershock -- replay <run-id> --local [--mine]
+  npm run aftershock -- compare <baseline-run-id> <rerun-run-id>
   npm run aftershock -- help
 
 Read-only public-devnet doctor/inspect commands. --save writes under reports/.
@@ -34,6 +35,20 @@ Receipt absence is unavailable evidence, not proof that execution failed.
 
 async function main(args: string[]): Promise<number> {
   const [command, ...rest] = args;
+  if (command === 'compare' && rest.length === 2) {
+    if (
+      !rest.every((id) =>
+        /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id),
+      )
+    )
+      return 2;
+    const comparison = compareRuns(
+      await readRun(process.cwd(), rest[0]!),
+      await readRun(process.cwd(), rest[1]!),
+    );
+    process.stdout.write(`${JSON.stringify(comparison, null, 2)}\n`);
+    return 0;
+  }
   if (command === 'scenarios' && rest.length === 0) {
     process.stdout.write(`${JSON.stringify(scenarioCatalogue, null, 2)}\n`);
     return 0;
