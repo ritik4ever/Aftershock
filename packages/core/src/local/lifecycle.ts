@@ -60,7 +60,7 @@ export async function frameReceipt(endpoint: LocalEndpoint, txHash: string) {
 export async function lifecycleOutcome(
   endpoint: LocalEndpoint,
   txHash: string,
-  expected: 'included' | 'dropped',
+  expected: 'included' | 'dropped' | 'replaced',
 ) {
   const deadline = Date.now() + 45_000;
   while (Date.now() < deadline) {

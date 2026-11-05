@@ -14,11 +14,13 @@ import { fixtureTransaction } from './local/codec.js';
 import { startFixture, FixtureSetupError } from './local/fixture.js';
 import { localRpc, LocalRpcError, waitForRpc } from './local/rpc.js';
 import { waitForMining } from './local/lifecycle.js';
+import { keyedReplacementTTL } from './local/ttl.js';
 import { minedKeyedLifecycle, minedPayerLifecycle } from './local/scenarios.js';
 
 export const scenarioId = z.enum([
   'paymaster-solvency',
   'keyed-nonce-lifecycle',
+  'keyed-replacement-ttl',
 ]);
 export type ScenarioId = z.infer<typeof scenarioId>;
 export const verdict = z.enum([
@@ -188,9 +190,48 @@ export const scenarioCatalogue = [
       'mined checks require --mine; terminal/TTL exceptions remain outside this suite',
     ],
   },
+  {
+    id: 'keyed-replacement-ttl',
+    title: 'Keyed replacement TTL expiry and refresh',
+    rule: 'FrameTxMempoolEntry/canReplaceWithTTL; MempoolService/validateReplaceability',
+    implemented: [
+      'pre-expiry fee rejection',
+      'live duplicate rejection after expiry',
+      'post-expiry below-bump replacement',
+      'refreshed timestamp requires fee bump again',
+    ],
+    blocked: [
+      'Exact expiry boundary and terminal-status exceptions are outside this case; no inclusion claim',
+    ],
+  },
 ] as const;
 
 export const definitions = {
+  'keyed-replacement-ttl': scenarioDefinition.parse({
+    id: 'keyed-replacement-ttl',
+    title: scenarioCatalogue[2].title,
+    sourceRule: scenarioCatalogue[2].rule,
+    sourceCommit: UPSTREAM.sidecar,
+    expectedInvariant:
+      'Expiry permits a different below-bump same-slot candidate, but not a live duplicate; replacement refreshes the TTL.',
+    preconditions: [
+      'Owned isolated pinned processes with verified 30-second TTL',
+      'Live New predecessor with unchanged lastUpdatedTime',
+      'No block production required; no exact boundary or terminal-state claim',
+    ],
+    actions: [
+      'admit-base',
+      'confirm-live-predecessor',
+      'reject-fee-before-ttl',
+      'wait-for-ttl',
+      'reject-duplicate-after-ttl',
+      'accept-fee-after-ttl',
+      'verify-ttl-replacement',
+      'reject-fee-after-refresh',
+      'verify-active-replacement',
+      'explorer-continuity',
+    ],
+  }),
   'paymaster-solvency': scenarioDefinition.parse({
     id: 'paymaster-solvency',
     title: scenarioCatalogue[0].title,
@@ -298,7 +339,9 @@ async function executeScenario(
         ? 'Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.'
         : 'Non-mining genesis fixture. No block-production/state-transition claims.',
       'Seed identifies action order, not private signing keys; fresh accounts are random.',
-      'Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run.',
+      id === 'keyed-replacement-ttl'
+        ? 'Admission-only TTL expiry/refresh case; no exact boundary, inclusion or terminal/submitted-entry claim.'
+        : 'Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run.',
     ],
     reproducer: `npm run --silent aftershock -- run ${id} --local${mining ? ' --mine' : ''}`,
   };
@@ -316,7 +359,13 @@ async function executeScenario(
       evidenceThrough: evidencePosition(),
     });
   try {
-    fixture = await startFixture(root, report.runId, mining, 'manual');
+    fixture = await startFixture(
+      root,
+      report.runId,
+      mining,
+      'manual',
+      id === 'keyed-replacement-ttl' ? 30 : 300,
+    );
     report.runId = fixture.runId;
     report.environment = fixture.fingerprint;
     const { keys, executionUrl, sidecarUrl } = fixture;
@@ -386,134 +435,140 @@ async function executeScenario(
         return expected === error.reason;
       }
     };
-    const payer = id === 'paymaster-solvency' ? keys[3]! : keys[0]!;
-    const priorityFee =
-      id === 'keyed-nonce-lifecycle' ? 1_000_000_000n : 2_000_000_000n;
-    const base = await fixtureTransaction(
-      keys[0]!,
-      payer,
-      [1n],
-      2_000_000_000n,
-      priorityFee,
-    );
-    if (!(await submit('admit-base', base, 'ACCEPTED')))
-      throw new Error('Baseline admission unavailable');
-    if (id === 'paymaster-solvency') {
-      const simulation = await localRpc(
-        executionUrl,
-        'ethrex_simulateFrameTransaction',
-        [base.raw, 'latest', { trace: false }],
-        z.object({ maxCost: z.union([quantity, z.string().regex(/^\d+$/)]) }),
-      );
-      const payerAddress = (await import('viem/accounts')).privateKeyToAccount(
-        payer,
-      ).address;
-      const balance = await localRpc(
-        executionUrl,
-        'eth_getBalance',
-        [payerAddress, 'latest'],
-        quantity,
-      );
-      const cost = BigInt(simulation.maxCost);
-      if (!(cost <= BigInt(balance) && 2n * cost > BigInt(balance)))
-        throw new Error('Balance boundary precondition unmet');
-      add('confirm-solvency-boundary', 'PASS', {
-        maximumCost: cost.toString(),
-        payerBalance: BigInt(balance).toString(),
-      });
-      await submit(
-        'reject-aggregate-overspend',
-        await fixtureTransaction(keys[1]!, payer, [1n]),
-        'BALANCE_OBLIGATIONS',
-      );
+    if (id === 'keyed-replacement-ttl') {
+      if (configuration.useropsTTL !== 30)
+        throw new Error('TTL configuration mismatch');
+      await keyedReplacementTTL(fixture, configuration.useropsTTL, add, submit);
     } else {
-      await submit('reject-duplicate', base, 'DUPLICATE');
-      await submit(
-        'admit-disjoint-key',
-        await fixtureTransaction(keys[0]!, payer, [2n]),
-        'ACCEPTED',
+      const payer = id === 'paymaster-solvency' ? keys[3]! : keys[0]!;
+      const priorityFee =
+        id === 'keyed-nonce-lifecycle' ? 1_000_000_000n : 2_000_000_000n;
+      const base = await fixtureTransaction(
+        keys[0]!,
+        payer,
+        [1n],
+        2_000_000_000n,
+        priorityFee,
       );
-      await submit(
-        'reject-overlapping-set',
-        await fixtureTransaction(keys[0]!, payer, [1n, 3n]),
-        'KEY_CONFLICT',
+      if (!(await submit('admit-base', base, 'ACCEPTED')))
+        throw new Error('Baseline admission unavailable');
+      if (id === 'paymaster-solvency') {
+        const simulation = await localRpc(
+          executionUrl,
+          'ethrex_simulateFrameTransaction',
+          [base.raw, 'latest', { trace: false }],
+          z.object({ maxCost: z.union([quantity, z.string().regex(/^\d+$/)]) }),
+        );
+        const payerAddress = (
+          await import('viem/accounts')
+        ).privateKeyToAccount(payer).address;
+        const balance = await localRpc(
+          executionUrl,
+          'eth_getBalance',
+          [payerAddress, 'latest'],
+          quantity,
+        );
+        const cost = BigInt(simulation.maxCost);
+        if (!(cost <= BigInt(balance) && 2n * cost > BigInt(balance)))
+          throw new Error('Balance boundary precondition unmet');
+        add('confirm-solvency-boundary', 'PASS', {
+          maximumCost: cost.toString(),
+          payerBalance: BigInt(balance).toString(),
+        });
+        await submit(
+          'reject-aggregate-overspend',
+          await fixtureTransaction(keys[1]!, payer, [1n]),
+          'BALANCE_OBLIGATIONS',
+        );
+      } else {
+        await submit('reject-duplicate', base, 'DUPLICATE');
+        await submit(
+          'admit-disjoint-key',
+          await fixtureTransaction(keys[0]!, payer, [2n]),
+          'ACCEPTED',
+        );
+        await submit(
+          'reject-overlapping-set',
+          await fixtureTransaction(keys[0]!, payer, [1n, 3n]),
+          'KEY_CONFLICT',
+        );
+        if (
+          Date.now() - admissionStarted + 15_000 >=
+          configuration.useropsTTL * 1000
+        )
+          throw new Error('Replacement TTL precondition expired');
+        await submit(
+          'reject-low-fee-bump',
+          await fixtureTransaction(
+            keys[0]!,
+            payer,
+            [1n],
+            2_100_000_000n,
+            1_100_000_000n,
+          ),
+          'FEE_BUMP',
+        );
+        await submit(
+          'reject-low-priority-fee-bump',
+          await fixtureTransaction(
+            keys[0]!,
+            payer,
+            [1n],
+            2_200_000_000n,
+            1_050_000_000n,
+          ),
+          'FEE_BUMP',
+        );
+      }
+      const replacement = await fixtureTransaction(
+        keys[0]!,
+        payer,
+        [1n],
+        2_200_000_000n,
+        (priorityFee * 11n) / 10n,
       );
-      if (
-        Date.now() - admissionStarted + 15_000 >=
-        configuration.useropsTTL * 1000
-      )
-        throw new Error('Replacement TTL precondition expired');
-      await submit(
-        'reject-low-fee-bump',
-        await fixtureTransaction(
-          keys[0]!,
-          payer,
-          [1n],
-          2_100_000_000n,
-          1_100_000_000n,
-        ),
-        'FEE_BUMP',
+      await submit('accept-fee-bumped-replacement', replacement, 'ACCEPTED');
+      const predecessor = await localRpc(
+        sidecarUrl,
+        'skandha_explorer_getTransaction',
+        [base.hash],
+        z.object({
+          hash,
+          admission: z.object({ outcome: z.string() }).nullable(),
+        }),
       );
-      await submit(
-        'reject-low-priority-fee-bump',
-        await fixtureTransaction(
-          keys[0]!,
-          payer,
-          [1n],
-          2_200_000_000n,
-          1_050_000_000n,
-        ),
-        'FEE_BUMP',
+      const oldEntry = await localRpc(
+        sidecarUrl,
+        'eth_getFrameTransactionByHash',
+        [base.hash],
+        z.unknown(),
       );
-    }
-    const replacement = await fixtureTransaction(
-      keys[0]!,
-      payer,
-      [1n],
-      2_200_000_000n,
-      (priorityFee * 11n) / 10n,
-    );
-    await submit('accept-fee-bumped-replacement', replacement, 'ACCEPTED');
-    const predecessor = await localRpc(
-      sidecarUrl,
-      'skandha_explorer_getTransaction',
-      [base.hash],
-      z.object({
-        hash,
-        admission: z.object({ outcome: z.string() }).nullable(),
-      }),
-    );
-    const oldEntry = await localRpc(
-      sidecarUrl,
-      'eth_getFrameTransactionByHash',
-      [base.hash],
-      z.unknown(),
-    );
-    const newEntry = await localRpc(
-      sidecarUrl,
-      'eth_getFrameTransactionByHash',
-      [replacement.hash],
-      z.object({ txHash: hash }),
-    );
-    add(
-      'verify-replacement-lifecycle',
-      predecessor.hash === base.hash &&
-        predecessor.admission?.outcome === 'replaced' &&
-        oldEntry === null &&
-        newEntry.txHash === replacement.hash
-        ? 'PASS'
-        : 'FAIL',
-      {
-        oldHash: base.hash,
-        newHash: replacement.hash,
-        oldOutcome: predecessor.admission?.outcome ?? 'MISSING',
-        oldEntryRemoved: oldEntry === null,
-      },
-    );
-    if (mining) {
-      if (id === 'keyed-nonce-lifecycle')
-        await minedKeyedLifecycle(fixture, replacement, add, submit);
-      else await minedPayerLifecycle(fixture, replacement, add, submit);
+      const newEntry = await localRpc(
+        sidecarUrl,
+        'eth_getFrameTransactionByHash',
+        [replacement.hash],
+        z.object({ txHash: hash }),
+      );
+      add(
+        'verify-replacement-lifecycle',
+        predecessor.hash === base.hash &&
+          predecessor.admission?.outcome === 'replaced' &&
+          oldEntry === null &&
+          newEntry.txHash === replacement.hash
+          ? 'PASS'
+          : 'FAIL',
+        {
+          oldHash: base.hash,
+          newHash: replacement.hash,
+          oldOutcome: predecessor.admission?.outcome ?? 'MISSING',
+          oldEntryRemoved: oldEntry === null,
+        },
+      );
+      if (mining) {
+        if (id === 'keyed-nonce-lifecycle')
+          await minedKeyedLifecycle(fixture, replacement, add, submit);
+        else await minedPayerLifecycle(fixture, replacement, add, submit);
+      }
     }
     const after = await localRpc(
       sidecarUrl,
@@ -526,19 +581,21 @@ async function executeScenario(
       bootId: after.bootId,
       gaps: gaps.join(','),
     });
-    if (mining)
-      add(
-        'mined-state-transition',
-        report.steps.every((step) => step.result === 'PASS')
-          ? 'PASS'
-          : 'INCONCLUSIVE',
-        { fixtureMode: 'mining', scope: id },
-      );
-    else
-      add('mined-state-transition', 'BLOCKED', {
-        reason:
-          'This run selected the non-mining fixture; rerun with --local --mine for staged mining',
-      });
+    if (id !== 'keyed-replacement-ttl') {
+      if (mining)
+        add(
+          'mined-state-transition',
+          report.steps.every((step) => step.result === 'PASS')
+            ? 'PASS'
+            : 'INCONCLUSIVE',
+          { fixtureMode: 'mining', scope: id },
+        );
+      else
+        add('mined-state-transition', 'BLOCKED', {
+          reason:
+            'This run selected the non-mining fixture; rerun with --local --mine for staged mining',
+        });
+    }
   } catch (error) {
     const diagnosticStored = fixture
       ? await writeFile(

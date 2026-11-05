@@ -44,8 +44,10 @@ export async function startFixture(
   runId: string = randomUUID(),
   mining = false,
   bundlingMode: 'auto' | 'manual' = mining ? 'auto' : 'manual',
+  useropsTTL = 300,
 ) {
   z.uuid().parse(runId);
+  z.number().int().min(10).max(300).parse(useropsTTL);
   const prefix = `aftershock-${runId}`;
   const directory = resolve(root, '.local', runId);
   await mkdir(resolve(root, '.local'), { recursive: true, mode: 0o700 });
@@ -185,7 +187,7 @@ export async function startFixture(
         standardMempoolId: mempoolId,
         supportedMempools: [{ mempoolId, entryPoint }],
         relayers: [keys[4]],
-        useropsTTL: 300,
+        useropsTTL,
         rpcEndpoint: `http://${execution}:8545`,
         rpcEndpointSubmit: `http://${execution}:8545`,
       }),
