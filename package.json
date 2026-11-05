@@ -1,0 +1,30 @@
+{
+  "name": "aftershock",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "npm@11.19.1",
+  "scripts": {
+    "aftershock": "tsx packages/cli/src/index.ts",
+    "test:integration": "tsx --test tests/local.integration.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/core.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts && node --test tests/probe-devnet.test.mjs",
+    "lint": "oxlint --deny-warnings packages tests scripts",
+    "format": "prettier --write packages tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json",
+    "format:check": "prettier --check packages tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "oxlint": "1.91.0",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

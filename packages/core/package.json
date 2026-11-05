@@ -1,0 +1,13 @@
+{
+  "name": "@aftershock/core",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@forshtat/hegota-support": "0.0.1",
+    "viem": "2.57.11",
+    "zod": "4.6.7"
+  }
+}
