@@ -72,6 +72,22 @@ test('scenario definitions name exact rules, preconditions and ordered actions',
     }),
   );
   assert.throws(() => runReport.parse({ ...unitReport(), seed: -1 }));
+  assert.throws(
+    () =>
+      scenarioDefinition.parse({
+        ...definitions['paymaster-solvency'],
+        actions: ['admit-base', 'admit-base'],
+      }),
+    /unique/,
+  );
+  assert.throws(
+    () =>
+      scenarioDefinition.parse({
+        ...definitions['paymaster-solvency'],
+        actions: ['fixture-cleanup'],
+      }),
+    /reserved/,
+  );
   assert.throws(() =>
     runReport.parse({
       ...unitReport(),

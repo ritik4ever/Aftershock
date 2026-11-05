@@ -13,6 +13,7 @@ import {
   markdownReport,
   replayPlan,
   compareRuns,
+  checkEvidence,
 } from '@aftershock/core';
 
 const help = `Aftershock core integration
@@ -25,6 +26,7 @@ const help = `Aftershock core integration
   npm run aftershock -- replay <run-id> --plan
   npm run aftershock -- replay <run-id> --local [--mine]
   npm run aftershock -- evidence <run-id>
+  npm run aftershock -- check-evidence <run-id>
   npm run aftershock -- compare <baseline-run-id> <rerun-run-id>
   npm run aftershock -- help
 
@@ -36,6 +38,17 @@ Receipt absence is unavailable evidence, not proof that execution failed.
 
 async function main(args: string[]): Promise<number> {
   const [command, ...rest] = args;
+  if (command === 'check-evidence' && rest.length === 1) {
+    if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(rest[0] ?? ''))
+      return 2;
+    const result = checkEvidence(await readRun(process.cwd(), rest[0]!));
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return result.status === 'CONSISTENT'
+      ? 0
+      : result.status === 'INSUFFICIENT'
+        ? 3
+        : 1;
+  }
   if (command === 'evidence' && rest.length === 1) {
     if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(rest[0] ?? ''))
       return 2;

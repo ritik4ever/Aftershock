@@ -37,7 +37,18 @@ export const scenarioDefinition = z
     sourceCommit: z.literal(UPSTREAM.sidecar),
     expectedInvariant: z.string().min(1),
     preconditions: z.array(z.string()).min(1),
-    actions: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1),
+    actions: z
+      .array(z.string().regex(/^[a-z0-9-]+$/))
+      .min(1)
+      .refine(
+        (actions) =>
+          new Set(actions).size === actions.length &&
+          actions.every(
+            (id) =>
+              !['fixture-cleanup', 'prerequisites-or-evidence'].includes(id),
+          ),
+        'Scenario actions must be unique and cannot use reserved step IDs',
+      ),
   })
   .strict();
 const step = z
