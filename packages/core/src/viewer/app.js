@@ -53,6 +53,24 @@ async function request(path, options = {}) {
     });
   return data;
 }
+async function readRemoteJob(path) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await request(path);
+    } catch (error) {
+      if (
+        attempt >= 2 ||
+        (error.status && error.status < 500) ||
+        (!error.status &&
+          !['TimeoutError', 'AbortError', 'TypeError', 'SyntaxError'].includes(
+            error.name,
+          ))
+      )
+        throw error;
+      await new Promise((resolve) => setTimeout(resolve, 2000 * (attempt + 1)));
+    }
+  }
+}
 function notice(text) {
   $('notice').textContent = text;
   $('notice').hidden = !text;
@@ -714,7 +732,9 @@ async function trackExecution(start = false) {
   try {
     let job = remoteAvailable
       ? remoteJob
-        ? await request(`/api/runner?job=${encodeURIComponent(remoteJob)}`)
+        ? await readRemoteJob(
+            `/api/runner?job=${encodeURIComponent(remoteJob)}`,
+          )
         : null
       : (await request('/api/execute')).job;
     if (remoteAvailable && start && job?.state !== 'RUNNING') job = null;
@@ -760,7 +780,7 @@ async function trackExecution(start = false) {
         ...executionDetails(job),
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
-      job = await request(
+      job = await (remoteAvailable ? readRemoteJob : request)(
         `${remoteAvailable ? '/api/runner' : '/api/execute'}?job=${encodeURIComponent(job.id)}`,
       );
     }
@@ -785,7 +805,7 @@ async function trackExecution(start = false) {
     );
     await loadRuns();
     if (remoteAvailable) {
-      const data = await request(
+      const data = await readRemoteJob(
         `/api/runner?job=${encodeURIComponent(job.id)}&format=detail`,
       );
       selection += 1;
@@ -802,6 +822,21 @@ async function trackExecution(start = false) {
     target.replaceChildren(
       node('p', `Fresh execution unavailable: ${error.message}`, 'error-text'),
     );
+    if (remoteAvailable && remoteJob) {
+      target.append(
+        node(
+          'p',
+          `Connection to run ${remoteJob} was interrupted. This does not mean the workflow failed. Reconnect to retrieve its actual result without starting another run.`,
+          'muted',
+        ),
+        ...executionDetails({
+          workflowUrl: `https://github.com/ritik4ever/Aftershock/actions/runs/${remoteJob}`,
+        }),
+      );
+      const reconnect = node('button', 'Reconnect to existing run');
+      reconnect.addEventListener('click', () => trackExecution());
+      target.append(reconnect);
+    }
   } finally {
     trackingExecution = false;
     $('execute-start').disabled = false;

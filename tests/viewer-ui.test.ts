@@ -88,6 +88,8 @@ async function app(
   jobFailure = false,
   remoteEnabled = false,
   savedRemoteJob = '',
+  remoteReadFailures = 0,
+  failRemoteDetail = false,
 ) {
   const elements = new Map(
     [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => [
@@ -152,6 +154,15 @@ async function app(
             available: remoteEnabled,
             scenarios: ['keyed-nonce-lifecycle'],
           });
+        if (
+          remoteReadFailures > 0 &&
+          (!failRemoteDetail || url.searchParams.get('format') === 'detail')
+        ) {
+          remoteReadFailures--;
+          throw Object.assign(new Error('signal timed out'), {
+            name: 'TimeoutError',
+          });
+        }
         if (url.searchParams.get('format') === 'detail')
           return Response.json({ report, checks: checkEvidence(report) });
         return Response.json({
@@ -286,6 +297,9 @@ async function app(
     },
     failLive: () => {
       liveUnavailable = true;
+    },
+    recoverRemote: () => {
+      remoteReadFailures = 0;
     },
     compare: () => {
       assert.ok(finishCompare);
@@ -443,6 +457,43 @@ test('hosted UI executes through configured GitHub API and renders the returned 
     ),
   );
   assert.ok(!ui.requests.some((path) => path.startsWith('/api/execute')));
+});
+
+test('hosted UI retries transient status and report timeouts without dispatching twice', async () => {
+  for (const detailOnly of [false, true]) {
+    const ui = await app([], true, false, false, true, '', 2, detailOnly);
+    ui.el('runner-code').value = 'DEMO_CODE_ONLY';
+    ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
+    await ui.el('execute-start').trigger('click');
+    assert.match(
+      ui.el('detail-content').textContent,
+      /Fresh GitHub-hosted isolated run/,
+    );
+    assert.equal(
+      ui.requests.filter((path) => path === '/api/runner').length,
+      2,
+    );
+  }
+});
+
+test('hosted UI preserves the workflow link and reconnects after exhausted retries', async () => {
+  const ui = await app([], true, false, false, true, '', 3);
+  ui.el('runner-code').value = 'DEMO_CODE_ONLY';
+  ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
+  await ui.el('execute-start').trigger('click');
+  assert.match(
+    ui.el('execute-result').textContent,
+    /does not mean the workflow failed/,
+  );
+  const reconnect = ui.el('execute-result').children.at(-1)!;
+  assert.equal(reconnect.textContent, 'Reconnect to existing run');
+  ui.recoverRemote();
+  await reconnect.trigger('click');
+  assert.match(
+    ui.el('detail-content').textContent,
+    /Fresh GitHub-hosted isolated run/,
+  );
+  assert.equal(ui.requests.filter((path) => path === '/api/runner').length, 2);
 });
 
 test('local UI starts and polls a fresh execution job while published UI only links to the local companion', async () => {
