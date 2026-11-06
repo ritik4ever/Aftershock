@@ -103,12 +103,16 @@ npm run --silent aftershock -- report <run-id> --format json
 npm run --silent aftershock -- report <run-id> --format md
 npm run --silent aftershock -- replay <run-id> --plan
 npm run --silent aftershock -- replay <run-id> --local [--mine]
+npm run --silent aftershock -- replay <run-id> --plan --reset
+npm run --silent aftershock -- replay <run-id> --local --reset
 npm run --silent aftershock -- compare <baseline-run-id> <rerun-run-id>
 npm run --silent aftershock -- evidence <run-id>
 npm run --silent aftershock -- check-evidence <run-id>
 ```
 
 Reports use exclusive writes, validated IDs and SHA-256 integrity checks. Integrity detects accidental changes; it does not authenticate a report's author. `replay --plan` reads a saved report offline. `replay --local` reruns its current built-in scenario in fresh isolated state; `--mine` must match the original fixture mode. It saves a new run and prints linked checksums, action verdicts and stable environment differences. Matching BLOCKED results remain BLOCKED. The offline `compare` command reconstructs a comparison from two saved reports without Docker or RPC; its exit 0 means the export succeeded, regardless of the recorded verdicts. This is a fresh-state rerun, not exact historical replay; no snapshot is restored. See [scenario coverage](docs/TEST_SCENARIOS.md).
+
+`replay --local --reset` supports newly recorded, complete admission-only `keyed-replacement-ttl` runs. It reads the original disposable keys from private Linux `.local/<run-id>/keys.json`, reconstructs the pinned genesis, requires identical cached image IDs, and starts new isolated containers with empty state. The comparison requires matching genesis, observed initial block and all five signed submission request digests. Missing/unsafe private inputs block the run; mismatched inputs cannot pass. Keep `.local/` private and out of Git. Historical reports without initial-state evidence are unsupported. This is initial-genesis reset, not mined database/consensus snapshot restoration or exact historical timing. Run `npm run test:reset` for the real isolated integration check.
 
 The original dependency-free bootstrap probe is also available:
 

@@ -1,6 +1,6 @@
 # Aftershock project spec
 
-Status: core CLI, both declared private mined suites, fresh-state reruns, projected RPC evidence, selected offline consistency checks, a separate keyed TTL expiry/refresh case and the local read-only report viewer are implemented. Exact snapshot replay and automated visual/mobile QA remain unfinished. PASS covers the declared live checks, not every protocol edge case. The original lifecycle suites remain BLOCKED without mining; the admission-only TTL case has no mined actions.
+Status: core CLI, both declared private mined suites, fresh-state reruns, admission-only TTL genesis-reset reruns, projected RPC evidence, selected offline consistency checks, a separate keyed TTL expiry/refresh case and the local read-only report viewer are implemented. Mined snapshot replay and automated visual/mobile QA remain unfinished. PASS covers the declared live checks, not every protocol edge case. The original lifecycle suites remain BLOCKED without mining; the admission-only TTL case has no mined actions.
 
 Requirements now follow the user-approved Version 2 master specification. The source-based [contract audit](CONTRACT_FIXTURES.md) maps every declared action and records why no new Solidity is required for current coverage. A future contract-based sponsorship predicate needs its own justified scenario and integration evidence; contract count is not a milestone.
 

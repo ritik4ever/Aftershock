@@ -45,7 +45,7 @@ npm run --silent aftershock -- inspect 0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c4
 
 The committed docs/evidence/workshop-admission-2026-11-05.json is a filtered observation captured by the CLI, not fixture output. The command also passed after a clean install and wrote a separate ignored report. Numeric observations, node identity, events and receipts came from the real gateway. Derived consistency/check counts are labeled as derived result fields. No synthetic balances, hashes or timestamps were inserted.
 
-Public histories are mutable and bounded; future inspection can fail after restart, expiry or reset. Running the workshop again creates a new transaction, not deterministic historical replay. No snapshot reset strategy is implemented. The fresh-state rerun command below supports private reports only. Unknown source commit means source-specific invariant conclusions remain INCONCLUSIVE.
+Public histories are mutable and bounded; future inspection can fail after restart, expiry or reset. Running the workshop again creates a new transaction, not deterministic historical replay. Mined database/consensus snapshot restoration remains unimplemented. The admission-only TTL genesis-reset mode and its private-input prerequisites are described in README.md; it restores initial signing/genesis inputs, not historical timing. The fresh-state rerun command below supports private reports only. Unknown source commit means source-specific invariant conclusions remain INCONCLUSIVE.
 
 ## Original private admission/replacement sequences
 
