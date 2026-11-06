@@ -58,6 +58,13 @@ test('contract plans accept bounded public bytecode and reject scripts, keys, ga
   assert.equal(
     contractPlan.safeParse({
       ...counterPlan,
+      steps: [{ kind: 'call', expect: 'revert', expectedReturn: '0x1234' }],
+    }).success,
+    false,
+  );
+  assert.equal(
+    contractPlan.safeParse({
+      ...counterPlan,
       steps: [{ kind: 'frame', nonceKeys: ['0x1'] }],
     }).success,
     false,

@@ -20,7 +20,7 @@ Action fields:
 | `kind` | `call` (discard writes), `transaction` (mined EIP-1559), or `frame` (real alternative mempool and mined EIP-8141) |
 | `data`, `value`, `gas` | Hex calldata/wei/gas; gas defaults to 1,000,000, maximum 1,500,000 |
 | `expect` | `success` or `revert`; default success |
-| `expectedReturn` | Exact hex return-data assertion for a call |
+| `expectedReturn` | Exact hex return-data assertion for a successful call; cannot be combined with `expect: "revert"` |
 | `storage` | `{ "slot": "0x…32 bytes", "value": "0x…32 bytes" }` assertion after the action |
 | `frameSender` | `account` (fresh EOA) or `contract` (your compatible deployed wallet) |
 | `verifyData` | Validation-frame calldata for the default two-frame transaction |
@@ -38,6 +38,6 @@ Local CLI:
 npm run --silent aftershock -- contract-test examples/counter.plan.json --local
 ```
 
-Limits: 48 KB serialized plan, eight actions, bounded gas/value, five-million-gas deployment, no custom scripts/endpoints or state overrides. The workflow never evaluates plan text as shell code. Shared hosted limits remain best-effort, not guaranteed bot protection. Artifacts expire after five days; download reports. Local job recovery lasts only for the viewer process. New hosted custom-plan dispatch and visual QA require verification after deployment.
+Limits: 48 KB serialized plan, eight actions, bounded gas/value, five-million-gas deployment, no custom scripts/endpoints or state overrides. The workflow never evaluates plan text as shell code. Shared hosted limits remain best-effort, not guaranteed bot protection. Artifacts expire after five days; download reports. Local job recovery lasts only for the viewer process. A user-provided hosted report (`48d1ff9f-7a9d-4037-9561-6de6f174516a`) and screenshot demonstrate counter deployment, admission, two successful mined frames, storage/read-back seven and cleanup. This does not establish every account configuration or complete visual coverage.
 
 The bundled counter is a small hand-assembled EVM fixture, not a Solidity compiler output. Nonempty calldata stores its first word in slot zero; empty calldata returns that slot. The example proves that visitor-configured bytecode can be deployed and changed through a real Frame Transaction. Replace its constructor bytecode and encoded calls with your own compiled contract.

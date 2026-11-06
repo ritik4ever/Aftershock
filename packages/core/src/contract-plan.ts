@@ -47,6 +47,8 @@ const action = z
     const fail = (message: string) => ctx.addIssue({ code: 'custom', message });
     if (v.kind !== 'call' && v.expectedReturn !== undefined)
       fail('Return-data assertions require a call step');
+    if (v.expect === 'revert' && v.expectedReturn !== undefined)
+      fail('Return-data assertions require a successful call expectation');
     if (v.frames && v.kind !== 'frame')
       fail('Frame definitions require a Frame Transaction step');
     if (

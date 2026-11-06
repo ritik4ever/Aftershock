@@ -22,6 +22,6 @@ The [workflow REST API](https://docs.github.com/en/rest/actions/workflows#create
 - The API verifies workflow identity, request/scenario/source commit, artifact digest and report schema. It bounds reads/decompression and never extracts ZIP paths to disk. These checks are not independent proof that an operator is honest.
 - Remote reports are displayed separately from the fixed published archive. They are not automatically added to archive comparisons. Artifact expiry, setup failure and missing evidence remain unavailable/error states; no saved example substitutes for a fresh run.
 
-No VM, tunnel, custom Solidity or new npm dependency is required for this design. User screenshots show hosted TTL (11 checks), payer (16) and keyed-nonce (18) runs passing with reports. Public starts without a shared code require verification after deployment.
+No separately provisioned VM, tunnel, custom Solidity or new npm dependency is required for this design. User screenshots show hosted TTL (11 checks), payer (16) and keyed-nonce (18) runs passing with reports. A downloaded hosted counter report also records deployment, Frame admission/mining, state assertions and cleanup. Starts are public without a shared code; active-work and rate guards still apply.
 
 Custom contract plans use the same workflow and capacity limits, with an additional public JSON plan and SHA-256 input. The run name and returned report must match that hash. See [Contract lab](CONTRACT_LAB.md). No new environment variable is required. Never upload private code, credentials or keys.
