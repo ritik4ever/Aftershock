@@ -142,7 +142,10 @@ async function app(
         if (options.method === 'POST') {
           assert.ok(remoteEnabled);
           const body = JSON.parse(String(options.body));
-          assert.equal(body.accessCode, 'DEMO_CODE_ONLY');
+          assert.deepEqual(Object.keys(body).sort(), [
+            'requestId',
+            'scenarioId',
+          ]);
           assert.equal(body.scenarioId, 'keyed-nonce-lifecycle');
           return Response.json(
             { id: '123', state: 'RUNNING' },
@@ -443,7 +446,6 @@ test('hosted UI executes through configured GitHub API and renders the returned 
   const ui = await app([], true, false, false, true);
   assert.equal(ui.el('execute-controls').hidden, false);
   assert.equal(ui.el('local-runner-link').hidden, true);
-  ui.el('runner-code').value = 'DEMO_CODE_ONLY';
   ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
   await ui.el('execute-start').trigger('click');
   assert.match(ui.el('execute-result').textContent, /Fresh run/);
@@ -462,7 +464,6 @@ test('hosted UI executes through configured GitHub API and renders the returned 
 test('hosted UI retries transient status and report timeouts without dispatching twice', async () => {
   for (const detailOnly of [false, true]) {
     const ui = await app([], true, false, false, true, '', 2, detailOnly);
-    ui.el('runner-code').value = 'DEMO_CODE_ONLY';
     ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
     await ui.el('execute-start').trigger('click');
     assert.match(
@@ -478,7 +479,6 @@ test('hosted UI retries transient status and report timeouts without dispatching
 
 test('hosted UI preserves the workflow link and reconnects after exhausted retries', async () => {
   const ui = await app([], true, false, false, true, '', 3);
-  ui.el('runner-code').value = 'DEMO_CODE_ONLY';
   ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
   await ui.el('execute-start').trigger('click');
   assert.match(

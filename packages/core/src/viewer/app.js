@@ -749,7 +749,6 @@ async function trackExecution(start = false) {
             ...(remoteAvailable
               ? {
                   requestId: remoteRequestId(),
-                  accessCode: $('runner-code').value,
                 }
               : {}),
           }),
@@ -853,10 +852,9 @@ else {
       $('execution-description').textContent =
         'Runs real signed transactions and state transitions on an isolated GitHub-hosted Linux VM. No local Docker installation is required. The job creates a new report; it does not reuse an archived result.';
       $('execute-controls').hidden = false;
-      $('remote-access').hidden = false;
       $('local-runner-link').hidden = true;
       $('remote-status').textContent =
-        'Fresh runs execute on GitHub-hosted Linux, not your computer. An access code is required to start a run. Queue and setup can take several minutes; closing your laptop does not stop the job.';
+        'Anyone can start a supported test. Runs execute on GitHub-hosted Linux, not your computer. Shared capacity is limited to four starts per hour, with one active workflow. Queue and setup can take several minutes; closing your laptop does not stop the job.';
       const select = $('execute-scenario');
       select.replaceChildren();
       for (const id of capability.scenarios) {

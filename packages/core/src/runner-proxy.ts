@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  startRemoteJob,
-  remoteScenario,
-  equalSecret,
-} from './runner-contract.js';
+import { startRemoteJob, remoteScenario } from './runner-contract.js';
 import { runReport } from './scenario.js';
 import { markdownReport } from './report.js';
 import { checkEvidence } from './evidence-check.js';
@@ -24,19 +20,13 @@ const runSchema = z.object({
   created_at: z.iso.datetime(),
   run_started_at: z.iso.datetime().nullable(),
 });
-export type RunnerConfig = { token: string; accessCode: string };
+export type RunnerConfig = { token: string };
 
 export function createRunnerProxy(
   config?: RunnerConfig,
   transport: typeof fetch = fetch,
 ) {
-  if (
-    config &&
-    (!config.token ||
-      config.accessCode.length < 24 ||
-      config.accessCode.length > 128)
-  )
-    throw new Error('Invalid runner credentials');
+  if (config && !config.token) throw new Error('Invalid runner credentials');
   return async (request: Request): Promise<Response> => {
     const json = (status: number, data: unknown) =>
       Response.json(data, {
@@ -96,14 +86,12 @@ export function createRunnerProxy(
           return json(400, { error: 'JSON scenario request required' });
         let input;
         try {
-          input = startRemoteJob
-            .extend({ accessCode: z.string().max(128) })
-            .parse(JSON.parse((await bounded(request, 2048)).toString('utf8')));
+          input = startRemoteJob.parse(
+            JSON.parse((await bounded(request, 2048)).toString('utf8')),
+          );
         } catch {
           return json(400, { error: 'Invalid or oversized scenario request' });
         }
-        if (!equalSecret(input.accessCode, config.accessCode))
-          return json(403, { error: 'Valid demo access code required' });
         const recent = z
           .object({ workflow_runs: z.array(runSchema) })
           .parse(

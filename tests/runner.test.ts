@@ -7,8 +7,7 @@ import { createRunnerProxy } from '../packages/core/src/runner-proxy.js';
 import { readRunnerArtifact } from '../packages/core/src/runner-artifact.js';
 import { runReport } from '../packages/core/src/scenario.js';
 
-const token = 'TEST_ONLY_GITHUB_TOKEN',
-  accessCode = 'TEST_ONLY_DEMO_ACCESS_CODE';
+const token = 'TEST_ONLY_GITHUB_TOKEN';
 const requestId = randomUUID(),
   sourceCommit = 'a'.repeat(40);
 const report = runReport.parse(
@@ -72,64 +71,61 @@ function setup(
     },
   );
   const calls: Array<{ url: string; method: string; body?: string }> = [];
-  const proxy = createRunnerProxy(
-    { token, accessCode },
-    async (input, init) => {
-      const url = String(input);
-      calls.push({
-        url,
-        method: init?.method ?? 'GET',
-        ...(init?.body ? { body: String(init.body) } : {}),
-      });
-      if (options.fail) throw new Error(`${token} PRIVATE_ERROR`);
-      if (url.startsWith('https://artifacts.blob.core.windows.net/')) {
-        assert.equal(
-          new Headers(init?.headers).get('authorization'),
-          null,
-          'Do not forward credentials to artifact storage',
-        );
-        return new Response(new Uint8Array(zip));
-      }
-      assert.ok(
-        url.startsWith('https://api.github.com/repos/ritik4ever/Aftershock/'),
-      );
+  const proxy = createRunnerProxy({ token }, async (input, init) => {
+    const url = String(input);
+    calls.push({
+      url,
+      method: init?.method ?? 'GET',
+      ...(init?.body ? { body: String(init.body) } : {}),
+    });
+    if (options.fail) throw new Error(`${token} PRIVATE_ERROR`);
+    if (url.startsWith('https://artifacts.blob.core.windows.net/')) {
       assert.equal(
         new Headers(init?.headers).get('authorization'),
-        `Bearer ${token}`,
+        null,
+        'Do not forward credentials to artifact storage',
       );
-      if (url.endsWith('/dispatches'))
-        return Response.json({ workflow_run_id: 123 });
-      if (url.includes('/workflows/'))
-        return Response.json({ workflow_runs: options.recent ?? [] });
-      if (url.endsWith('/artifacts/9/zip'))
-        return new Response(null, {
-          status: 302,
-          headers: {
-            location: options.badHost
-              ? 'https://evil.example/archive'
-              : 'https://artifacts.blob.core.windows.net/archive',
+      return new Response(new Uint8Array(zip));
+    }
+    assert.ok(
+      url.startsWith('https://api.github.com/repos/ritik4ever/Aftershock/'),
+    );
+    assert.equal(
+      new Headers(init?.headers).get('authorization'),
+      `Bearer ${token}`,
+    );
+    if (url.endsWith('/dispatches'))
+      return Response.json({ workflow_run_id: 123 });
+    if (url.includes('/workflows/'))
+      return Response.json({ workflow_runs: options.recent ?? [] });
+    if (url.endsWith('/artifacts/9/zip'))
+      return new Response(null, {
+        status: 302,
+        headers: {
+          location: options.badHost
+            ? 'https://evil.example/archive'
+            : 'https://artifacts.blob.core.windows.net/archive',
+        },
+      });
+    if (url.includes('/artifacts?'))
+      return Response.json({
+        artifacts: [
+          {
+            id: 9,
+            name: 'aftershock-result',
+            expired: false,
+            digest: options.badDigest
+              ? `sha256:${'0'.repeat(64)}`
+              : digest(zip),
+            size_in_bytes: zip.length,
           },
-        });
-      if (url.includes('/artifacts?'))
-        return Response.json({
-          artifacts: [
-            {
-              id: 9,
-              name: 'aftershock-result',
-              expired: false,
-              digest: options.badDigest
-                ? `sha256:${'0'.repeat(64)}`
-                : digest(zip),
-              size_in_bytes: zip.length,
-            },
-          ],
-        });
-      return Response.json(options.current ?? run);
-    },
-  );
+        ],
+      });
+    return Response.json(options.current ?? run);
+  });
   return { proxy, calls };
 }
-const post = (extra = {}, code = accessCode) =>
+const post = (extra = {}) =>
   new Request('https://aftershock.example/api/runner', {
     method: 'POST',
     headers: {
@@ -139,14 +135,14 @@ const post = (extra = {}, code = accessCode) =>
     body: JSON.stringify({
       scenarioId: 'keyed-nonce-lifecycle',
       requestId,
-      accessCode: code,
+
       ...extra,
     }),
   });
 
-test('remote dispatch validates input and keeps GitHub credentials and demo code out of outputs/dispatch', async () => {
+test('public remote dispatch needs no shared code and keeps GitHub credentials server-side', async () => {
   const { proxy, calls } = setup();
-  assert.equal((await proxy(post({}, 'wrong'))).status, 403);
+  assert.equal((await proxy(post({ accessCode: 'obsolete' }))).status, 400);
   assert.equal((await proxy(post({ command: 'shell' }))).status, 400);
   assert.equal(calls.length, 0);
   const response = await proxy(post());
