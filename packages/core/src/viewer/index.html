@@ -16,7 +16,7 @@
       >
       <nav aria-label="Main navigation">
         <a href="#test-input">Test yours</a><a href="#execute">Scenarios</a
-        ><a href="#live">Live checks</a><a href="#scenarios">Scenarios</a
+        ><a href="#live">Live checks</a><a href="#contract-lab">Contract lab</a
         ><a href="#runs">Runs</a><a href="#details">Evidence</a
         ><a href="#comparison">Compare</a><a href="#guide">Guide</a
         ><a
@@ -33,12 +33,12 @@
         <p class="eyebrow">FRAME TRANSACTION TESTING</p>
         <h1>Find the failures.<br /><em>Follow the evidence.</em></h1>
         <p class="hero-copy">
-          Run fresh isolated tests, inspect live public transactions, and
-          compare evidence from real executions.
+          Deploy and test your contracts, simulate signed Frame Transactions,
+          and inspect evidence from real executions.
         </p>
         <div class="hero-actions">
-          <a class="button primary" href="#execute"
-            >Run a fresh test <span>&#8594;</span></a
+          <a class="button primary" href="#contract-lab"
+            >Test your contract <span>&#8594;</span></a
           ><a class="button" href="#live">Inspect live transaction</a>
         </div>
       </section>
@@ -130,6 +130,51 @@
           Run dry test
         </button>
         <div id="user-test-result" aria-live="polite"></div>
+      </section>
+      <section id="contract-lab" class="section">
+        <p class="eyebrow">YOUR COMPILED CONTRACT AND STATEFUL TEST PLAN</p>
+        <h2>Deploy. Transact. Assert<span class="accent">.</span></h2>
+        <p class="muted">
+          Provide constructor bytecode and ordered calls, mined transactions or
+          EIP-8141 frames. Aftershock deploys your contract on a fresh private
+          chain, generates test accounts and checks your expected outcomes. This
+          is actual execution, including alternative-mempool admission and
+          mining for Frame steps.
+        </p>
+        <p class="muted">
+          Plans, bytecode, calldata and resulting reports may be public through
+          GitHub Actions. Never upload secrets, keys, proprietary code or
+          private data. Compile Solidity locally and include linked libraries
+          and constructor arguments in initCode; appendOwner can append the
+          generated owner's ABI-encoded address.
+        </p>
+        <div id="contract-controls" hidden>
+          <button id="contract-example" class="button">
+            Fill executable counter plan
+          </button>
+          <label
+            >Upload a public test-plan JSON file<input
+              id="contract-file"
+              type="file"
+              accept=".json,application/json"
+          /></label>
+          <label
+            >Your test plan JSON<textarea
+              id="contract-plan"
+              name="contractPlan"
+              rows="14"
+              maxlength="49152"
+              placeholder='{"name":"My contract","initCode":"0x…","steps":[…]}'
+            ></textarea>
+          </label>
+          <button id="contract-start" class="button primary">
+            Deploy and run public test plan
+          </button>
+        </div>
+        <p id="contract-availability" class="muted">
+          Checking isolated runner availability…
+        </p>
+        <div id="contract-result" aria-live="polite"></div>
       </section>
       <section id="execute" class="section">
         <p class="eyebrow">FRESH ISOLATED EXECUTION</p>

@@ -11,6 +11,7 @@ import { createLiveHandler } from './live.js';
 import { createExecutionJobs } from './execution.js';
 import { scenarioId } from './scenario.js';
 import { createUserTestHandler } from './user-test.js';
+import { createContractJobs } from './contract-jobs.js';
 
 const samples = {
   keyed: 'rpc-keyed-nonce-lifecycle.json',
@@ -82,6 +83,9 @@ export async function startViewer(root: string, port = 4318) {
   const live = createLiveHandler();
   const userTest = createUserTestHandler();
   const execution = createExecutionJobs(root);
+  const contracts = createContractJobs(root, () =>
+    Boolean(execution.current()),
+  );
   const server = createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -119,7 +123,9 @@ export async function startViewer(root: string, port = 4318) {
       req.method !== 'GET' &&
       !(
         req.method === 'POST' &&
-        ['/api/execute', '/api/test'].includes(req.url ?? '')
+        ['/api/execute', '/api/test', '/api/contract-run'].includes(
+          req.url ?? '',
+        )
       )
     ) {
       res.setHeader('Allow', 'GET');
@@ -132,7 +138,10 @@ export async function startViewer(root: string, port = 4318) {
     }
     const url = new URL(req.url, `http://${host}`);
     try {
-      if (url.pathname === '/api/test') {
+      if (
+        url.pathname === '/api/test' ||
+        url.pathname === '/api/contract-run'
+      ) {
         let size = 0;
         const chunks: Buffer[] = [];
         const bodyTimer = setTimeout(() => req.destroy(), 8000);
@@ -149,7 +158,9 @@ export async function startViewer(root: string, port = 4318) {
         } finally {
           clearTimeout(bodyTimer);
         }
-        const response = await userTest(
+        const response = await (
+          url.pathname === '/api/test' ? userTest : contracts.handle
+        )(
           new Request(url, {
             method: req.method,
             headers: {
@@ -166,6 +177,12 @@ export async function startViewer(root: string, port = 4318) {
       }
       if (url.pathname === '/api/execute') {
         if (req.method === 'POST') {
+          if (contracts.busy()) {
+            json(409, {
+              error: 'A contract test is already running in this process',
+            });
+            return;
+          }
           if (
             req.headers['content-type']?.split(';')[0]?.trim() !==
             'application/json'

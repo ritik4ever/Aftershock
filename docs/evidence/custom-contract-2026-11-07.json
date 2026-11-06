@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "custom-contract",
+  "runId": "5372d620-a843-43ab-9761-c75453eea790",
+  "endpointClass": "ISOLATED_LOCAL",
+  "plan": {
+    "name": "Counter mined frame write and read assertion",
+    "initCode": "0x6018600c60003960186000f33615600c57600035600055005b60005460005260206000f3",
+    "appendOwner": false,
+    "deploymentValue": "0x0",
+    "steps": [
+      {
+        "kind": "frame",
+        "data": "0x0000000000000000000000000000000000000000000000000000000000000007",
+        "value": "0x0",
+        "gas": "0xf4240",
+        "expect": "success",
+        "storage": {
+          "slot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "value": "0x0000000000000000000000000000000000000000000000000000000000000007"
+        },
+        "frameSender": "account",
+        "verifyData": "0x",
+        "nonceKeys": [
+          "0x0"
+        ]
+      },
+      {
+        "kind": "call",
+        "data": "0x",
+        "value": "0x0",
+        "gas": "0xf4240",
+        "expect": "success",
+        "expectedReturn": "0x0000000000000000000000000000000000000000000000000000000000000007",
+        "frameSender": "account",
+        "verifyData": "0x",
+        "nonceKeys": [
+          "0x0"
+        ]
+      }
+    ]
+  },
+  "planSha256": "cc121044248a7f8c70e86e0ba0da3e3d661550cad0575fb65c4b34a337b41b25",
+  "startedAt": "2026-11-06T18:59:40.020Z",
+  "completedAt": "2026-11-06T19:07:51.278Z",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "environment": {
+    "network": "aftershock-5372d620-a843-43ab-9761-c75453eea790-net",
+    "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
+    "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
+    "chainId": "0x9",
+    "networkInternal": "true",
+    "publishedPorts": "none",
+    "bundlingMode": "auto",
+    "genesisSha256": "6d280fa9392e1ad58973720f3537e3113fc5c027edc76279ca3c66e4a995d0e7",
+    "consensusImage": "ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0",
+    "genesisGeneratorImage": "ethpandaops/ethereum-genesis-generator@sha256:51decce4284d8498dabfa38ae13ddce84cbf8c7be4f33a32b798ce10c9868e77",
+    "fixtureMode": "mining"
+  },
+  "steps": [
+    {
+      "id": "mining-ready",
+      "at": "2026-11-06T19:07:26.033Z",
+      "result": "PASS",
+      "observed": {
+        "number": "0x43",
+        "timestamp": "0x6aee256a",
+        "hash": "0xbdd4796ab89994111e03a39122fe80a7b945eb62e2e98c861ad265796a99672f"
+      }
+    },
+    {
+      "id": "deploy-contract",
+      "at": "2026-11-06T19:07:28.274Z",
+      "result": "PASS",
+      "observed": {
+        "address": "0x18a9D8fE57F36498Ff02D62C91D71ccD9037cE01",
+        "owner": "0x5876EB734b6D23D5ba5ED9165A8D3119FE9f5977",
+        "receipt": {
+          "transactionHash": "0xf6531594f8eee2825a7cb5ce87963b594b4070f99df03e5d84f88245c53520dd",
+          "status": "0x1",
+          "blockNumber": "0x44",
+          "contractAddress": "0x18a9d8fe57f36498ff02d62c91d71ccd9037ce01"
+        },
+        "runtimeHash": "0xe2333aefa9b667e206a9db2d549430ea96ad74fb22c8d074b1f7bf2e0389c1d1",
+        "runtimeBytes": 24
+      }
+    },
+    {
+      "id": "action-1",
+      "at": "2026-11-06T19:07:48.684Z",
+      "result": "PASS",
+      "observed": {
+        "kind": "frame",
+        "address": "0x18a9D8fE57F36498Ff02D62C91D71ccD9037cE01",
+        "hash": "0x1d1a51a3018674d6a6b912ef03e10e499aabc5496e50ffbe9d6242f1df944294",
+        "admitted": true,
+        "receipt": {
+          "blockNumber": "0x46",
+          "status": "success",
+          "payer": "0x5876eb734b6d23d5ba5ed9165a8d3119fe9f5977",
+          "cumulativeGasUsed": "0x1fd81",
+          "frameReceipts": [
+            {
+              "status": "success",
+              "gasUsed": {
+                "execution": "0x64",
+                "state": "0x0"
+              }
+            },
+            {
+              "status": "success",
+              "gasUsed": {
+                "execution": "0x3b17",
+                "state": "0x17e80"
+              }
+            }
+          ]
+        },
+        "admission": {
+          "txHash": "0x1d1a51a3018674d6a6b912ef03e10e499aabc5496e50ffbe9d6242f1df944294",
+          "outcome": "included",
+          "at": 1793992048531,
+          "sender": "0x5876EB734b6D23D5ba5ED9165A8D3119FE9f5977",
+          "nonce": "0x1",
+          "nonceKeys": [
+            "0x0"
+          ],
+          "checks": [
+            {
+              "rule": "gas-limit",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "recent-root",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "prefix",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "structure",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "signature",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "simulation",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "trace-alignment",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "OP-061",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "execution",
+              "verdict": "pass",
+              "waived": false
+            },
+            {
+              "rule": "trace-alignment",
+              "verdict": "pass",
+              "frameIndex": 0,
+              "entity": "payer",
+              "waived": false
+            },
+            {
+              "rule": "out-of-gas",
+              "verdict": "pass",
+              "frameIndex": 0,
+              "entity": "payer",
+              "waived": false
+            },
+            {
+              "rule": "OP-011",
+              "verdict": "pass",
+              "frameIndex": 0,
+              "entity": "payer",
+              "waived": false
+            },
+            {
+              "rule": "create",
+              "verdict": "pass",
+              "frameIndex": 0,
+              "entity": "payer",
+              "waived": false
+            },
+            {
+              "rule": "storage",
+              "verdict": "pass",
+              "frameIndex": 0,
+              "entity": "payer",
+              "waived": false
+            },
+            {
+              "rule": "COD-010",
+              "verdict": "pass",
+              "frameIndex": 0,
+              "entity": "payer",
+              "waived": false
+            },
+            {
+              "rule": "entrypoint-access",
+              "verdict": "pass",
+              "frameIndex": 0,
+              "entity": "payer",
+              "waived": false
+            },
+            {
+              "rule": "mempool",
+              "verdict": "pass",
+              "waived": false
+            }
+          ],
+          "frames": 2
+        },
+        "storage": {
+          "slot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "expected": "0x0000000000000000000000000000000000000000000000000000000000000007",
+          "actual": "0x0000000000000000000000000000000000000000000000000000000000000007"
+        }
+      }
+    },
+    {
+      "id": "action-2",
+      "at": "2026-11-06T19:07:48.768Z",
+      "result": "PASS",
+      "observed": {
+        "kind": "call",
+        "address": "0x18a9D8fE57F36498Ff02D62C91D71ccD9037cE01",
+        "returned": "0x0000000000000000000000000000000000000000000000000000000000000007"
+      }
+    },
+    {
+      "id": "fixture-cleanup",
+      "at": "2026-11-06T19:07:51.277Z",
+      "result": "PASS",
+      "observed": {
+        "removedOwnedResources": true
+      }
+    }
+  ],
+  "result": "PASS"
+}

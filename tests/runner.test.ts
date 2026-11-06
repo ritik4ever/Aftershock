@@ -6,6 +6,12 @@ import { crc32, deflateRawSync } from 'node:zlib';
 import { createRunnerProxy } from '../packages/core/src/runner-proxy.js';
 import { readRunnerArtifact } from '../packages/core/src/runner-artifact.js';
 import { runReport } from '../packages/core/src/scenario.js';
+import {
+  contractReport,
+  counterPlan,
+  planHash,
+} from '../packages/core/src/contract-plan.js';
+import { UPSTREAM } from '../packages/core/src/inspect.js';
 
 const token = 'TEST_ONLY_GITHUB_TOKEN';
 const requestId = randomUUID(),
@@ -183,6 +189,83 @@ test('remote jobs enforce busy/rate guards and reuse observed request identity',
   const duplicate = setup({ recent: [run] });
   assert.equal((await duplicate.proxy(post())).status, 200);
   assert.ok(!duplicate.calls.some((call) => call.method === 'POST'));
+});
+
+test('remote custom contract dispatch and artifact verification bind the exact public plan', async () => {
+  const dispatch = setup();
+  assert.equal(
+    (
+      await dispatch.proxy(
+        post({ scenarioId: 'custom-contract', plan: counterPlan }),
+      )
+    ).status,
+    202,
+  );
+  const inputs = JSON.parse(dispatch.calls.at(-1)!.body!).inputs;
+  assert.equal(inputs.plan_sha256, planHash(counterPlan));
+  assert.deepEqual(JSON.parse(inputs.plan), counterPlan);
+  const custom = contractReport.parse({
+    schemaVersion: 1,
+    scenarioId: 'custom-contract',
+    endpointClass: 'ISOLATED_LOCAL',
+    runId: randomUUID(),
+    plan: counterPlan,
+    planSha256: planHash(counterPlan),
+    startedAt: run.created_at,
+    completedAt: run.created_at,
+    sourcePins: UPSTREAM,
+    environment: { scope: 'UNIT_TEST_ONLY' },
+    result: 'BLOCKED',
+    steps: [
+      {
+        id: 'prerequisites-or-evidence',
+        at: run.created_at,
+        result: 'BLOCKED',
+        observed: { scope: 'UNIT_TEST_ONLY' },
+      },
+    ],
+  });
+  const current = {
+    ...run,
+    display_title: `Aftershock:custom-contract:${requestId}:${planHash(counterPlan)}`,
+  };
+  const valid = setup({
+    current,
+    result: {
+      requestId,
+      scenarioId: 'custom-contract',
+      sourceCommit,
+      report: custom,
+    },
+  });
+  const response = await valid.proxy(
+    new Request('https://aftershock.example/api/runner?job=123&format=detail'),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(
+    (await response.json()).report.planSha256,
+    planHash(counterPlan),
+  );
+  const tampered = setup({
+    current: {
+      ...current,
+      display_title: `Aftershock:custom-contract:${requestId}:${'0'.repeat(64)}`,
+    },
+    result: {
+      requestId,
+      scenarioId: 'custom-contract',
+      sourceCommit,
+      report: custom,
+    },
+  });
+  assert.equal(
+    (
+      await tampered.proxy(
+        new Request('https://aftershock.example/api/runner?job=123'),
+      )
+    ).status,
+    502,
+  );
 });
 test('remote report provenance, artifact digest and schema are verified before rendering or exporting', async () => {
   const { proxy } = setup();

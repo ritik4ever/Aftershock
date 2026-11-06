@@ -4,6 +4,7 @@ import { runReport } from './scenario.js';
 import { markdownReport } from './report.js';
 import { checkEvidence } from './evidence-check.js';
 import { readRunnerArtifact } from './runner-artifact.js';
+import { contractReport, planHash, counterPlan } from './contract-plan.js';
 
 const repository = 'ritik4ever/Aftershock';
 const workflow = 'scenario-run.yml';
@@ -75,7 +76,11 @@ export function createRunnerProxy(
         return json(200, {
           available: true,
           provider: 'GITHUB_ACTIONS',
-          scenarios: remoteScenario.options,
+          scenarios: remoteScenario.options.filter(
+            (id) => id !== 'custom-contract',
+          ),
+          contractPlans: true,
+          contractExample: counterPlan,
         });
       if (request.method === 'POST') {
         if (
@@ -87,7 +92,7 @@ export function createRunnerProxy(
         let input;
         try {
           input = startRemoteJob.parse(
-            JSON.parse((await bounded(request, 2048)).toString('utf8')),
+            JSON.parse((await bounded(request, 50000)).toString('utf8')),
           );
         } catch {
           return json(400, { error: 'Invalid or oversized scenario request' });
@@ -99,7 +104,7 @@ export function createRunnerProxy(
               `/actions/workflows/${workflow}/runs?event=workflow_dispatch&branch=main&per_page=20`,
             ),
           ).workflow_runs;
-        const title = `Aftershock:${input.scenarioId}:${input.requestId}`;
+        const title = `Aftershock:${input.scenarioId}:${input.requestId}${input.scenarioId === 'custom-contract' ? ':' + planHash(input.plan) : ''}`;
         const previous = recent.find((run) => run.display_title === title);
         if (previous)
           return json(200, {
@@ -128,6 +133,12 @@ export function createRunnerProxy(
               inputs: {
                 scenario: input.scenarioId,
                 request_id: input.requestId,
+                ...(input.scenarioId === 'custom-contract'
+                  ? {
+                      plan: JSON.stringify(input.plan),
+                      plan_sha256: planHash(input.plan),
+                    }
+                  : {}),
               },
             }),
           );
@@ -155,10 +166,14 @@ export function createRunnerProxy(
       if (String(run.id) !== input.data.job)
         throw new Error('Run identity mismatch');
       const title =
-        /^Aftershock:(paymaster-solvency|keyed-nonce-lifecycle|keyed-replacement-ttl):([a-f0-9-]{36})$/i.exec(
+        /^Aftershock:(paymaster-solvency|keyed-nonce-lifecycle|keyed-replacement-ttl|custom-contract):([a-f0-9-]{36})(?::([a-f0-9]{64}))?$/i.exec(
           run.display_title,
         );
-      if (!title || !z.uuid().safeParse(title[2]).success)
+      if (
+        !title ||
+        !z.uuid().safeParse(title[2]).success ||
+        (title[1] === 'custom-contract') !== Boolean(title[3])
+      )
         throw new Error('Unexpected workflow identity');
       const job = {
         id: String(run.id),
@@ -255,7 +270,7 @@ export function createRunnerProxy(
           requestId: z.uuid(),
           scenarioId: remoteScenario,
           sourceCommit: z.string(),
-          report: runReport,
+          report: z.union([runReport, contractReport]),
         })
         .strict()
         .parse(
@@ -273,6 +288,42 @@ export function createRunnerProxy(
       )
         throw new Error('Report provenance mismatch');
       const report = result.report;
+      if (report.scenarioId === 'custom-contract') {
+        if (report.planSha256 !== title[3])
+          throw new Error('Custom plan provenance mismatch');
+        if (input.data.format === 'md')
+          return new Response(
+            `# ${report.plan.name}\n\nResult: ${report.result}\n\nPlan SHA-256: ${report.planSha256}\n\n${report.steps.map((s) => `- ${s.id}: ${s.result}`).join('\n')}\n`,
+            {
+              headers: {
+                'content-type': 'text/markdown; charset=utf-8',
+                'cache-control': 'no-store',
+              },
+            },
+          );
+        if (input.data.format)
+          return json(
+            200,
+            input.data.format === 'detail'
+              ? { report, kind: 'custom-contract' }
+              : report,
+          );
+        return json(200, {
+          ...job,
+          state: 'COMPLETED',
+          kind: 'custom-contract',
+          runId: report.runId,
+          result: report.result,
+          completedChecks: report.steps.length,
+          updatedAt: report.completedAt,
+          progress: report.steps.slice(-8).map((s) => ({
+            at: s.at,
+            phase: s.id === 'fixture-cleanup' ? 'CLEANUP' : 'EXECUTING',
+            label: s.id,
+            result: s.result,
+          })),
+        });
+      }
       if (input.data.format === 'md')
         return new Response(markdownReport(report), {
           headers: {

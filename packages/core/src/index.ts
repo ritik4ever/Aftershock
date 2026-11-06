@@ -30,3 +30,5 @@ export { checkEvidence } from './evidence-check.js';
 export { startViewer } from './viewer.js';
 export { localDoctor } from './local/doctor.js';
 export { runUserTest, userTestInput, publicTestReader } from './user-test.js';
+export { contractPlan, counterPlan } from './contract-plan.js';
+export { runContractPlan } from './local/contract-test.js';

@@ -10,6 +10,7 @@ import {
 } from '../packages/core/src/scenario.js';
 import { checkEvidence } from '../packages/core/src/evidence-check.js';
 import { replayPlan, compareRuns } from '../packages/core/src/replay.js';
+import { counterPlan, planHash } from '../packages/core/src/contract-plan.js';
 
 // A small DOM test double exercises the shipped script, including asynchronous
 // responses. It does not render CSS or substitute for visual browser QA.
@@ -171,6 +172,13 @@ async function app(
         if (options.method === 'POST') {
           assert.ok(remoteEnabled);
           const body = JSON.parse(String(options.body));
+          if (body.scenarioId === 'custom-contract') {
+            assert.deepEqual(body.plan, counterPlan);
+            return Response.json(
+              { id: '456', state: 'RUNNING' },
+              { status: 202 },
+            );
+          }
           assert.deepEqual(Object.keys(body).sort(), [
             'requestId',
             'scenarioId',
@@ -185,6 +193,8 @@ async function app(
           return Response.json({
             available: remoteEnabled,
             scenarios: ['keyed-nonce-lifecycle'],
+            contractPlans: remoteEnabled,
+            contractExample: counterPlan,
           });
         if (
           remoteReadFailures > 0 &&
@@ -194,6 +204,31 @@ async function app(
           throw Object.assign(new Error('signal timed out'), {
             name: 'TimeoutError',
           });
+        }
+        if (url.searchParams.get('job') === '456') {
+          const customReport = {
+            plan: counterPlan,
+            planSha256: planHash(counterPlan),
+            runId: report.runId,
+            result: 'PASS',
+            steps: [
+              {
+                id: 'fixture-cleanup',
+                result: 'PASS',
+                observed: { scope: 'UNIT_TEST_ONLY' },
+              },
+            ],
+          };
+          return Response.json(
+            url.searchParams.get('format') === 'detail'
+              ? { report: customReport, kind: 'custom-contract' }
+              : {
+                  id: '456',
+                  state: 'COMPLETED',
+                  runId: report.runId,
+                  result: 'PASS',
+                },
+          );
         }
         if (url.searchParams.get('format') === 'detail')
           return Response.json({ report, checks: checkEvidence(report) });
@@ -349,6 +384,17 @@ async function app(
     },
   };
 }
+
+test('hosted UI dispatches a visitor deployment plan and displays the returned custom report', async () => {
+  const ui = await app([], true, false, false, true);
+  assert.equal(ui.el('contract-controls').hidden, false);
+  await ui.el('contract-example').trigger('click');
+  assert.deepEqual(JSON.parse(ui.el('contract-plan').value), counterPlan);
+  await ui.el('contract-start').trigger('click');
+  assert.match(ui.el('contract-result').textContent, /fixture-cleanup: PASS/);
+  assert.match(ui.el('contract-result').textContent, /Plan SHA-256/);
+  assert.equal(ui.el('contract-start').disabled, false);
+});
 
 test('hosted UI sends visitor contract input to the live test API and displays assertions without archive fallback', async () => {
   const ui = await app([], true);

@@ -22,6 +22,8 @@ import {
   runUserTest,
   userTestInput,
   publicTestReader,
+  contractPlan,
+  runContractPlan,
 } from '@aftershock/core';
 import { open } from 'node:fs/promises';
 import { constants } from 'node:fs';
@@ -31,6 +33,7 @@ const help = `Aftershock core integration
   npm run aftershock -- doctor --local
   npm run aftershock -- inspect <transaction-hash> [--save]
   npm run aftershock -- test-input <input.json>
+  npm run aftershock -- contract-test <plan.json> --local
   npm run aftershock -- versions
   npm run aftershock -- scenarios
   npm run aftershock -- run <scenario-id> --local [--mine]
@@ -56,7 +59,10 @@ Receipt absence is unavailable evidence, not proof that execution failed.
 
 async function main(args: string[]): Promise<number> {
   const [command, ...rest] = args;
-  if (command === 'test-input' && rest.length === 1) {
+  if (
+    (command === 'test-input' && rest.length === 1) ||
+    (command === 'contract-test' && rest.length === 2 && rest[1] === '--local')
+  ) {
     const file = await open(
       rest[0]!,
       constants.O_RDONLY |
@@ -81,13 +87,20 @@ async function main(args: string[]): Promise<number> {
         bytesRead += chunk.bytesRead;
       }
       if (bytesRead > 49152) throw new Error('Input too large');
-      input = userTestInput.parse(
-        JSON.parse(buffer.toString('utf8', 0, bytesRead)),
+      const decoded: unknown = JSON.parse(
+        buffer.toString('utf8', 0, bytesRead),
       );
+      input =
+        command === 'contract-test'
+          ? contractPlan.parse(decoded)
+          : userTestInput.parse(decoded);
     } finally {
       await file.close();
     }
-    const result = await runUserTest(input, publicTestReader());
+    const result =
+      command === 'contract-test'
+        ? await runContractPlan(contractPlan.parse(input), process.cwd())
+        : await runUserTest(userTestInput.parse(input), publicTestReader());
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     return result.result === 'PASS' ? 0 : result.result === 'FAIL' ? 1 : 3;
   }

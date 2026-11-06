@@ -46,7 +46,9 @@ async function request(path, options = {}) {
     !response.ok ||
     (data.error &&
       !(
-        (path.startsWith('/api/execute') || path.startsWith('/api/runner')) &&
+        (path.startsWith('/api/execute') ||
+          path.startsWith('/api/runner') ||
+          path.startsWith('/api/contract-run')) &&
         data.state === 'ERROR'
       ))
   )
@@ -77,6 +79,174 @@ function notice(text) {
   $('notice').textContent = text;
   $('notice').hidden = !text;
 }
+let contractEndpoint = '',
+  contractExample = null,
+  contractTracking = false,
+  contractJob = '',
+  contractRequest = '';
+function enableContractLab(example, endpoint) {
+  if (!example) return;
+  contractEndpoint = endpoint;
+  contractExample = example;
+  $('contract-controls').hidden = false;
+  $('contract-availability').textContent =
+    endpoint === '/api/runner'
+      ? 'Ready on GitHub-hosted isolated nodes. Setup and mining take several minutes. Shared execution limits apply.'
+      : 'Ready on this local isolated Docker runner.';
+  try {
+    contractJob =
+      globalThis.sessionStorage?.getItem(
+        `aftershock-contract-job:${endpoint}`,
+      ) || '';
+    contractRequest =
+      globalThis.sessionStorage?.getItem(
+        `aftershock-contract-request:${endpoint}`,
+      ) || '';
+  } catch {
+    /* The accepted job link remains visible without storage. */
+  }
+  if (
+    contractJob &&
+    (endpoint === '/api/runner'
+      ? /^[1-9][0-9]{0,15}$/
+      : /^[a-f0-9-]{36}$/i
+    ).test(contractJob)
+  )
+    void trackContractPlan(false);
+}
+$('contract-example').addEventListener('click', () => {
+  $('contract-plan').value = JSON.stringify(contractExample, null, 2);
+});
+$('contract-file').addEventListener('change', async () => {
+  const file = $('contract-file').files?.[0];
+  if (!file) return;
+  if (file.size > 49152) {
+    $('contract-result').textContent = 'Plan file exceeds 48 KiB.';
+    return;
+  }
+  try {
+    $('contract-plan').value = await file.text();
+  } catch {
+    $('contract-result').textContent = 'Cannot read the selected plan file.';
+  }
+});
+async function trackContractPlan(start) {
+  if (!contractEndpoint || contractTracking) return;
+  contractTracking = true;
+  const target = $('contract-result'),
+    button = $('contract-start');
+  button.disabled = true;
+  try {
+    let job = contractJob
+      ? await readRemoteJob(
+          `${contractEndpoint}?job=${encodeURIComponent(contractJob)}`,
+        )
+      : null;
+    if (start && job?.state !== 'RUNNING') job = null;
+    if (!job && !start) return;
+    if (!job) {
+      const plan = JSON.parse($('contract-plan').value);
+      if (JSON.stringify(plan).length > 48000)
+        throw new Error('Plan exceeds 48 KB');
+      if (!contractRequest) contractRequest = crypto.randomUUID();
+      try {
+        globalThis.sessionStorage?.setItem(
+          `aftershock-contract-request:${contractEndpoint}`,
+          contractRequest,
+        );
+      } catch {
+        /* Keep in memory. */
+      }
+      job = await request(contractEndpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          requestId: contractRequest,
+          plan,
+          ...(contractEndpoint === '/api/runner'
+            ? { scenarioId: 'custom-contract' }
+            : {}),
+        }),
+      });
+      contractJob = job.id;
+      contractRequest = '';
+      try {
+        globalThis.sessionStorage?.setItem(
+          `aftershock-contract-job:${contractEndpoint}`,
+          contractJob,
+        );
+        globalThis.sessionStorage?.removeItem(
+          `aftershock-contract-request:${contractEndpoint}`,
+        );
+      } catch {
+        /* Show job ID below. */
+      }
+    }
+    while (job.state === 'RUNNING') {
+      target.replaceChildren(
+        node(
+          'p',
+          `Contract job ${job.id}: queued or executing real deployment and transactions. No result yet.`,
+          'muted',
+        ),
+        ...executionDetails(job),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      job = await readRemoteJob(
+        `${contractEndpoint}?job=${encodeURIComponent(job.id)}`,
+      );
+    }
+    if (job.state !== 'COMPLETED')
+      throw new Error(job.error || 'No verified contract report');
+    const { report } = await readRemoteJob(
+      `${contractEndpoint}?job=${encodeURIComponent(job.id)}&format=detail`,
+    );
+    const download = node(
+      'a',
+      'Download actual contract report JSON ↓',
+      'button',
+    );
+    download.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(report, null, 2))}`;
+    download.setAttribute('download', `${report.runId}.contract-report.json`);
+    target.replaceChildren(
+      node('h3', `${report.plan.name}: ${report.result}`),
+      node(
+        'p',
+        `New isolated run ${report.runId}. Plan SHA-256 ${report.planSha256}.`,
+        'muted',
+      ),
+      download,
+      ...executionDetails(job),
+      details('Executed public plan', report.plan),
+    );
+    for (const step of report.steps)
+      target.append(details(`${step.id}: ${step.result}`, step.observed));
+  } catch (error) {
+    target.replaceChildren(
+      node('p', `Contract test unavailable: ${error.message}`, 'error-text'),
+    );
+    if (contractJob) {
+      const reconnect = node(
+        'button',
+        'Reconnect to this contract run',
+        'button',
+      );
+      reconnect.addEventListener('click', () => trackContractPlan(false));
+      target.append(
+        node(
+          'p',
+          `Retained job ${contractJob}; a connection error does not prove execution failed.`,
+          'muted',
+        ),
+        reconnect,
+      );
+    }
+  } finally {
+    contractTracking = false;
+    button.disabled = false;
+  }
+}
+$('contract-start').addEventListener('click', () => trackContractPlan(true));
 function userTestMode() {
   const contract = $('user-kind').value === 'contract';
   $('user-transaction').hidden = contract;
@@ -923,13 +1093,24 @@ async function trackExecution(start = false) {
   }
 }
 $('execute-start').addEventListener('click', () => trackExecution(true));
-if (!globalThis.aftershockStatic) void trackExecution();
-else {
+if (!globalThis.aftershockStatic) {
+  void trackExecution();
+  void request('/api/contract-run')
+    .then((capability) =>
+      enableContractLab(capability.example, '/api/contract-run'),
+    )
+    .catch(() => {
+      $('contract-availability').textContent =
+        'Local contract runner unavailable.';
+    });
+} else {
   void (async () => {
     try {
       const capability = await request('/api/runner');
       if (!capability.available) return;
       remoteAvailable = true;
+      if (capability.contractPlans)
+        enableContractLab(capability.contractExample, '/api/runner');
       $('execution-description').textContent =
         'Runs real signed transactions and state transitions on an isolated GitHub-hosted Linux VM. No local Docker installation is required. The job creates a new report; it does not reuse an archived result.';
       $('execute-controls').hidden = false;

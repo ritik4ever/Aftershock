@@ -1,5 +1,5 @@
 name: Remote scenario
-run-name: 'Aftershock:${{ inputs.scenario }}:${{ inputs.request_id }}'
+run-name: "Aftershock:${{ inputs.scenario }}:${{ inputs.request_id }}${{ inputs.plan_sha256 != '' && format(':{0}', inputs.plan_sha256) || '' }}"
 
 on:
   workflow_dispatch:
@@ -9,11 +9,24 @@ on:
         type: choice
         required: true
         options:
-          [keyed-replacement-ttl, paymaster-solvency, keyed-nonce-lifecycle]
+          [
+            keyed-replacement-ttl,
+            paymaster-solvency,
+            keyed-nonce-lifecycle,
+            custom-contract,
+          ]
       request_id:
         description: Unique request UUID
         type: string
         required: true
+      plan:
+        description: Public JSON contract test plan
+        type: string
+        default: ''
+      plan_sha256:
+        description: Validated public plan hash
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -29,12 +42,14 @@ jobs:
     env:
       AFTERSHOCK_SCENARIO: ${{ inputs.scenario }}
       AFTERSHOCK_REQUEST_ID: ${{ inputs.request_id }}
+      AFTERSHOCK_CONTRACT_PLAN: ${{ inputs.plan }}
+      AFTERSHOCK_PLAN_SHA256: ${{ inputs.plan_sha256 }}
     steps:
       - name: Validate request
         shell: bash
         run: |
           case "$AFTERSHOCK_SCENARIO" in
-            keyed-replacement-ttl|paymaster-solvency|keyed-nonce-lifecycle) ;;
+            keyed-replacement-ttl|paymaster-solvency|keyed-nonce-lifecycle|custom-contract) ;;
             *) exit 2 ;;
           esac
           [[ "$AFTERSHOCK_REQUEST_ID" =~ ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$ ]]

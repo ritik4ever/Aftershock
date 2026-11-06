@@ -9,6 +9,7 @@ export class LocalRpcError extends Error {
   constructor(
     readonly code: number,
     readonly reason: string,
+    readonly detail: string | undefined = undefined,
   ) {
     super(`Local RPC rejected (${code}, ${reason})`);
   }
@@ -128,7 +129,11 @@ export function decodeLocalResponse<T>(
                         /Nonce mismatch: expected \d+, got \d+/.test(message)
                       ? 'NONCE_MISMATCH'
                       : 'OTHER';
-    throw new LocalRpcError(envelope.error.code, reason);
+    throw new LocalRpcError(
+      envelope.error.code,
+      reason,
+      message.slice(0, 2048),
+    );
   }
   if (!Object.hasOwn(envelope, 'result')) throw new Error('Missing RPC result');
   return schema.parse(envelope.result);
