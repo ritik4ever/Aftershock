@@ -4,7 +4,7 @@ Last executed checkpoint: 2026-11-06. Results describe tested scope, not a zero-
 
 | Check | Result |
 | --- | --- |
-| Default suite, working and separate clean-installed Linux checkouts | PASS: 105 tests, zero failures/skips |
+| Default suite | PASS: 109 tests in the working Linux checkout; earlier 105-test checkpoint also passed in a separate clean-installed checkout |
 | Typecheck, lint, formatting, dependency tree and JS/shell syntax | PASS |
 | Aftershock full/production npm audits | Zero advisories at check time; upstream sidecar is separate |
 | Native CLI/API workflow over genuine reports | PASS: 21 assertions |
@@ -39,11 +39,11 @@ The implementing agent performed self-review; no independent audit/formal verifi
 
 `npm run build:static` passed in both Linux checkouts. It exports seven fixed reviewed real captures, precomputed checks/comparisons, JSON/Markdown/evidence downloads, replay guidance and the recorded public receipt. New regressions verify route mapping, compatible/invalid comparisons, retention of the known FAIL, exclusion of unreviewed/private files, and rejection of mocked/symlinked input. The local server retains its existing security boundary.
 
-The generated artifact passed HTTP checks for all 84 data resources plus page/assets/public receipt; private paths returned 404. Sensitive-field scanning found no credentials or signing payloads. Typecheck, lint, formatting, 96 default tests, dependency/syntax checks and the full application audit (zero advisories) passed. No new dependencies, public transactions or contracts were needed; stateful chain suites were not rerun for this export change. Vercel configuration is prepared, but actual deployment, hosted security headers and hosted desktop/mobile navigation remain NOT VERIFIED until the deployed URL is checked.
+The generated artifact passed HTTP checks for all 84 data resources plus page/assets/public receipt; private paths returned 404. Sensitive-field scanning found no credentials or signing payloads. Typecheck, lint, formatting, 96 default tests, dependency/syntax checks and the full application audit (zero advisories) passed. No new dependencies, public transactions or contracts were needed; stateful chain suites were not rerun for this export change. Vercel deployment and its CSP were subsequently verified over HTTP. Hosted visual/mobile navigation remains separate from HTTP checks.
 
 ## Live reads and fresh browser execution
 
-The deployed snapshot URL returned HTTP 200 with its expected CSP. Its archived records are genuine earlier executions, not mocked live data. New code separates them from explicit live checks and fresh local execution. `/api/live` queries only the fixed gateway's read allowlist; no result is loaded from an archive when RPC fails. Real requests observed chain 1337 and our public hash as OnChain/SUCCESS with complete projected evidence. The new Vercel function itself is NOT VERIFIED on the deployed site until the manual push/redeployment.
+The deployed snapshot URL returned HTTP 200 with its expected CSP. Its archived records are genuine earlier executions, not mocked live data. New code separates them from explicit live checks and fresh local execution. `/api/live` queries only the fixed gateway's read allowlist; no result is loaded from an archive when RPC fails. Real requests observed chain 1337 and our public hash as OnChain/SUCCESS with complete projected evidence. The deployed Vercel function was subsequently verified: it returned live chain-1337 gateway data, a current observation timestamp and an honest unknown source commit.
 
 The local browser endpoint was exercised through actual HTTP POST/job polling against real Docker fixtures:
 
@@ -55,3 +55,11 @@ The local browser endpoint was exercised through actual HTTP POST/job polling ag
 These 2026-11-06 runs saved new immutable reports; no reviewed example was substituted. Cleanup assertions and Docker label inventories confirmed no remaining resources for either run. Private keys/logs/reports remain in Linux. Unit tests separately cover pending/unknown receipts, identity mismatches, upstream errors, local job failures/concurrency, body limits and cross-origin/script rejection. One test's asynchronous completion wait was corrected after a loaded full-suite run exposed a timing race; the final suites passed.
 
 The hosted execution link opens the user's loopback companion; Vercel does not run Docker. A public remote execution backend is not provisioned because the available execution host is WSL only. New controls still need manual visual verification; HTTP and shipped-script tests do not establish browser rendering. No packages, public mutations or external deployments were performed for this change.
+
+## Execution progress and CI checkpoint
+
+Actual engine stage changes and completed assertions now reach job polling and the local UI, with a bounded 64-event history, timestamps and safe failure guidance. Progress contains fixed identifiers and verdicts, not raw node data or diagnostics. Reports remain authoritative; there is no estimated completion percentage. Regression tests cover bounded history, defensive copies, concurrent context isolation, verdict-preserving guidance and failed-job display.
+
+`npm run test:progress` passed both real HTTP-triggered scenarios, each observing SETUP, EXECUTING, CLEANUP and REPORT phases: TTL `918a1579-cc01-4c3d-a975-be45eef2126e` (11 PASS steps) and mined payer `8b9e7c4e-a844-49cb-8274-50d497c7e009` (16 PASS steps). Both saved new isolated reports and verified cleanup. The default suite passed 109 tests; typecheck, lint, formatting, dependency checks, JavaScript syntax and npm audit passed. Static export passed. These are API/script checks; the new progress rendering still needs manual visual confirmation.
+
+The main-push/manual GitHub workflow uses pinned actions, read-only repository permission and the locked Node/dependency setup. It runs the standard gates and static export; native Docker suites remain explicit local integration checks. GitHub-hosted execution is NOT VERIFIED until the workflow is pushed and its first run completes.
