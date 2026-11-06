@@ -17,6 +17,35 @@ import { definitions } from '../packages/core/src/scenario.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { runReport } from '../packages/core/src/scenario.js';
+import { replayPlan } from '../packages/core/src/replay.js';
+
+test('genuine sponsor capture supports fresh replay only with its automatic mining mode', async () => {
+  const captured = runReport.parse(
+    JSON.parse(
+      await readFile('docs/evidence/staked-storage-boundary.json', 'utf8'),
+    ),
+  );
+  const plan = replayPlan(captured);
+  assert.equal(plan.scenarioId, 'staked-storage-boundary');
+  assert.equal(plan.mining, true);
+  assert.equal(plan.exactHistoricalReplay, false);
+  assert.match(plan.command, /--local --mine$/);
+  assert.ok(plan.requirements.some((item) => item.includes('workshop')));
+  assert.throws(() =>
+    replayPlan({
+      ...captured,
+      environment: { ...captured.environment, bundlingMode: 'manual' },
+    }),
+  );
+  assert.throws(() =>
+    replayPlan({
+      ...captured,
+      environment: { ...captured.environment, fixtureMode: 'admission' },
+    }),
+  );
+});
 
 test('missing pinned source inputs fail safely before fixture creation', async () => {
   const previous = process.env.AFTERSHOCK_UPSTREAM_ROOT;

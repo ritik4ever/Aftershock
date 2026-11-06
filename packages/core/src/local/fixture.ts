@@ -575,9 +575,11 @@ export async function startFixture(
     };
     return { runId, keys, executionUrl, sidecarUrl, fingerprint, cleanup };
   } catch (error) {
+    // Diagnostics are optional: a full disk or unwritable path must never
+    // bypass teardown of containers/network already created by this fixture.
     await writeFile(`${directory}/setup-error.log`, String(error), {
       mode: 0o600,
-    });
+    }).catch(() => undefined);
     await cleanup();
     throw new FixtureSetupError(stage);
   }

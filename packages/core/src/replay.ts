@@ -27,6 +27,7 @@ export function replayPlan(input: RunReport) {
   if (!isDeepStrictEqual(report.definition, definitions[report.scenarioId]))
     throw new Error('Saved definition differs from the current implementation');
   const mining = report.environment.fixtureMode === 'mining';
+  const sponsor = report.scenarioId === 'staked-storage-boundary';
   if (
     !['executionImage', 'sidecarImage', 'genesisSha256'].every((key) =>
       Boolean(report.environment[key]),
@@ -34,7 +35,8 @@ export function replayPlan(input: RunReport) {
     report.environment.chainId !== '0x9' ||
     report.environment.networkInternal !== 'true' ||
     report.environment.publishedPorts !== 'none' ||
-    report.environment.bundlingMode !== 'manual' ||
+    report.environment.bundlingMode !== (sponsor ? 'auto' : 'manual') ||
+    (sponsor && !mining) ||
     !['admission', 'mining'].includes(report.environment.fixtureMode ?? '') ||
     (mining &&
       (!report.environment.consensusImage ||
@@ -54,6 +56,11 @@ export function replayPlan(input: RunReport) {
       'Cached pinned images',
       'Local Docker engine',
       'Fresh isolated fixture; no snapshot restoration',
+      ...(sponsor
+        ? [
+            'Pinned workshop and sidecar Git objects under the configured source root',
+          ]
+        : []),
     ],
     limitations: [
       'New keys, genesis, hashes, balances and timings; seed does not reproduce private state.',

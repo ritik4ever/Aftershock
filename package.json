@@ -25,9 +25,10 @@
     "test:checkpoint": "tsx --test tests/checkpoint.integration.ts",
     "test:replay:checkpoint": "tsx --test tests/checkpoint-replay.integration.ts",
     "test:sponsor": "tsx --test tests/sponsor.integration.ts",
+    "test:replay:sponsor": "tsx --test tests/sponsor-replay.integration.ts",
     "test:lifecycle": "tsx --test tests/lifecycle.integration.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/core.test.ts tests/evidence.test.ts tests/evidence-check.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts tests/mining.test.ts tests/viewer.test.ts tests/viewer-ui.test.ts tests/reset.test.ts tests/checkpoint.test.ts tests/checkpoint-replay.test.ts tests/sponsor.test.ts && node --test tests/probe-devnet.test.mjs",
+    "test": "tsx --test tests/core.test.ts tests/evidence.test.ts tests/evidence-check.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts tests/mining.test.ts tests/viewer.test.ts tests/viewer-ui.test.ts tests/reset.test.ts tests/checkpoint.test.ts tests/checkpoint-replay.test.ts tests/sponsor.test.ts tests/fixture-cleanup.test.ts && node --test tests/probe-devnet.test.mjs",
     "lint": "oxlint --deny-warnings packages tests scripts",
     "format": "prettier --write packages tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json",
     "format:check": "prettier --check packages tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json"

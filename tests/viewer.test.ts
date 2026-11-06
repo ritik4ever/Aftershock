@@ -104,6 +104,9 @@ test('viewer serves real saved reports, reviewed examples and immutable exports'
       ),
     );
     assert.equal(sponsor.report.result, 'PASS');
+    const sponsorReplay = await fetch(v.url + '/api/replay?key=sample:sponsor');
+    assert.equal(sponsorReplay.status, 200);
+    assert.equal((await sponsorReplay.json()).mining, true);
     assert.equal(
       sponsor.report.steps.find(
         (step: { id: string }) => step.id === 'observe-alt-inclusion',

@@ -166,9 +166,11 @@
           the source pins and preconditions with each report.
         </p>
         <p>
-          Replay currently creates fresh accounts and genesis. It compares
-          action verdicts and stable environment fields, without restoring
-          historical private state. Commands are displayed for manual use only.
+          Fresh-state replay creates fresh accounts and genesis, then compares
+          action verdicts and stable environment fields. Checkpoint-backed
+          keyed-nonce reset is also available through the CLI. Neither mode
+          reproduces historical timing. Commands are displayed for manual use
+          only.
         </p>
         <a
           class="button"
