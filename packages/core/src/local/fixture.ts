@@ -6,6 +6,7 @@ import { resolve, relative } from 'node:path';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { getContractAddress } from 'viem';
 import { z } from 'zod';
+import { executionProgress } from '../progress.js';
 import { UPSTREAM } from '../inspect.js';
 import { readResetKeys, resetSource, minedResetSource } from './reset.js';
 import type { ResetSource, MinedResetSource } from './reset.js';
@@ -106,7 +107,13 @@ export async function startFixture(
   const owned: string[] = [];
   let networkCreated = false;
   let stage = 'image-provenance';
+  const setStage = (next: string) => {
+    stage = next;
+    executionProgress('SETUP', next);
+  };
+  setStage(stage);
   const cleanup = async () => {
+    executionProgress('CLEANUP', 'removing-owned-resources');
     const failures: string[] = [];
     for (const name of [...owned].reverse()) {
       const logs = await execute('docker', ['logs', '--tail', '40', name], {
@@ -160,7 +167,7 @@ export async function startFixture(
     }
     const identity = reset ?? minedReset;
     if (identity) {
-      stage = 'reset-image-identity';
+      setStage('reset-image-identity');
       for (const [image, expected] of [
         [ETHREX_IMAGE, identity.executionImage],
         [SIDECAR_IMAGE, identity.sidecarImage],
@@ -172,7 +179,7 @@ export async function startFixture(
           throw new Error('Reset image differs from baseline');
       }
     }
-    stage = 'genesis-template';
+    setStage('genesis-template');
     await docker(
       'create',
       '--pull',
@@ -202,7 +209,7 @@ export async function startFixture(
     let genesis = JSON.parse(template) as Genesis;
     if (genesis.config.chainId !== 9)
       throw new Error('Unexpected fixture chain');
-    stage = reset ? 'reset-private-inputs' : 'fresh-private-inputs';
+    setStage(reset ? 'reset-private-inputs' : 'fresh-private-inputs');
     const keys = identity
       ? await readResetKeys(root, {
           runId: identity.runId,
@@ -224,7 +231,7 @@ export async function startFixture(
       };
     });
     if (minedReset) {
-      stage = 'mined-checkpoint-inputs';
+      setStage('mined-checkpoint-inputs');
       if (
         minedReset.consensusImage !== LIGHTHOUSE_IMAGE ||
         minedReset.genesisGeneratorImage !== GENESIS_IMAGE ||
@@ -245,7 +252,7 @@ export async function startFixture(
       );
       genesis = JSON.parse(restored.genesisText) as Genesis;
     } else if (mining) {
-      stage = 'mining-genesis';
+      setStage('mining-genesis');
       genesis = (
         await generateMiningGenesis(directory, keys, runId, docker, (name) =>
           owned.push(name),
@@ -253,7 +260,7 @@ export async function startFixture(
       ).genesis;
     }
     if (reset) {
-      stage = 'reset-genesis-identity';
+      setStage('reset-genesis-identity');
       if (
         createHash('sha256').update(JSON.stringify(genesis)).digest('hex') !==
         reset.genesisSha256
@@ -299,7 +306,7 @@ export async function startFixture(
       }),
       { mode: 0o600 },
     );
-    stage = 'private-network';
+    setStage('private-network');
     await docker(
       'network',
       'create',
@@ -324,7 +331,7 @@ export async function startFixture(
         ? ['--user', `${process.getuid!()}:${process.getgid!()}`]
         : []),
     ];
-    stage = 'execution-start';
+    setStage('execution-start');
     await docker(
       'run',
       '--pull',
@@ -366,7 +373,7 @@ export async function startFixture(
       executor: sidecar,
       url: `http://${execution}:8545`,
     };
-    stage = 'sidecar-start';
+    setStage('sidecar-start');
     await docker(
       'run',
       '--pull',
@@ -406,7 +413,7 @@ export async function startFixture(
     );
     owned.push(sidecar);
     if (minedReset) {
-      stage = 'mined-checkpoint-head';
+      setStage('mined-checkpoint-head');
       await waitForRpc(executionUrl);
       const actual = await localRpc(
         executionUrl,
@@ -421,7 +428,7 @@ export async function startFixture(
         throw new Error('Restored mined checkpoint head differs from baseline');
     }
     if (mining) {
-      stage = 'consensus-start';
+      setStage('consensus-start');
       const beacon = `${prefix}-beacon`;
       const validator = `${prefix}-validator`;
       const feeRecipient = privateKeyToAccount(keys[4]!).address;
@@ -484,7 +491,7 @@ export async function startFixture(
       );
       owned.push(validator);
     }
-    stage = 'isolation-verification';
+    setStage('isolation-verification');
     const sidecarUrl: LocalEndpoint = {
       executor: sidecar,
       url: 'http://127.0.0.1:14337/rpc/',

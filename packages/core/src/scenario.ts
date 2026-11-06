@@ -8,6 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { z } from 'zod';
+import { executionProgress } from './progress.js';
 import { UPSTREAM, historyGaps } from './inspect.js';
 import { hash, quantity, explorerInfo } from './schema.js';
 import { fixtureTransaction } from './local/codec.js';
@@ -503,7 +504,7 @@ async function executeScenario(
     id: string,
     result: RunReport['result'],
     observed: RunReport['steps'][number]['observed'],
-  ) =>
+  ) => {
     report.steps.push({
       id,
       at: new Date().toISOString(),
@@ -511,6 +512,12 @@ async function executeScenario(
       observed,
       evidenceThrough: evidencePosition(),
     });
+    executionProgress(
+      id === 'fixture-cleanup' ? 'CLEANUP' : 'EXECUTING',
+      id,
+      result,
+    );
+  };
   try {
     const sponsor =
       id === 'staked-storage-boundary'

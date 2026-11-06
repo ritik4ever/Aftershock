@@ -16,13 +16,13 @@ npm run --silent aftershock -- doctor --local
 npm run --silent aftershock -- serve --port 4323
 ```
 
-Open http://127.0.0.1:4323. Restart an old viewer process after updating code. **Start fresh isolated run** executes a fixed scenario on your WSL/Docker stack, polls its job and opens its newly saved report. One job runs per viewer process; allow cleanup to finish before stopping it. The UI accepts no scripts, endpoints or signing keys. If the port is occupied, restart the old process or select another port.
+Open http://127.0.0.1:4323. Restart an old viewer process after updating code. **Start fresh isolated run** executes a fixed scenario on your WSL/Docker stack, polls actual setup stages and completed checks, reconnects after a page refresh and opens its newly saved report. Progress includes timestamps and safe failure guidance; it is not an estimated percentage. One job runs per viewer process; allow cleanup to finish before stopping it. The UI accepts no scripts, endpoints or signing keys. If the port is occupied, restart the old process or select another port.
 
 ## Hosting on Vercel
 
 Import the repository with framework **Other**, Node **24.x**, build command `npm run build:static` and output directory `dist`. `vercel.json` supplies build settings, security headers and the read-only `/api/live` function; no environment variables are needed. **Check network now** and **Inspect transaction now** query the fixed sponsor gateway at request time. Pending/missing receipts and upstream errors remain unavailable; saved results are never substituted. No keys, transaction submission or Docker controls are exposed on Vercel.
 
-The hosted **Run a new test** section opens the local companion at port 4323; start it with the command above. With only WSL available, new isolated runs execute on your own machine, not remotely for arbitrary visitors. A protected remote Docker backend would require separate infrastructure. The seven exported reports are genuine earlier runs, labeled **Recorded real run**; refreshing that list is not a new test. To rebuild records locally use `npm run build:static` with no existing `dist`. Deploy the repository root. Hosted verification of the new live function remains pending after the manual push/redeployment.
+The hosted **Run a new test** section opens the local companion at port 4323; start it with the command above. With only WSL available, new isolated runs execute on your own machine, not remotely for arbitrary visitors. A protected remote Docker backend would require separate infrastructure. The seven exported reports are genuine earlier runs, labeled **Recorded real run**; refreshing that list is not a new test. To rebuild records locally use `npm run build:static` with no existing `dist`. Deploy the repository root. The deployed live function was verified against the sponsor gateway on November 6, 2026; hosted Docker execution is not provided.
 
 The existing development installation is `/home/ritik/aftershock-build` in WSL. The Windows review checkout has no installed dependencies. Other machines can use any Linux-home checkout.
 

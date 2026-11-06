@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { executionProgress } from '../progress.js';
 import { privateKeyToAccount } from 'viem/accounts';
 import { keccak256 } from 'viem';
 import type { Hex, Address } from 'viem';
@@ -14,6 +15,7 @@ export async function waitForMining(
   pollMilliseconds = 15000,
 ) {
   z.number().int().min(1000).max(15000).parse(pollMilliseconds);
+  executionProgress('EXECUTING', 'waiting-for-mining-fork-readiness');
   const genesis = await localRpc(
     endpoint,
     'eth_getBlockByNumber',
@@ -40,6 +42,7 @@ export async function waitForMining(
 
 export async function frameReceipt(endpoint: LocalEndpoint, txHash: string) {
   hash.parse(txHash);
+  executionProgress('EXECUTING', 'waiting-for-frame-receipt');
   const deadline = performance.now() + 75_000;
   while (performance.now() < deadline) {
     try {

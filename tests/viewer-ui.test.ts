@@ -85,6 +85,7 @@ async function app(
   unavailableReports: Array<{ key: string; reason: string }> = [],
   published = false,
   existingJob = false,
+  jobFailure = false,
 ) {
   const elements = new Map(
     [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => [
@@ -146,11 +147,40 @@ async function app(
           { status: 202 },
         );
       if (path === '/api/execute?job=unit-job')
+        if (jobFailure)
+          return Response.json({
+            id: 'unit-job',
+            state: 'ERROR',
+            error: 'No valid report saved',
+            guidance: {
+              code: 'REPORT_UNAVAILABLE',
+              message: 'Check local prerequisites',
+            },
+            progress: [
+              {
+                at: '2026-11-06T12:00:01.000Z',
+                phase: 'SETUP',
+                label: 'image-provenance',
+              },
+            ],
+          });
+      if (path === '/api/execute?job=unit-job')
         return Response.json({
           id: 'unit-job',
           state: 'COMPLETED',
           runId: report.runId,
           result: report.result,
+          startedAt: '2026-11-06T12:00:00.000Z',
+          completedChecks: 1,
+          progress: [
+            {
+              at: '2026-11-06T12:00:01.000Z',
+              phase: 'EXECUTING',
+              label: 'actual-check',
+              result: 'PASS',
+            },
+          ],
+          guidance: { code: 'EVIDENCE_REVIEW', message: 'Test guidance' },
         });
       if (path.startsWith('/api/live'))
         return liveUnavailable
@@ -322,6 +352,25 @@ test('local UI resumes an active run after reload without starting a second run'
   assert.equal(ui.requests.filter((path) => path === '/api/execute').length, 1);
   assert.ok(ui.requests.includes('/api/execute?job=unit-job'));
   assert.match(ui.el('execute-result').textContent, /Fresh run/);
+  assert.match(ui.el('execute-result').textContent, /actual-check.*PASS/);
+  assert.match(
+    ui.el('execute-result').textContent,
+    /EVIDENCE_REVIEW: Test guidance/,
+  );
+  assert.equal(ui.el('execute-start').disabled, false);
+});
+
+test('failed execution shows its safe guidance and observed stage without claiming a fresh result', async () => {
+  const ui = await app([], false, false, true);
+  ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
+  await ui.el('execute-start').trigger('click');
+  assert.match(ui.el('execute-result').textContent, /No valid report saved/);
+  assert.match(
+    ui.el('execute-result').textContent,
+    /REPORT_UNAVAILABLE: Check local prerequisites/,
+  );
+  assert.match(ui.el('execute-result').textContent, /image-provenance/);
+  assert.doesNotMatch(ui.el('execute-result').textContent, /Fresh run/);
   assert.equal(ui.el('execute-start').disabled, false);
 });
 

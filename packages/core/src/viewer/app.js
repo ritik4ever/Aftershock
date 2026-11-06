@@ -31,7 +31,10 @@ async function request(path, options = {}) {
     ...options,
   });
   const data = await response.json();
-  if (!response.ok || data.error)
+  if (
+    !response.ok ||
+    (data.error && !(path.startsWith('/api/execute') && data.state === 'ERROR'))
+  )
     throw Object.assign(new Error(data.error || 'Request unavailable'), {
       status: response.status,
     });
@@ -623,6 +626,33 @@ if (globalThis.aftershockStatic) {
   $('local-runner-link').hidden = false;
 }
 let trackingExecution = false;
+function executionDetails(job) {
+  const parts = [];
+  if (job.startedAt)
+    parts.push(
+      node(
+        'p',
+        `Started ${date(job.startedAt)}. Last update ${date(job.updatedAt || job.startedAt)}. ${job.completedChecks ?? 0} checks completed.`,
+        'muted',
+      ),
+    );
+  if (job.progress?.length) {
+    const timeline = node('ol');
+    for (const event of job.progress.slice(-8))
+      timeline.append(
+        node(
+          'li',
+          `${date(event.at)} · ${event.phase}: ${event.label}${event.result ? ` — ${event.result}` : ''}`,
+        ),
+      );
+    parts.push(timeline);
+  }
+  if (job.guidance)
+    parts.push(
+      node('p', `${job.guidance.code}: ${job.guidance.message}`, 'muted'),
+    );
+  return parts;
+}
 async function trackExecution(start = false) {
   if (globalThis.aftershockStatic || trackingExecution) return;
   trackingExecution = true;
@@ -651,18 +681,29 @@ async function trackExecution(start = false) {
           `Real isolated run ${job.id} is running. Waiting for node observations; no verdict yet.`,
           'muted',
         ),
+        ...executionDetails(job),
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
       job = await request(`/api/execute?job=${encodeURIComponent(job.id)}`);
     }
-    if (job.state !== 'COMPLETED')
-      throw new Error(job.error || 'Run did not produce a saved report');
+    if (job.state !== 'COMPLETED') {
+      target.replaceChildren(
+        node(
+          'p',
+          job.error || 'Run did not produce a saved report',
+          'error-text',
+        ),
+        ...executionDetails(job),
+      );
+      return;
+    }
     target.replaceChildren(
       node(
         'p',
         `Fresh run ${job.runId}: ${job.result}. Review the actual report below.`,
         'muted',
       ),
+      ...executionDetails(job),
     );
     await loadRuns();
     await selectRun(`local:${job.runId}`, true);
