@@ -3,10 +3,10 @@ import { open, readdir, readFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { resolve } from 'node:path';
 import { z } from 'zod';
-import { readRun } from './report.js';
-import { runReport } from './scenario.js';
+import { readRun, markdownReport } from './report.js';
+import { runReport, scenarioCatalogue, definitions } from './scenario.js';
 import { checkEvidence } from './evidence-check.js';
-import { compareRuns } from './replay.js';
+import { compareRuns, replayPlan } from './replay.js';
 
 const samples = {
   keyed: 'rpc-keyed-nonce-lifecycle.json',
@@ -117,6 +117,18 @@ export async function startViewer(root: string, port = 4318) {
         res.end(asset.body);
         return;
       }
+      if (url.pathname === '/api/scenarios' && !url.search) {
+        json(200, {
+          scenarios: scenarioCatalogue.map((scenario) => ({
+            ...scenario,
+            definition: definitions[scenario.id],
+            command: `npm run --silent aftershock -- run ${scenario.id} --local${scenario.id === 'keyed-replacement-ttl' ? '' : ' --mine'}`,
+          })),
+          execution: 'CLI_ONLY',
+          nodeConnectivity: 'NOT_CHECKED',
+        });
+        return;
+      }
       if (url.pathname === '/api/runs' && !url.search) {
         let names: string[] = [];
         try {
@@ -133,14 +145,17 @@ export async function startViewer(root: string, port = 4318) {
         }
         names.sort();
         const keys = [
-          ...Object.keys(samples).map((id) => `sample:${id}`),
           ...names.slice(0, 100).map((id) => `local:${id}`),
+          ...Object.keys(samples).map((id) => `sample:${id}`),
         ];
         const runs = [];
+        const seen = new Set<string>();
         let unavailable = 0;
         for (const key of keys) {
           try {
             const report = await load(key);
+            if (seen.has(report.runId)) continue;
+            seen.add(report.runId);
             runs.push({
               key,
               runId: report.runId,
@@ -172,19 +187,43 @@ export async function startViewer(root: string, port = 4318) {
         return;
       }
       if (
+        url.pathname === '/api/replay' &&
+        url.searchParams.size === 1 &&
+        url.searchParams.has('key')
+      ) {
+        const report = await load(url.searchParams.get('key')!);
+        try {
+          json(200, replayPlan(report));
+        } catch {
+          json(422, {
+            error:
+              'Saved run is incompatible with the current replay requirements',
+          });
+        }
+        return;
+      }
+      if (
         url.pathname === '/api/download' &&
         url.searchParams.size === 2 &&
         url.searchParams.has('key') &&
         url.searchParams.has('format')
       ) {
         const format = url.searchParams.get('format');
-        if (!['report', 'evidence'].includes(format ?? '')) {
+        if (!['report', 'evidence', 'md'].includes(format ?? '')) {
           json(400, { error: 'Unknown export format' });
           return;
         }
         const report = await load(url.searchParams.get('key')!);
         if (format === 'evidence' && !report.evidence) {
           json(404, { error: 'No recorded journal' });
+          return;
+        }
+        if (format === 'md') {
+          res.writeHead(200, {
+            'Content-Type': 'text/markdown; charset=utf-8',
+            'Content-Disposition': `attachment; filename="${report.runId}.md"`,
+          });
+          res.end(markdownReport(report));
           return;
         }
         res.setHeader(

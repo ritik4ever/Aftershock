@@ -12,7 +12,8 @@ const date = (value) => new Date(value).toLocaleString();
 let runs = [],
   selected = '',
   selection = 0,
-  refresh = 0;
+  refresh = 0,
+  comparison = 0;
 async function request(path) {
   const response = await fetch(path, {
     signal: AbortSignal.timeout(10000),
@@ -42,6 +43,42 @@ function keyValues(values) {
     dl.append(node('dt', key), node('dd', value));
   return dl;
 }
+function list(values) {
+  const ul = node('ul');
+  for (const value of values) ul.append(node('li', value));
+  return ul;
+}
+async function loadScenarios() {
+  const target = $('scenario-list');
+  $('refresh-scenarios').disabled = true;
+  target.replaceChildren(node('p', 'Loading scenarios...', 'muted'));
+  try {
+    const data = await request('/api/scenarios');
+    target.replaceChildren();
+    for (const scenario of data.scenarios) {
+      const card = panel(scenario.title);
+      card.append(
+        node('p', scenario.definition.expectedInvariant),
+        details('Implemented checks', scenario.implemented),
+        details('Prerequisites', scenario.definition.preconditions),
+        details('Coverage limits', scenario.blocked),
+        details('Source rule', {
+          commit: scenario.definition.sourceCommit,
+          rule: scenario.definition.sourceRule,
+        }),
+        node('p', 'Run manually in your terminal:', 'muted'),
+        node('pre', scenario.command, 'data'),
+      );
+      target.append(card);
+    }
+  } catch (error) {
+    target.replaceChildren(
+      node('p', `Could not load scenarios: ${error.message}`, 'error-text'),
+    );
+  } finally {
+    $('refresh-scenarios').disabled = false;
+  }
+}
 function renderRuns() {
   const search = $('search').value.toLowerCase().trim(),
     verdict = $('verdict').value,
@@ -53,7 +90,7 @@ function renderRuns() {
       `${r.title} ${r.scenarioId} ${r.runId}`.toLowerCase().includes(search),
   );
   $('run-count').textContent =
-    `${filtered.length} of ${runs.length} runs ? Reviewed examples are historical captures, not new executions.`;
+    `${filtered.length} of ${runs.length} unique runs. Reviewed examples are historical captures, not new executions.`;
   const target = $('run-list');
   target.replaceChildren();
   if (!filtered.length) {
@@ -89,7 +126,7 @@ function renderRuns() {
       meta.append(node('span', text));
     left.append(meta);
     const right = node('span', undefined, 'run-right');
-    right.append(badge(run.result), node('span', '?', 'run-arrow'));
+    right.append(badge(run.result), node('span', '\u2192', 'run-arrow'));
     button.append(left, right);
     button.addEventListener('click', () => selectRun(run.key, true));
     target.append(button);
@@ -103,6 +140,8 @@ async function loadRuns() {
     const data = await request('/api/runs');
     if (ticket !== refresh) return;
     runs = data.runs;
+    comparison += 1;
+    $('compare-result').replaceChildren();
     $('stat-total').textContent = String(runs.length);
     $('stat-pass').textContent = String(
       runs.filter((r) => r.result === 'PASS').length,
@@ -123,14 +162,14 @@ async function loadRuns() {
       select.replaceChildren(
         node(
           'option',
-          id === 'compare-left' ? 'Choose baseline?' : 'Choose rerun?',
+          id === 'compare-left' ? 'Choose baseline...' : 'Choose rerun...',
         ),
       );
       select.firstChild.value = '';
       for (const run of runs) {
         const option = node(
           'option',
-          `${run.scenarioId} ? ${run.result} ? ${run.runId.slice(0, 8)} ? ${run.source}`,
+          `${run.scenarioId} / ${run.result} / ${run.runId.slice(0, 8)} / ${run.source}`,
         );
         option.value = run.key;
         select.append(option);
@@ -141,8 +180,21 @@ async function loadRuns() {
     if (selected && runs.some((r) => r.key === selected))
       await selectRun(selected, false);
     else if (runs.length) await selectRun(runs[0].key, false);
+    else {
+      selected = '';
+      selection += 1;
+      $('detail-content').replaceChildren(
+        node(
+          'div',
+          'No available report. Create a run with the CLI, then refresh.',
+          'empty',
+        ),
+      );
+    }
   } catch (error) {
-    notice(`Could not load runs: ${error.message}`);
+    notice(
+      `Could not refresh runs: ${error.message}. Previously loaded data, if any, may be stale.`,
+    );
   } finally {
     if (ticket === refresh) $('refresh').disabled = false;
   }
@@ -152,11 +204,16 @@ async function selectRun(key, scroll) {
   const ticket = ++selection;
   renderRuns();
   const content = $('detail-content');
-  content.replaceChildren(node('div', 'Loading report?', 'empty'));
+  content.replaceChildren(node('div', 'Loading report...', 'empty'));
   try {
-    const data = await request(`/api/run?key=${encodeURIComponent(key)}`);
+    const [reportResult, replayResult] = await Promise.allSettled([
+      request(`/api/run?key=${encodeURIComponent(key)}`),
+      request(`/api/replay?key=${encodeURIComponent(key)}`),
+    ]);
     if (ticket !== selection) return;
-    renderDetail(data.report, data.checks, key);
+    if (reportResult.status === 'rejected') throw reportResult.reason;
+    const data = reportResult.value;
+    renderDetail(data.report, data.checks, key, replayResult);
     if (scroll)
       $('details').scrollIntoView({
         behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -168,7 +225,7 @@ async function selectRun(key, scroll) {
       content.replaceChildren(node('div', error.message, 'empty'));
   }
 }
-function renderDetail(report, checks, key) {
+function renderDetail(report, checks, key, replayResult) {
   const content = $('detail-content');
   content.replaceChildren();
   const intro = panel(''),
@@ -179,12 +236,12 @@ function renderDetail(report, checks, key) {
     node('h3', report.definition.title),
     node(
       'div',
-      `${key.startsWith('sample:') ? 'Reviewed example' : 'Saved local run'} ? ${report.runId}`,
+      `${key.startsWith('sample:') ? 'Reviewed example' : 'Saved local run'} / ${report.runId}`,
       'context-line',
     ),
     node(
       'div',
-      `${date(report.startedAt)} ? ${report.environment.fixtureMode || 'Unknown fixture'} ? ${report.endpointClass}`,
+      `${date(report.startedAt)} / ${report.environment.fixtureMode || 'Unknown fixture'} / ${report.endpointClass}`,
       'context-line',
     ),
   );
@@ -193,15 +250,18 @@ function renderDetail(report, checks, key) {
   const actions = node('div', undefined, 'detail-actions');
   for (const [label, format] of [
     ['Report JSON', 'report'],
+    ['Report Markdown', 'md'],
     ['Evidence JSON', 'evidence'],
   ]) {
     if (format === 'evidence' && !report.evidence) continue;
-    const link = node('a', `${label} ?`);
+    const link = node('a', `${label} \u2193`);
     link.href = `/api/download?key=${encodeURIComponent(key)}&format=${format}`;
     actions.append(link);
   }
   intro.append(
     actions,
+    node('p', report.definition.expectedInvariant),
+    details('Required preconditions', report.definition.preconditions),
     node(
       'p',
       'Admission, active state and execution success are separate observations. A matching offline check does not clear a recorded failure.',
@@ -226,7 +286,7 @@ function renderDetail(report, checks, key) {
     badge(checks.status),
     node(
       'p',
-      `${checks.checks.length} selected checks ? ${checks.notReevaluatedSteps.length} actions not fully reevaluated. Original scenario: ${checks.recordedRunResult}.`,
+      `${checks.checks.length} selected checks / ${checks.notReevaluatedSteps.length} actions not fully reevaluated. Original scenario: ${checks.recordedRunResult}.`,
     ),
   );
   evidence.append(
@@ -241,7 +301,7 @@ function renderDetail(report, checks, key) {
     label.append(
       node(
         'small',
-        `${check.check} ? RPC sequences ${check.rpcSequences.join(', ') || 'unavailable'}`,
+        `${check.check} / RPC sequences ${check.rpcSequences.join(', ') || 'unavailable'}`,
       ),
     );
     row.append(label, badge(check.status));
@@ -324,15 +384,38 @@ function renderDetail(report, checks, key) {
   context.classList.add('full-width');
   context.append(
     node('p', report.definition.expectedInvariant),
+    details('Source rule', report.definition.sourceRule),
     details('Source pins', report.sourcePins),
     details('Observed environment', report.environment),
     details('Run limitations', report.limitations),
     details('Reproducer (display only)', report.reproducer),
   );
-  grid.append(journal, context);
+  const replay = panel('Fresh-state rerun');
+  replay.classList.add('full-width');
+  if (replayResult.status === 'fulfilled') {
+    const plan = replayResult.value;
+    replay.append(
+      node(
+        'p',
+        'Exact historical replay: unavailable. This command creates a new isolated fixture. It is never executed by the viewer.',
+      ),
+      list(plan.requirements),
+      node('pre', plan.command, 'data'),
+      details('Comparison limits', plan.limitations),
+    );
+  } else
+    replay.append(
+      node(
+        'p',
+        `Replay plan unavailable: ${replayResult.reason.message}`,
+        'error-text',
+      ),
+    );
+  grid.append(journal, context, replay);
   content.append(grid);
 }
 $('compare-button').addEventListener('click', async () => {
+  const ticket = ++comparison;
   const left = $('compare-left').value,
     right = $('compare-right').value,
     target = $('compare-result');
@@ -343,11 +426,12 @@ $('compare-button').addEventListener('click', async () => {
     return;
   }
   $('compare-button').disabled = true;
-  target.replaceChildren(node('p', 'Comparing saved runs?', 'muted'));
+  target.replaceChildren(node('p', 'Comparing saved runs...', 'muted'));
   try {
     const result = await request(
       `/api/compare?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}`,
     );
+    if (ticket !== comparison) return;
     const card = node('div', undefined, 'comparison-card');
     card.append(
       node('h3', result.comparison.replaceAll('_', ' ')),
@@ -361,7 +445,7 @@ $('compare-button').addEventListener('click', async () => {
       keyValues({
         'Baseline verdict': result.baselineResult,
         'Rerun verdict': result.rerunResult,
-        'Exact historical replay': 'No ? fresh-state comparison',
+        'Exact historical replay': 'No / fresh-state comparison',
         'Environment differences':
           result.environmentDifferences.join(', ') || 'None in compared fields',
       }),
@@ -384,12 +468,20 @@ $('compare-button').addEventListener('click', async () => {
     }
     target.replaceChildren(card);
   } catch (error) {
-    target.replaceChildren(node('p', error.message, 'error-text'));
+    if (ticket === comparison)
+      target.replaceChildren(node('p', error.message, 'error-text'));
   } finally {
     $('compare-button').disabled = false;
   }
 });
+for (const id of ['compare-left', 'compare-right'])
+  $(id).addEventListener('change', () => {
+    comparison += 1;
+    $('compare-result').replaceChildren();
+  });
+$('refresh-scenarios').addEventListener('click', loadScenarios);
 $('refresh').addEventListener('click', loadRuns);
 for (const id of ['search', 'verdict', 'source'])
   $(id).addEventListener(id === 'search' ? 'input' : 'change', renderRuns);
 loadRuns();
+loadScenarios();

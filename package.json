@@ -14,6 +14,7 @@
   "scripts": {
     "aftershock": "tsx packages/cli/src/index.ts",
     "test:fixtures": "tsx --test tests/fixture-capabilities.integration.ts",
+    "test:upstream-rules": "tsx --test tests/replacement-rules.source.test.ts",
     "test:cancelled": "tsx --test tests/cancelled.integration.ts",
     "test:ttl": "tsx --test tests/ttl.integration.ts",
     "test:integration": "tsx --test tests/local.integration.ts",
@@ -22,7 +23,7 @@
     "test:replay": "tsx --test tests/replay.integration.ts",
     "test:lifecycle": "tsx --test tests/lifecycle.integration.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/core.test.ts tests/evidence.test.ts tests/evidence-check.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts tests/mining.test.ts tests/viewer.test.ts && node --test tests/probe-devnet.test.mjs",
+    "test": "tsx --test tests/core.test.ts tests/evidence.test.ts tests/evidence-check.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts tests/mining.test.ts tests/viewer.test.ts tests/viewer-ui.test.ts && node --test tests/probe-devnet.test.mjs",
     "lint": "oxlint --deny-warnings packages tests scripts",
     "format": "prettier --write packages tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json",
     "format:check": "prettier --check packages tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json"

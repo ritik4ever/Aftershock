@@ -9,7 +9,9 @@ import { hash, quantity, receipt, explorerTransaction } from '../schema.js';
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function waitForMining(
   endpoint: LocalEndpoint,
-  pollMilliseconds = 5000,
+  // Staged forks take minutes; frequent readiness reads can exhaust the
+  // bounded journal before the actual lifecycle actions begin.
+  pollMilliseconds = 15000,
 ) {
   z.number().int().min(1000).max(15000).parse(pollMilliseconds);
   const genesis = await localRpc(

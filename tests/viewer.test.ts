@@ -5,8 +5,13 @@ import { mkdtemp, mkdir, readFile, writeFile, symlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { startViewer } from '../packages/core/src/viewer.js';
-import { saveRun } from '../packages/core/src/report.js';
-import { runReport } from '../packages/core/src/scenario.js';
+import { saveRun, markdownReport } from '../packages/core/src/report.js';
+import {
+  runReport,
+  scenarioCatalogue,
+  definitions,
+} from '../packages/core/src/scenario.js';
+import { replayPlan } from '../packages/core/src/replay.js';
 
 const keyed = runReport.parse(
   JSON.parse(
@@ -57,13 +62,21 @@ test('viewer serves real saved reports, reviewed examples and immutable exports'
     for (const asset of ['/app.js', '/style.css'])
       assert.equal((await fetch(v.url + asset)).status, 200);
     const runs = await (await fetch(v.url + '/api/runs')).json();
-    assert.equal(runs.runs.length, 6);
+    assert.equal(runs.runs.length, 5);
+    assert.equal(
+      new Set(runs.runs.map((r: { runId: string }) => r.runId)).size,
+      5,
+    );
+    assert.equal(
+      runs.runs.find((r: { runId: string }) => r.runId === keyed.runId).source,
+      'Saved local run',
+    );
     assert.equal(runs.unavailable, 0);
     assert.equal(
       runs.runs.filter(
         (r: { source: string }) => r.source === 'Reviewed example',
       ).length,
-      4,
+      3,
     );
     const path = join(v.root, 'reports', `${keyed.runId}.scenario.json`);
     const before = await readFile(path);
@@ -83,6 +96,23 @@ test('viewer serves real saved reports, reviewed examples and immutable exports'
     );
     assert.match(download.headers.get('content-disposition')!, /attachment/);
     assert.deepEqual(await download.json(), keyed);
+    const markdown = await fetch(
+      `${v.url}/api/download?key=local:${keyed.runId}&format=md`,
+    );
+    assert.equal(markdown.status, 200);
+    assert.equal(
+      markdown.headers.get('content-type'),
+      'text/markdown; charset=utf-8',
+    );
+    assert.match(
+      markdown.headers.get('content-disposition')!,
+      new RegExp(`${keyed.runId}\\.md`),
+    );
+    assert.equal(await markdown.text(), markdownReport(keyed));
+    const failedMarkdown = await fetch(
+      `${v.url}/api/download?key=sample:cancelled&format=md`,
+    );
+    assert.match(await failedMarkdown.text(), /Result: FAIL/);
     const evidence = await (
       await fetch(
         `${v.url}/api/download?key=local:${keyed.runId}&format=evidence`,
@@ -158,8 +188,61 @@ test('viewer rejects cross-origin access, write requests and filesystem routes',
       '/api/runs?path=.local',
       '/api/run?key=sample:keyed&key=sample:payer',
       '/api/download?key=sample:keyed&format=html',
+      '/api/replay?key=sample:keyed&key=sample:payer',
+      '/api/scenarios?run=true',
     ])
       assert.ok((await fetch(v.url + route)).status >= 400, route);
+  } finally {
+    await v.close();
+  }
+});
+
+test('viewer exposes current scenario definitions and replay plans without executing commands', async () => {
+  const v = await fixture();
+  try {
+    const response = await fetch(v.url + '/api/scenarios');
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    assert.equal(data.execution, 'CLI_ONLY');
+    assert.equal(data.nodeConnectivity, 'NOT_CHECKED');
+    assert.equal(data.scenarios.length, scenarioCatalogue.length);
+    for (const item of data.scenarios) {
+      const id = item.id as keyof typeof definitions;
+      assert.deepEqual(item.definition, definitions[id]);
+      assert.match(item.command, new RegExp(`run ${id} --local`));
+      assert.equal(
+        item.command.endsWith('--mine'),
+        id !== 'keyed-replacement-ttl',
+      );
+    }
+    const plan = await fetch(`${v.url}/api/replay?key=local:${keyed.runId}`);
+    assert.equal(plan.status, 200);
+    assert.deepEqual(await plan.json(), replayPlan(keyed));
+    const incompatible = {
+      ...structuredClone(keyed),
+      runId: '33333333-3333-4333-8333-333333333333',
+    };
+    incompatible.definition.title = 'Historical definition';
+    await saveRun(v.root, incompatible);
+    assert.equal(
+      (await fetch(`${v.url}/api/replay?key=local:${incompatible.runId}`))
+        .status,
+      422,
+    );
+    // An unsupported replay never hides an otherwise valid historical report.
+    assert.equal(
+      (await fetch(`${v.url}/api/run?key=local:${incompatible.runId}`)).status,
+      200,
+    );
+    assert.equal(
+      (await fetch(v.url + '/api/replay?key=local:../private')).status,
+      404,
+    );
+    assert.equal(
+      (await fetch(v.url + '/api/replay?key=sample:keyed', { method: 'POST' }))
+        .status,
+      405,
+    );
   } finally {
     await v.close();
   }

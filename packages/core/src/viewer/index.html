@@ -3,26 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Aftershock ? Run explorer</title>
+    <title>Aftershock | Run explorer</title>
     <link rel="stylesheet" href="/style.css" />
     <script src="/app.js" defer></script>
   </head>
   <body>
     <header class="site-header">
       <a class="brand" href="/" aria-label="Aftershock home"
-        ><span class="brand-mark">?</span> Aftershock</a
+        ><span class="brand-mark" aria-hidden="true">&#10035;</span>
+        Aftershock</a
       >
       <nav aria-label="Main navigation">
-        <a href="#runs">Runs</a><a href="#details">Evidence</a
-        ><a href="#comparison">Compare</a
+        <a href="#scenarios">Scenarios</a><a href="#runs">Runs</a
+        ><a href="#details">Evidence</a><a href="#comparison">Compare</a
+        ><a href="#guide">Guide</a
         ><a
           href="https://github.com/ritik4ever/Aftershock"
           target="_blank"
           rel="noopener noreferrer"
-          >GitHub ?</a
+          >GitHub &#8599;</a
         >
       </nav>
-      <span class="local-pill"><span class="dot"></span>Local ? Read only</span>
+      <span class="local-pill">Local / Read only</span>
     </header>
     <main>
       <section class="hero">
@@ -33,20 +35,24 @@
           reproducible test runs.
         </p>
         <div class="hero-actions">
-          <a class="button primary" href="#runs">Explore runs <span>?</span></a
+          <a class="button primary" href="#runs"
+            >Explore runs <span>&#8594;</span></a
           ><a class="button" href="#comparison">Compare results</a>
         </div>
       </section>
       <section class="stats" aria-label="Run overview">
-        <div><strong id="stat-total">?</strong><span>Available runs</span></div>
         <div>
-          <strong id="stat-pass">?</strong><span>Passing scenarios</span>
+          <strong id="stat-total">&mdash;</strong><span>Available runs</span>
         </div>
         <div>
-          <strong id="stat-fail">?</strong><span>Scenarios with findings</span>
+          <strong id="stat-pass">&mdash;</strong><span>Passing runs</span>
         </div>
         <div>
-          <strong id="stat-evidence">?</strong><span>Complete journals</span>
+          <strong id="stat-fail">&mdash;</strong><span>Runs with findings</span>
+        </div>
+        <div>
+          <strong id="stat-evidence">&mdash;</strong
+          ><span>Complete journals</span>
         </div>
       </section>
       <div
@@ -56,13 +62,32 @@
         aria-live="polite"
         hidden
       ></div>
+      <section id="scenarios" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">THE TEST ENGINE</p>
+            <h2>Scenario coverage<span class="accent">.</span></h2>
+          </div>
+          <button id="refresh-scenarios" class="button small">
+            Refresh scenarios
+          </button>
+        </div>
+        <p class="muted">
+          Execution requires the CLI and cached isolated Docker images. This
+          viewer does not check node connectivity or run tests. Saved results
+          describe earlier executions.
+        </p>
+        <div id="scenario-list" class="detail-grid" aria-live="polite">
+          <p class="muted">Loading scenarios...</p>
+        </div>
+      </section>
       <section id="runs" class="section">
         <div class="section-heading">
           <div>
             <p class="eyebrow">THE RECORD</p>
             <h2>Run explorer<span class="accent">.</span></h2>
           </div>
-          <button id="refresh" class="button small">Refresh runs ?</button>
+          <button id="refresh" class="button small">Refresh runs</button>
         </div>
         <div class="filters">
           <label class="search-label"
@@ -70,7 +95,7 @@
             ><input
               id="search"
               type="search"
-              placeholder="Search scenario or run ID?" /></label
+              placeholder="Search scenario or run ID..." /></label
           ><label
             ><span>Verdict</span
             ><select id="verdict">
@@ -109,18 +134,49 @@
           <label
             ><span>Baseline</span
             ><select id="compare-left">
-              <option value="">Choose baseline?</option>
+              <option value="">Choose baseline...</option>
             </select></label
           ><label
             ><span>Rerun</span
             ><select id="compare-right">
-              <option value="">Choose rerun?</option>
+              <option value="">Choose rerun...</option>
             </select></label
           ><button id="compare-button" class="button primary">
-            Compare runs ?
+            Compare runs
           </button>
         </div>
         <div id="compare-result" aria-live="polite"></div>
+      </section>
+      <section id="guide" class="section">
+        <p class="eyebrow">READING THE RESULTS</p>
+        <h2>Evidence, with limits<span class="accent">.</span></h2>
+        <p>
+          Frame transactions separate validation, payment and execution.
+          Admission is not proof that execution succeeded: inspect the recorded
+          receipt and each frame status.
+        </p>
+        <p>
+          PASS covers the declared scenario in its recorded environment. FAIL
+          identifies a failed check; it does not automatically establish an
+          exploit. BLOCKED and INCONCLUSIVE require more evidence.
+        </p>
+        <p>
+          Aftershock tests the pinned sidecar implementation. Draft
+          alternative-mempool rules and other client versions may differ. Read
+          the source pins and preconditions with each report.
+        </p>
+        <p>
+          Replay currently creates fresh accounts and genesis. It compares
+          action verdicts and stable environment fields, without restoring
+          historical private state. Commands are displayed for manual use only.
+        </p>
+        <a
+          class="button"
+          href="https://github.com/ritik4ever/Aftershock/blob/main/README.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Project documentation &#8599;</a
+        >
       </section>
       <section id="details" class="section">
         <div class="section-heading">
@@ -137,9 +193,9 @@
       </section>
     </main>
     <footer>
-      <a class="brand" href="/">? Aftershock</a>
+      <a class="brand" href="/">Aftershock</a>
       <p>Find the failures before they reach Ethereum.</p>
-      <span>Local report viewer ? No transaction controls</span>
+      <span>Local report viewer / No transaction controls</span>
     </footer>
   </body>
 </html>

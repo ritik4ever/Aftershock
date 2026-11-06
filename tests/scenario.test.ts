@@ -302,6 +302,11 @@ test('Markdown preserves honest result and escapes untrusted formatting', () => 
   assert.match(markdown, /No RPC journal was captured/);
   assert.ok(!markdown.includes('<script>'));
   assert.ok(!markdown.includes('![external]'));
+  assert.match(markdown, /## Expected invariant/);
+  assert.ok(markdown.includes(report.definition.expectedInvariant));
+  assert.ok(markdown.includes(report.sourcePins.sidecar));
+  assert.ok(markdown.includes(report.startedAt));
+  assert.ok(markdown.indexOf('| Step |') < markdown.indexOf('## Limitations'));
 });
 
 test('fresh-state rerun plans reject mocks, changed definitions and unsafe fixtures', async () => {

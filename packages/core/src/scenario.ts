@@ -424,10 +424,7 @@ async function executeScenario(
     await waitForRpc(executionUrl);
     await waitForRpc(sidecarUrl);
     if (mining) {
-      const ready = await waitForMining(
-        executionUrl,
-        id === 'cancelled-replacement' ? 15000 : 5000,
-      );
+      const ready = await waitForMining(executionUrl);
       report.environment.readyBlock = ready.number;
       report.environment.readyBlockHash = ready.hash;
     }
