@@ -114,6 +114,8 @@ Reports use exclusive writes, validated IDs and SHA-256 integrity checks. Integr
 
 `replay --local --reset` supports newly recorded, complete admission-only `keyed-replacement-ttl` runs. It reads the original disposable keys from private Linux `.local/<run-id>/keys.json`, reconstructs the pinned genesis, requires identical cached image IDs, and starts new isolated containers with empty state. The comparison requires matching genesis, observed initial block and all five signed submission request digests. Missing/unsafe private inputs block the run; mismatched inputs cannot pass. Keep `.local/` private and out of Git. Historical reports without initial-state evidence are unsupported. This is initial-genesis reset, not mined database/consensus snapshot restoration or exact historical timing. Run `npm run test:reset` for the real isolated integration check.
 
+`npm run test:checkpoint` exercises the separate library-level mined checkpoint capability on a fresh Linux fixture. It stops and copies execution, beacon, validator and sidecar runtime directories together, rejects corrupted snapshot data, restores the saved block/balances/nonce, checks that a later control receipt disappears, and resumes mining a genuine frame transaction. Verified on 2026-11-06 in isolated run `01d55dbd-0479-4044-9674-7a7c0d81663f`: restored block `0x44` after a control transfer at `0x45`, then observed two successful frame receipts at the new `0x45`. Private snapshots and capability observations remain under ignored Linux `.local/`. This is a pre-scenario checkpoint primitive; mined CLI replay and exact historical timing are still unfinished.
+
 The original dependency-free bootstrap probe is also available:
 
 ```sh
