@@ -223,6 +223,57 @@ test('viewer rejects cross-origin access, write requests and filesystem routes',
   }
 });
 
+test('local scenario start rejects cross-origin, scripts, malformed and oversized bodies before execution', async () => {
+  const v = await fixture();
+  try {
+    const start = (body: string, headers: Record<string, string> = {}) =>
+      fetch(v.url + '/api/execute', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...headers },
+        body,
+      });
+    assert.equal(
+      (await start('{}', { origin: 'https://evil.example' })).status,
+      403,
+    );
+    assert.equal(
+      (await start('{}', { 'sec-fetch-site': 'cross-site' })).status,
+      403,
+    );
+    assert.equal(
+      (await start('{}', { 'content-type': 'text/plain' })).status,
+      415,
+    );
+    assert.equal((await start('{bad')).status, 400);
+    assert.equal(
+      (
+        await start(
+          JSON.stringify({
+            scenarioId: 'keyed-replacement-ttl',
+            script: 'anything',
+          }),
+        )
+      ).status,
+      400,
+    );
+    assert.equal((await start('x'.repeat(1025))).status, 413);
+    assert.equal(
+      (await fetch(v.url + '/api/execute?job=../secret')).status,
+      400,
+    );
+    assert.equal(
+      (
+        await fetch(
+          v.url + '/api/execute?job=11111111-1111-4111-8111-111111111111',
+        )
+      ).status,
+      404,
+    );
+  } finally {
+    await v.close();
+  }
+});
+
 test('viewer exposes current scenario definitions and replay plans without executing commands', async () => {
   const v = await fixture();
   try {

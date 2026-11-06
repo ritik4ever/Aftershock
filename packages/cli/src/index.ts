@@ -81,7 +81,7 @@ async function main(args: string[]): Promise<number> {
       throw error;
     }
     process.stdout.write(
-      `Aftershock report viewer: ${viewer.url} (read only; Ctrl+C to stop)\n`,
+      `Aftershock local viewer/isolated runner: ${viewer.url} (wait for active runs to finish cleanup before Ctrl+C)\n`,
     );
     return 0;
   }

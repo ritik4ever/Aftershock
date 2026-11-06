@@ -10,8 +10,9 @@ Aftershock is devnet research software, not proof of production safety.
 | RPC | Fixed methods, schema validation, bounded bodies/deadlines and integer-safe quantities; node responses remain trusted observations |
 | Evidence | Check transaction identities, explorer boot/sequence continuity and successful frame receipts; admission alone is insufficient |
 | Files | Validated IDs, containment, bounded regular-file reads, no-follow leaf opens, exclusive writes and checksum/semantic validation |
-| Viewer | Loopback binding, same-origin/Host checks, GET-only APIs, CSP and text rendering; no execution or credentials |
-| Hosted export | Fixed reviewed-capture allowlist; no private-directory discovery, backend or live RPC; Vercel serves only generated `dist` assets with security headers |
+| Local browser runner | Loopback and same-origin/Host checks; JSON-only bounded scenario-start requests, fixed IDs, one active job/process; no arbitrary scripts, endpoint selection or credentials |
+| Hosted site | Fixed reviewed-capture export plus GET-only `/api/live`; no public execution endpoint or private-directory discovery |
+| Live public reads | Fixed gateway/method allowlist, 2.5-second read deadlines, schema/identity checks, no-store responses, two concurrent checks/instance; no archive fallback. This is not a global rate limiter |
 | Replay | Built-in actions only, verified private inputs and image/state checks; no arbitrary report-supplied execution |
 
 Journals are capped at 256 entries/64 KiB compact data; incomplete required evidence cannot PASS. Only explicitly recovered readiness failures are tolerated. Historical files are never populated with invented fields.

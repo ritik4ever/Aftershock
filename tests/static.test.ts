@@ -54,6 +54,7 @@ test('static export publishes only reviewed evidence with working reports, downl
     context,
   );
   const routes = context.aftershockStatic!;
+  assert.ok(!Object.keys(routes).some((route) => route.startsWith('/api/execute')));
   const data = async (route: string) => {
     const url = new URL(route, 'http://localhost');
     url.searchParams.sort();
@@ -99,7 +100,9 @@ test('static export publishes only reviewed evidence with working reports, downl
     'published captures must support a genuine compatible comparison',
   );
   const html = await readFile(join(output.directory, 'index.html'), 'utf8');
-  assert.match(html, /Published snapshot/);
+  assert.match(html, /Records \+ live checks/);
+  assert.match(html, /id="execute-controls" hidden/);
+  assert.doesNotMatch(html, /id="local-runner-link" hidden/);
   assert.match(html, /block 2020/);
   assert.match(html, /not an original scenario or live monitoring/);
   for (const name of await readdir(output.directory)) {

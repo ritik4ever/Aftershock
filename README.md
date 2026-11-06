@@ -2,7 +2,7 @@
 
 Find the failures before they reach Ethereum.
 
-Aftershock runs stateful EIP-8141 Frame Transaction tests against a real isolated ethrex/sidecar stack. It checks payer solvency, keyed nonces, replacement and lifecycle behavior, then exports evidence through a CLI and local read-only viewer.
+Aftershock runs stateful EIP-8141 Frame Transaction tests against a real isolated ethrex/sidecar stack. It checks payer solvency, keyed nonces, replacement and lifecycle behavior through a CLI and browser workspace, with fresh execution and live public inspection separated from recorded reports.
 
 ## Run
 
@@ -16,13 +16,13 @@ npm run --silent aftershock -- doctor --local
 npm run --silent aftershock -- serve --port 4323
 ```
 
-Open http://127.0.0.1:4323. An occupied port may mean the viewer is already running; choose another port if needed. The viewer reads saved reports; it does not execute transactions or control Docker.
+Open http://127.0.0.1:4323. Restart an old viewer process after updating code. **Start fresh isolated run** executes a fixed scenario on your WSL/Docker stack, polls its job and opens its newly saved report. One job runs per viewer process; allow cleanup to finish before stopping it. The UI accepts no scripts, endpoints or signing keys. If the port is occupied, restart the old process or select another port.
 
 ## Hosting on Vercel
 
-Import the repository with framework **Other**, Node **24.x**, build command `npm run build:static` and output directory `dist`. `vercel.json` supplies installation/build settings and security headers; no environment variables are needed. The build exports seven fixed reviewed captures, downloads, comparison results and the recorded public receipt. It never scans private reports or starts the local server. Deploy the repository root, not `packages/cli`.
+Import the repository with framework **Other**, Node **24.x**, build command `npm run build:static` and output directory `dist`. `vercel.json` supplies build settings, security headers and the read-only `/api/live` function; no environment variables are needed. **Check network now** and **Inspect transaction now** query the fixed sponsor gateway at request time. Pending/missing receipts and upstream errors remain unavailable; saved results are never substituted. No keys, transaction submission or Docker controls are exposed on Vercel.
 
-To check the export locally, run `npm run build:static` in a clean checkout/output directory (`dist` must not already exist). The public UI is labeled **Published snapshot / Read only**; its refresh actions reread exported files, not live nodes. Updating evidence requires a reviewed rebuild/deployment. No keys or Docker infrastructure are hosted. Deployment itself remains pending until a real Vercel URL is verified.
+The hosted **Run a new test** section opens the local companion at port 4323; start it with the command above. With only WSL available, new isolated runs execute on your own machine, not remotely for arbitrary visitors. A protected remote Docker backend would require separate infrastructure. The seven exported reports are genuine earlier runs, labeled **Recorded real run**; refreshing that list is not a new test. To rebuild records locally use `npm run build:static` with no existing `dist`. Deploy the repository root. Hosted verification of the new live function remains pending after the manual push/redeployment.
 
 The existing development installation is `/home/ritik/aftershock-build` in WSL. The Windows review checkout has no installed dependencies. Other machines can use any Linux-home checkout.
 
@@ -71,7 +71,7 @@ npm test
 npm audit
 ```
 
-The last checkpoint passed 96 default tests and quality gates. Integration results and known failures are in [TESTING_REPORT](docs/TESTING_REPORT.md). Desktop/mobile flows were manually verified for the local viewer; automated visual testing and the deployed static viewer are not yet verified.
+Executed checks and integration results are in [TESTING_REPORT](docs/TESTING_REPORT.md). Earlier desktop/mobile report flows were manually verified; the new live/execution controls require a fresh browser check after deployment/restart.
 
 This is a research tool, not a security certification. The pinned sidecar has separate dependency advisories and a reproduced Cancelled explorer inconsistency. Thirteen historical private reports fail current validation and remain preserved. Broader lifecycle edges, full raw traces and exact historical replay are outside verified coverage.
 

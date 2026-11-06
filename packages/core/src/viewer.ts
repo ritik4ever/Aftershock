@@ -7,6 +7,9 @@ import { readRun, markdownReport } from './report.js';
 import { runReport, scenarioCatalogue, definitions } from './scenario.js';
 import { checkEvidence } from './evidence-check.js';
 import { compareRuns, replayPlan } from './replay.js';
+import { createLiveHandler } from './live.js';
+import { createExecutionJobs } from './execution.js';
+import { scenarioId } from './scenario.js';
 
 const samples = {
   keyed: 'rpc-keyed-nonce-lifecycle.json',
@@ -74,6 +77,8 @@ export async function startViewer(root: string, port = 4318) {
     }
   }
   let boundPort = 0;
+  const live = createLiveHandler();
+  const execution = createExecutionJobs(root);
   const server = createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -101,7 +106,10 @@ export async function startViewer(root: string, port = 4318) {
       json(403, { error: 'Local same-origin requests only' });
       return;
     }
-    if (req.method !== 'GET') {
+    if (
+      req.method !== 'GET' &&
+      !(req.method === 'POST' && req.url === '/api/execute')
+    ) {
       res.setHeader('Allow', 'GET');
       json(405, { error: 'Read-only viewer' });
       return;
@@ -112,6 +120,76 @@ export async function startViewer(root: string, port = 4318) {
     }
     const url = new URL(req.url, `http://${host}`);
     try {
+      if (url.pathname === '/api/execute') {
+        if (req.method === 'POST') {
+          if (
+            req.headers['content-type']?.split(';')[0]?.trim() !==
+            'application/json'
+          ) {
+            json(415, { error: 'Scenario starts require application/json' });
+            return;
+          }
+          let body = '',
+            size = 0;
+          for await (const chunk of req.iterator({ destroyOnReturn: false })) {
+            size += Buffer.byteLength(chunk);
+            if (size > 1024) {
+              req.resume();
+              json(413, { error: 'Request too large' });
+              return;
+            }
+            body += String(chunk);
+          }
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(body);
+          } catch {
+            json(400, { error: 'Invalid JSON' });
+            return;
+          }
+          const input = z.object({ scenarioId }).strict().safeParse(parsed);
+          if (!input.success) {
+            json(400, {
+              error:
+                'Choose one built-in scenario; no scripts, endpoints or signing keys accepted',
+            });
+            return;
+          }
+          const job = execution.start(input.data.scenarioId);
+          json(
+            job ? 202 : 409,
+            job ?? {
+              error: 'A scenario is already running in this viewer process',
+            },
+          );
+          return;
+        }
+        const id = url.searchParams.get('job');
+        if (url.searchParams.size !== 1 || !z.uuid().safeParse(id).success) {
+          json(400, { error: 'Provide a valid job ID' });
+          return;
+        }
+        const job = execution.get(id!);
+        json(
+          job ? 200 : 404,
+          job ?? {
+            error:
+              'Job unavailable; it may belong to a previous viewer process',
+          },
+        );
+        return;
+      }
+      if (url.pathname === '/api/live') {
+        const response = await live(
+          new Request(url, {
+            headers: {
+              ...(req.headers.origin ? { origin: req.headers.origin } : {}),
+            },
+          }),
+        );
+        json(response.status, await response.json());
+        return;
+      }
       const asset = assets.get(url.pathname);
       if (asset && !url.search) {
         res.writeHead(200, { 'Content-Type': asset.type });

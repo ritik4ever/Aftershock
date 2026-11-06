@@ -18,14 +18,17 @@ function resource(path) {
   if (!globalThis.aftershockStatic) return path;
   const url = new URL(path, 'http://localhost');
   url.searchParams.sort();
+  if (url.origin === 'http://localhost' && url.pathname === '/api/live')
+    return url.pathname + url.search;
   const file = globalThis.aftershockStatic[url.pathname + url.search];
   if (!file) throw new Error('Unavailable in this published snapshot');
   return file;
 }
-async function request(path) {
+async function request(path, options = {}) {
   const response = await fetch(resource(path), {
-    signal: AbortSignal.timeout(10000),
+    signal: AbortSignal.timeout(path.startsWith('/api/live') ? 16000 : 10000),
     credentials: 'omit',
+    ...options,
   });
   const data = await response.json();
   if (!response.ok || data.error)
@@ -99,7 +102,7 @@ function renderRuns() {
       `${r.title} ${r.scenarioId} ${r.runId}`.toLowerCase().includes(search),
   );
   $('run-count').textContent =
-    `${filtered.length} of ${runs.length} unique runs. Reviewed examples are historical captures, not new executions.`;
+    `${filtered.length} of ${runs.length} unique recorded runs. These are genuine earlier executions, not new tests triggered by this page.`;
   const target = $('run-list');
   target.replaceChildren();
   if (!filtered.length) {
@@ -528,3 +531,132 @@ for (const id of ['search', 'verdict', 'source'])
   $(id).addEventListener(id === 'search' ? 'input' : 'change', renderRuns);
 loadRuns();
 loadScenarios();
+
+let liveTicket = 0;
+async function liveCheck(inspect) {
+  const target = $('live-result'),
+    hash = $('live-hash').value.trim(),
+    ticket = ++liveTicket;
+  if (inspect && !/^0x[a-f0-9]{64}$/i.test(hash)) {
+    target.replaceChildren(
+      node(
+        'p',
+        'Enter a valid 0x-prefixed transaction hash with 64 hexadecimal digits.',
+        'error-text',
+      ),
+    );
+    return;
+  }
+  $('live-inspect').disabled = true;
+  $('live-network').disabled = true;
+  target.replaceChildren(
+    node('p', 'Querying the real public gateway now...', 'muted'),
+  );
+  try {
+    const data = await request(
+      inspect ? `/api/live?hash=${encodeURIComponent(hash)}` : '/api/live',
+    );
+    if (ticket !== liveTicket) return;
+    const card = panel('Live gateway response'),
+      info = inspect ? data.before : data.info;
+    card.append(
+      keyValues({
+        'Observed now': date(data.observedAt),
+        'Public chain ID': data.chainId,
+        'Gateway version': info.version,
+        'Source commit': info.commit || 'Unknown / not verified',
+        'Bundling mode': info.bundlingMode,
+      }),
+    );
+    if (inspect) {
+      card.append(
+        keyValues({
+          'Transaction hash': data.requestedHash,
+          'Current lifecycle': data.status.value?.status || 'Unavailable',
+          'Admission observed': data.result.admissionObserved
+            ? 'Yes'
+            : 'Not established',
+          'Frame execution': data.result.execution,
+          'Receipt block': data.receipt.value?.blockNumber || 'Unavailable',
+          'Observation issues':
+            data.result.issues.join(', ') ||
+            'None detected; missing fields remain unavailable',
+        }),
+      );
+      if (data.receipt.value)
+        card.append(
+          details('Actual frame receipts', data.receipt.value.frameReceipts),
+        );
+      card.append(details('Current projected evidence', data));
+    }
+    card.append(
+      node(
+        'p',
+        'Read-only observation, not a new scenario run or a source-specific invariant PASS. Missing receipts or explorer history are not replaced with recorded examples.',
+        'muted',
+      ),
+    );
+    target.replaceChildren(card);
+  } catch (error) {
+    if (ticket === liveTicket)
+      target.replaceChildren(
+        node(
+          'p',
+          `Live check unavailable: ${error.message}. No saved result substituted.`,
+          'error-text',
+        ),
+      );
+  } finally {
+    if (ticket === liveTicket) {
+      $('live-inspect').disabled = false;
+      $('live-network').disabled = false;
+    }
+  }
+}
+$('live-network').addEventListener('click', () => liveCheck(false));
+$('live-inspect').addEventListener('click', () => liveCheck(true));
+
+if (globalThis.aftershockStatic) {
+  $('execute-controls').hidden = true;
+  $('local-runner-link').hidden = false;
+}
+$('execute-start').addEventListener('click', async () => {
+  if (globalThis.aftershockStatic) return;
+  const target = $('execute-result');
+  $('execute-start').disabled = true;
+  try {
+    let job = await request('/api/execute', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ scenarioId: $('execute-scenario').value }),
+    });
+    while (job.state === 'RUNNING') {
+      target.replaceChildren(
+        node(
+          'p',
+          `Real isolated run ${job.id} is running. Waiting for node observations; no verdict yet.`,
+          'muted',
+        ),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      job = await request(`/api/execute?job=${encodeURIComponent(job.id)}`);
+    }
+    if (job.state !== 'COMPLETED')
+      throw new Error(job.error || 'Run did not produce a saved report');
+    target.replaceChildren(
+      node(
+        'p',
+        `Fresh run ${job.runId}: ${job.result}. Review the actual report below.`,
+        'muted',
+      ),
+    );
+    await loadRuns();
+    await selectRun(`local:${job.runId}`, true);
+  } catch (error) {
+    target.replaceChildren(
+      node('p', `Fresh execution unavailable: ${error.message}`, 'error-text'),
+    );
+  } finally {
+    $('execute-start').disabled = false;
+  }
+});

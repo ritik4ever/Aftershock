@@ -112,19 +112,53 @@ async function app(
   let empty = false;
   let finishCompare: ((response: Response) => void) | undefined;
   const requests: string[] = [];
+  let liveUnavailable = false;
   const completion = runInNewContext(source, {
     document: { getElementById: el, createElement: () => new Element() },
     AbortSignal,
     URL,
+    setTimeout: (callback: () => void) => {
+      void setImmediate().then(callback);
+    },
     ...(published ? { aftershockStatic: routes } : {}),
     matchMedia: () => ({ matches: true }),
     fetch: async (path: string, options: RequestInit) => {
-      assert.equal(
-        options.method,
-        undefined,
-        'viewer only issues default GET requests',
-      );
+      if (path === '/api/execute') {
+        assert.equal(options.method, 'POST');
+        assert.deepEqual(JSON.parse(String(options.body)), {
+          scenarioId: 'keyed-nonce-lifecycle',
+        });
+      } else
+        assert.equal(
+          options.method,
+          undefined,
+          'read endpoints only issue GET requests',
+        );
       requests.push(path);
+      if (path === '/api/execute')
+        return Response.json(
+          { id: 'unit-job', state: 'RUNNING' },
+          { status: 202 },
+        );
+      if (path === '/api/execute?job=unit-job')
+        return Response.json({
+          id: 'unit-job',
+          state: 'COMPLETED',
+          runId: report.runId,
+          result: report.result,
+        });
+      if (path.startsWith('/api/live'))
+        return liveUnavailable
+          ? Response.json(
+              { error: 'Live upstream unavailable' },
+              { status: 502 },
+            )
+          : Response.json({
+              mode: 'LIVE_PUBLIC_READ',
+              observedAt: '2026-11-06T12:00:00.000Z',
+              chainId: '0x539',
+              info: { version: 'v4.1.1', commit: '', bundlingMode: 'auto' },
+            });
       const original = published
         ? Object.keys(routes).find((route) => routes[route] === path)
         : path;
@@ -178,6 +212,9 @@ async function app(
     requests,
     clear: () => {
       empty = true;
+    },
+    failLive: () => {
+      liveUnavailable = true;
     },
     compare: () => {
       assert.ok(finishCompare);
@@ -250,6 +287,43 @@ test('refreshing an empty listing clears a previously selected report', async ()
   assert.match(ui.el('detail-content').textContent, /No available report/);
   assert.ok(!ui.el('detail-content').textContent.includes(report.runId));
   assert.equal(ui.el('refresh').disabled, false);
+});
+
+test('published viewer performs explicit live checks and shows failures without substituting recorded runs', async () => {
+  const ui = await app([], true);
+  const count = ui.requests.length;
+  ui.el('live-hash').value = 'invalid';
+  await ui.el('live-inspect').trigger('click');
+  assert.equal(ui.requests.length, count);
+  assert.match(ui.el('live-result').textContent, /Enter a valid/);
+  await ui.el('live-network').trigger('click');
+  assert.equal(ui.requests.at(-1), '/api/live');
+  assert.match(ui.el('live-result').textContent, /Live gateway response/);
+  assert.match(ui.el('live-result').textContent, /Unknown \/ not verified/);
+  ui.failLive();
+  await ui.el('live-network').trigger('click');
+  assert.match(ui.el('live-result').textContent, /No saved result substituted/);
+  assert.doesNotMatch(
+    ui.el('live-result').textContent,
+    new RegExp(report.runId),
+  );
+  assert.equal(ui.el('live-network').disabled, false);
+});
+
+test('local UI starts and polls a fresh execution job while published UI only links to the local companion', async () => {
+  const ui = await app();
+  ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
+  await ui.el('execute-start').trigger('click');
+  assert.ok(ui.requests.includes('/api/execute'));
+  assert.ok(ui.requests.includes('/api/execute?job=unit-job'));
+  assert.match(ui.el('execute-result').textContent, /Fresh run/);
+  assert.equal(ui.el('execute-start').disabled, false);
+  const published = await app([], true);
+  assert.equal(published.el('execute-controls').hidden, true);
+  assert.equal(published.el('local-runner-link').hidden, false);
+  const before = published.requests.length;
+  await published.el('execute-start').trigger('click');
+  assert.equal(published.requests.length, before);
 });
 
 test('viewer explains unavailable reports with safe text while retaining usable runs', async () => {

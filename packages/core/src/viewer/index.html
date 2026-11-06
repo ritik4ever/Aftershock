@@ -14,7 +14,8 @@
         Aftershock</a
       >
       <nav aria-label="Main navigation">
-        <a href="#scenarios">Scenarios</a><a href="#runs">Runs</a
+        <a href="#execute">Run test</a><a href="#live">Live checks</a
+        ><a href="#scenarios">Scenarios</a><a href="#runs">Runs</a
         ><a href="#details">Evidence</a><a href="#comparison">Compare</a
         ><a href="#guide">Guide</a
         ><a
@@ -24,31 +25,113 @@
           >GitHub &#8599;</a
         >
       </nav>
-      <span class="local-pill">Local / Read only</span>
+      <span class="local-pill">Local / Isolated runner</span>
     </header>
     <main>
       <section class="hero">
         <p class="eyebrow">FRAME TRANSACTION TESTING</p>
         <h1>Find the failures.<br /><em>Follow the evidence.</em></h1>
         <p class="hero-copy">
-          Explore transaction lifecycles, inspect recorded findings, and compare
-          reproducible test runs.
+          Run fresh isolated tests, inspect live public transactions, and
+          compare evidence from real executions.
         </p>
         <div class="hero-actions">
-          <a class="button primary" href="#runs"
-            >Explore runs <span>&#8594;</span></a
-          ><a class="button" href="#comparison">Compare results</a>
+          <a class="button primary" href="#execute"
+            >Run a fresh test <span>&#8594;</span></a
+          ><a class="button" href="#live">Inspect live transaction</a>
         </div>
       </section>
-      <section class="stats" aria-label="Run overview">
+      <section id="execute" class="section">
+        <p class="eyebrow">FRESH ISOLATED EXECUTION</p>
+        <h2>Run a new test<span class="accent">.</span></h2>
+        <p class="muted">
+          Runs real signed transactions and state transitions on your owned
+          WSL/Docker stack. Creates a new report; it never reuses an example as
+          a new result. Mining cases take several minutes. Keep this process
+          running until cleanup finishes.
+        </p>
+        <div id="execute-controls" class="compare-controls">
+          <label
+            ><span>Scenario</span
+            ><select id="execute-scenario">
+              <option value="paymaster-solvency">
+                Shared payer solvency (mined)
+              </option>
+              <option value="keyed-nonce-lifecycle">
+                Keyed nonce lifecycle (mined)
+              </option>
+              <option value="keyed-replacement-ttl">
+                Keyed TTL expiry/refresh
+              </option>
+              <option value="cancelled-replacement">
+                Cancelled readmission (known finding)
+              </option>
+              <option value="staked-storage-boundary">
+                Staked storage boundary (mined)
+              </option>
+            </select></label
+          >
+          <button id="execute-start" class="button primary">
+            Start fresh isolated run
+          </button>
+        </div>
+        <div id="local-runner-link" hidden>
+          <p>
+            Vercel does not run Docker. Start the companion on your machine,
+            then open its execution page:
+          </p>
+          <pre class="data">
+npm run --silent aftershock -- serve --port 4323</pre>
+          <a
+            class="button primary"
+            href="http://127.0.0.1:4323/#execute"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Open local test runner</a
+          >
+        </div>
+        <div id="execute-result" aria-live="polite"></div>
+      </section>
+      <section id="live" class="section">
+        <p class="eyebrow">CURRENT PUBLIC DEVNET OBSERVATIONS</p>
+        <h2>Check the real network<span class="accent">.</span></h2>
+        <p class="muted">
+          These buttons query the sponsor gateway now. They do not replay saved
+          results, submit transactions or run isolated scenarios. The gateway
+          receives the transaction hash you inspect.
+        </p>
+        <div class="compare-controls">
+          <label
+            ><span>Public Frame Transaction hash</span
+            ><input
+              id="live-hash"
+              type="text"
+              maxlength="66"
+              spellcheck="false"
+              placeholder="0x... (64 hexadecimal digits)"
+          /></label>
+          <button id="live-inspect" class="button primary">
+            Inspect transaction now
+          </button>
+          <button id="live-network" class="button">Check network now</button>
+        </div>
+        <div id="live-result" aria-live="polite">
+          <p class="muted">
+            No live check performed yet. Recorded scenario runs are listed
+            separately below.
+          </p>
+        </div>
+      </section>
+      <section class="stats" aria-label="Recorded run overview">
         <div>
-          <strong id="stat-total">&mdash;</strong><span>Available runs</span>
+          <strong id="stat-total">&mdash;</strong><span>Recorded runs</span>
         </div>
         <div>
-          <strong id="stat-pass">&mdash;</strong><span>Passing runs</span>
+          <strong id="stat-pass">&mdash;</strong
+          ><span>Recorded passing runs</span>
         </div>
         <div>
-          <strong id="stat-fail">&mdash;</strong><span>Runs with findings</span>
+          <strong id="stat-fail">&mdash;</strong><span>Recorded findings</span>
         </div>
         <div>
           <strong id="stat-evidence">&mdash;</strong
@@ -74,8 +157,9 @@
         </div>
         <p class="muted">
           Execution requires the CLI and cached isolated Docker images. This
-          viewer does not check node connectivity or run tests. Saved results
-          describe earlier executions.
+          section lists coverage. Start a fresh run above on the local
+          companion, or use Live checks for current public node observations.
+          Saved results describe earlier executions.
         </p>
         <div id="scenario-list" class="detail-grid" aria-live="polite">
           <p class="muted">Loading scenarios...</p>
@@ -112,6 +196,7 @@
               <option value="">All sources</option>
               <option>Saved local run</option>
               <option>Reviewed example</option>
+              <option>Recorded real run</option>
             </select></label
           >
         </div>

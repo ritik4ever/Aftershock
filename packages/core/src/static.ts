@@ -82,7 +82,7 @@ export async function buildStaticViewer(root: string) {
     startedAt: report.startedAt,
     steps: report.steps.length,
     complete: report.evidence?.complete ?? false,
-    source: 'Reviewed example',
+    source: 'Recorded real run',
   }));
   await emit('/api/runs', {
     runs: runs.sort((a, b) => b.startedAt.localeCompare(a.startedAt)),
@@ -170,8 +170,14 @@ export async function buildStaticViewer(root: string) {
       '<script src="/app.js" defer></script>',
       '<script src="/static-config.js" defer></script>\n    <script src="/app.js" defer></script>',
     )
-    .replace('Local / Read only', 'Published snapshot / Read only')
-    .replace('<main>', `<main>${proofHTML}`);
+    .replace('Local / Isolated runner', 'Records + live checks / Read only')
+    .replace('id="execute-controls"', 'id="execute-controls" hidden')
+    .replace('id="local-runner-link" hidden', 'id="local-runner-link"')
+    .replace('id="live-hash"', `id="live-hash" value="${proof.requestedHash}"`)
+    .replace(
+      '<section id="guide" class="section">',
+      `${proofHTML}<section id="guide" class="section">`,
+    );
   await writeFile(resolve(stage, 'index.html'), html, { flag: 'wx' });
   await writeFile(
     resolve(stage, 'static-config.js'),

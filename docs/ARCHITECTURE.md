@@ -6,9 +6,10 @@
 - Fixed scenario definitions, official-codec signing and isolated Docker fixtures.
 - Lifecycle/receipt assertions and bounded per-run RPC evidence.
 - Immutable report storage, selected offline checking, comparison and replay.
-- A loopback-only HTTP viewer with same-origin, read-only APIs.
+- A loopback-only browser runner with same-origin checks and one fixed-scenario job at a time.
+- A Vercel read-only live function for current public network/transaction observations, alongside static recorded reports.
 
-State-changing scenarios use owned internal networks and fresh private keys. The public reader has no mutation methods. The viewer cannot run shell commands, sign transactions or start containers.
+State-changing scenarios run only through the owned local engine with internal networks and fresh keys. The local UI accepts a built-in scenario ID and opens the newly generated report. It accepts no arbitrary scripts/keys/endpoints. The public Vercel function imports only read/validation modules and has no mutation or Docker endpoint. Hosted execution links open the user's local companion; no remote runner is provisioned.
 
 Reports retain allowlisted node outputs and request digests, not signatures, calldata, logs or complete raw transcripts. SHA-256 detects changes but does not authenticate authorship. Offline checking does not rerun the protocol.
 
