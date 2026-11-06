@@ -15,12 +15,14 @@ import { startFixture, FixtureSetupError } from './local/fixture.js';
 import { localRpc, LocalRpcError, waitForRpc } from './local/rpc.js';
 import { waitForMining } from './local/lifecycle.js';
 import { keyedReplacementTTL } from './local/ttl.js';
+import { cancelledReplacement } from './local/cancelled.js';
 import { minedKeyedLifecycle, minedPayerLifecycle } from './local/scenarios.js';
 
 export const scenarioId = z.enum([
   'paymaster-solvency',
   'keyed-nonce-lifecycle',
   'keyed-replacement-ttl',
+  'cancelled-replacement',
 ]);
 export type ScenarioId = z.infer<typeof scenarioId>;
 export const verdict = z.enum([
@@ -204,9 +206,57 @@ export const scenarioCatalogue = [
       'Exact expiry boundary and terminal-status exceptions are outside this case; no inclusion claim',
     ],
   },
+  {
+    id: 'cancelled-replacement',
+    title: 'Cancelled predecessor fee exemption and identical reactivation',
+    rule: 'FrameTxMempoolEntry/canReplace; MempoolService/validateReplaceability',
+    implemented: [
+      'mined payer drain and observed cancellation (--mine)',
+      'restored affordability before below-bump replacement',
+      'identical cancelled resubmission and restored live guards',
+    ],
+    blocked: [
+      'Requires mining; OnChain/Finalized/Reverted and Submitted/Pending exceptions remain outside this case',
+    ],
+  },
 ] as const;
 
 export const definitions = {
+  'cancelled-replacement': scenarioDefinition.parse({
+    id: 'cancelled-replacement',
+    title: scenarioCatalogue[3].title,
+    sourceRule: scenarioCatalogue[3].rule,
+    sourceCommit: UPSTREAM.sidecar,
+    expectedInvariant:
+      'An actually Cancelled same-slot entry may be replaced below the live fee bump or resubmitted identically after affordability is restored; live guards apply again.',
+    preconditions: [
+      'Owned isolated mining fixture with manual sidecar bundling',
+      'Real cancellation after mined payer drain, no status injection',
+      'Verified 300-second TTL; both reacceptances occur before expiry',
+    ],
+    actions: [
+      'admit-base',
+      'reject-live-duplicate',
+      'reject-live-below-bump',
+      'drain-for-cancellation',
+      'observe-cancelled',
+      'restore-payer',
+      'confirm-terminal-window',
+      'accept-cancelled-below-bump',
+      'verify-terminal-replacement',
+      'drain-for-recancel',
+      'observe-recancelled',
+      'restore-payer-again',
+      'confirm-resubmission-window',
+      'resubmit-cancelled-identical',
+      'verify-reactivation',
+      'explorer-reactivation-consistency',
+      'reject-reactivated-duplicate',
+      'reject-reactivated-below-bump',
+      'explorer-continuity',
+      'mined-state-transition',
+    ],
+  }),
   'keyed-replacement-ttl': scenarioDefinition.parse({
     id: 'keyed-replacement-ttl',
     title: scenarioCatalogue[2].title,
@@ -339,9 +389,11 @@ async function executeScenario(
         ? 'Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.'
         : 'Non-mining genesis fixture. No block-production/state-transition claims.',
       'Seed identifies action order, not private signing keys; fresh accounts are random.',
-      id === 'keyed-replacement-ttl'
-        ? 'Admission-only TTL expiry/refresh case; no exact boundary, inclusion or terminal/submitted-entry claim.'
-        : 'Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run.',
+      id === 'cancelled-replacement'
+        ? 'Cancelled predecessor only; no OnChain/Finalized/Reverted, exact TTL-boundary or Submitted/Pending claims.'
+        : id === 'keyed-replacement-ttl'
+          ? 'Admission-only TTL expiry/refresh case; no exact boundary, inclusion or terminal/submitted-entry claim.'
+          : 'Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run.',
     ],
     reproducer: `npm run --silent aftershock -- run ${id} --local${mining ? ' --mine' : ''}`,
   };
@@ -372,7 +424,10 @@ async function executeScenario(
     await waitForRpc(executionUrl);
     await waitForRpc(sidecarUrl);
     if (mining) {
-      const ready = await waitForMining(executionUrl);
+      const ready = await waitForMining(
+        executionUrl,
+        id === 'cancelled-replacement' ? 15000 : 5000,
+      );
       report.environment.readyBlock = ready.number;
       report.environment.readyBlockHash = ready.hash;
     }
@@ -435,7 +490,17 @@ async function executeScenario(
         return expected === error.reason;
       }
     };
-    if (id === 'keyed-replacement-ttl') {
+    if (id === 'cancelled-replacement') {
+      if (configuration.useropsTTL !== 300)
+        throw new Error('Cancellation TTL mismatch');
+      if (!mining) throw new Error('Cancelled replacement requires mining');
+      await cancelledReplacement(
+        fixture,
+        configuration.useropsTTL,
+        add,
+        submit,
+      );
+    } else if (id === 'keyed-replacement-ttl') {
       if (configuration.useropsTTL !== 30)
         throw new Error('TTL configuration mismatch');
       await keyedReplacementTTL(fixture, configuration.useropsTTL, add, submit);

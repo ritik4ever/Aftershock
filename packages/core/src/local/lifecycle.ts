@@ -7,15 +7,19 @@ import { localRpc, LocalRpcError } from './rpc.js';
 import { hash, quantity, receipt, explorerTransaction } from '../schema.js';
 
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-export async function waitForMining(endpoint: LocalEndpoint) {
+export async function waitForMining(
+  endpoint: LocalEndpoint,
+  pollMilliseconds = 5000,
+) {
+  z.number().int().min(1000).max(15000).parse(pollMilliseconds);
   const genesis = await localRpc(
     endpoint,
     'eth_getBlockByNumber',
     ['0x0', false],
     z.object({ timestamp: quantity }),
   );
-  const deadline = Date.now() + 570_000;
-  while (Date.now() < deadline) {
+  const deadline = performance.now() + 570_000;
+  while (performance.now() < deadline) {
     const block = await localRpc(
       endpoint,
       'eth_getBlockByNumber',
@@ -27,15 +31,15 @@ export async function waitForMining(endpoint: LocalEndpoint) {
       BigInt(block.timestamp) >= BigInt(genesis.timestamp) + 396n
     )
       return block;
-    await pause(5000);
+    await pause(pollMilliseconds);
   }
   throw new Error('Mining readiness unavailable');
 }
 
 export async function frameReceipt(endpoint: LocalEndpoint, txHash: string) {
   hash.parse(txHash);
-  const deadline = Date.now() + 75_000;
-  while (Date.now() < deadline) {
+  const deadline = performance.now() + 75_000;
+  while (performance.now() < deadline) {
     try {
       const result = await localRpc(
         endpoint,
@@ -62,8 +66,8 @@ export async function lifecycleOutcome(
   txHash: string,
   expected: 'included' | 'dropped' | 'replaced',
 ) {
-  const deadline = Date.now() + 45_000;
-  while (Date.now() < deadline) {
+  const deadline = performance.now() + 45_000;
+  while (performance.now() < deadline) {
     const result = await localRpc(
       endpoint,
       'skandha_explorer_getTransaction',
@@ -123,8 +127,8 @@ export async function transfer(
     (await localRpc(endpoint, 'eth_sendRawTransaction', [raw], hash)) !== txHash
   )
     throw new Error('Transfer hash mismatch');
-  const deadline = Date.now() + 75_000;
-  while (Date.now() < deadline) {
+  const deadline = performance.now() + 75_000;
+  while (performance.now() < deadline) {
     const result = await localRpc(
       endpoint,
       'eth_getTransactionReceipt',
