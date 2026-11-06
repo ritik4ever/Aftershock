@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile, realpath } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, realpath, rename } from 'node:fs/promises';
 import { resolve, relative } from 'node:path';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { z } from 'zod';
@@ -48,9 +48,12 @@ export async function startFixture(
   bundlingMode: 'auto' | 'manual' = mining ? 'auto' : 'manual',
   useropsTTL = 300,
   reset?: ResetSource,
+  checkpointMining = false,
 ) {
   z.uuid().parse(runId);
   z.number().int().min(10).max(300).parse(useropsTTL);
+  if (checkpointMining && (!mining || reset || process.platform !== 'linux'))
+    throw new Error('Managed checkpoints require a fresh Linux mining fixture');
   if (reset) {
     resetSource.parse(reset);
     if (mining || bundlingMode !== 'manual' || useropsTTL !== 30)
@@ -209,6 +212,15 @@ export async function startFixture(
     await writeFile(`${directory}/keys.json`, JSON.stringify(keys), {
       mode: 0o600,
     });
+    if (checkpointMining) {
+      await mkdir(`${directory}/runtime`, { mode: 0o700 });
+      for (const name of ['execution', 'beacon', 'sidecar'])
+        await mkdir(`${directory}/runtime/${name}`, { mode: 0o700 });
+      await rename(
+        `${directory}/validators`,
+        `${directory}/runtime/validators`,
+      );
+    }
     const entryPoint = '0x00000000000000000000000000000000000000aa';
     const mempoolId = 'QmcFZKUX9qoo3StwVycJTAhwdiqbEjcwNvQVK246p3z1rk';
     await writeFile(
@@ -246,6 +258,9 @@ export async function startFixture(
       '2',
       '--pids-limit',
       '256',
+      ...(checkpointMining
+        ? ['--user', `${process.getuid!()}:${process.getgid!()}`]
+        : []),
     ];
     stage = 'execution-start';
     await docker(
@@ -258,10 +273,14 @@ export async function startFixture(
       ...common,
       '-v',
       `${directory}/genesis.json:/aftershock/genesis.json:ro`,
+      ...(checkpointMining
+        ? ['-v', `${directory}/runtime/execution:/aftershock/state`]
+        : []),
       ...(mining ? ['-v', `${directory}/jwt:/aftershock/jwt:ro`] : []),
       ETHREX_IMAGE,
       '--network',
       '/aftershock/genesis.json',
+      ...(checkpointMining ? ['--datadir', '/aftershock/state'] : []),
       '--p2p.disabled',
       '--syncmode',
       'full',
@@ -298,11 +317,16 @@ export async function startFixture(
         `${directory}/consensus:/aftershock/consensus:ro`,
         '-v',
         `${directory}/jwt:/aftershock/jwt:ro`,
+        ...(checkpointMining
+          ? ['-v', `${directory}/runtime/beacon:/aftershock/state`]
+          : []),
         LIGHTHOUSE_IMAGE,
         'lighthouse',
         'beacon_node',
         '--testnet-dir=/aftershock/consensus',
-        '--datadir=/tmp/beacon',
+        checkpointMining
+          ? '--datadir=/aftershock/state'
+          : '--datadir=/tmp/beacon',
         '--http',
         '--http-address=0.0.0.0',
         '--http-port=4000',
@@ -327,7 +351,7 @@ export async function startFixture(
         '-v',
         `${directory}/consensus:/aftershock/consensus:ro`,
         '-v',
-        `${directory}/validators:/aftershock/validators`,
+        `${directory}/${checkpointMining ? 'runtime/' : ''}validators:/aftershock/validators`,
         LIGHTHOUSE_IMAGE,
         'lighthouse',
         'vc',
@@ -355,12 +379,15 @@ export async function startFixture(
       ...common,
       '-v',
       `${directory}/sidecar.json:/aftershock/config.json:ro`,
+      ...(checkpointMining
+        ? ['-v', `${directory}/runtime/sidecar:/aftershock/state`]
+        : []),
       reset?.sidecarImage ?? SIDECAR_IMAGE,
       'node',
       '--configFile',
       '/aftershock/config.json',
       '--dataDir',
-      '/tmp/aftershock',
+      checkpointMining ? '/aftershock/state' : '/tmp/aftershock',
       '--api.address',
       '0.0.0.0',
       '--api.port',
@@ -447,6 +474,9 @@ export async function startFixture(
         .digest('hex'),
       ...(reset
         ? { fixtureInputMode: 'GENESIS_RESET', resetBaselineRunId: reset.runId }
+        : {}),
+      ...(checkpointMining
+        ? { runtimeStateMode: 'MANAGED_PRIVATE_DIRECTORIES' }
         : {}),
       ...(mining
         ? {
