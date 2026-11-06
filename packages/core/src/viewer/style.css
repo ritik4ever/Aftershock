@@ -92,16 +92,19 @@ button:disabled {
   border-bottom: 1px solid var(--line);
 }
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 750;
   font-size: 21px;
   letter-spacing: -0.8px;
   white-space: nowrap;
 }
 .brand-mark {
-  color: var(--accent);
-  font-size: 30px;
-  vertical-align: middle;
-  margin-right: 8px;
+  display: block;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
 }
 nav {
   display: flex;
@@ -582,7 +585,8 @@ button:disabled:hover {
     font-size: 18px;
   }
   .brand-mark {
-    font-size: 25px;
+    width: 28px;
+    height: 28px;
   }
   nav {
     order: 3;
