@@ -1,5 +1,7 @@
 # Actual scenario coverage
 
+The additional `staked-storage-boundary` case reuses pinned upstream Foreign, ViolatingWallet and registry creation artifacts. Its native mining test verifies unstaked rejection, real staking, canonical rejection and alternative admission/inclusion of the same post-stake signed candidate, successful frames, unwaived storage checks and a real one-wei recipient increase. See [executed results](TESTING_REPORT.md) and [capture](evidence/staked-storage-boundary.json). This adapted workshop demonstration does not replace the two original stateful suites below. No new Solidity or compiler reconstruction is claimed.
+
 Both suites use real pinned private ethrex and sidecar processes, the official codec, a fresh genesis and fresh private accounts. Their results are not generated from a local mempool model. Current fixture chain is 9. Public chain 1337 remains a separate baseline observation.
 
 | Suite | Implemented and observed | Outside current coverage |

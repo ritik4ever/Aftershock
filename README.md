@@ -43,6 +43,17 @@ npm run test:cancelled
 
 It drains/restores a fresh EOA payer through mined transfers and checks Cancelled fee exemptions, identical reactivation and live guards. It also checks explorer metadata against the active entry. A scenario FAIL remains a finding even when its regression test successfully reproduces the pinned behavior. See [compatibility notes](docs/PROTOCOL_COMPATIBILITY.md) and [actual results](docs/ENVIRONMENT.md).
 
+## Alternative-mempool sponsor demonstration
+
+```sh
+npm run --silent aftershock -- run staked-storage-boundary --local --mine
+npm run test:sponsor
+```
+
+This deploys the pinned upstream `Foreign`, `ViolatingWallet` and staking registry artifacts in the private mining fixture. No new Solidity or local compiler is required. Source Git objects must exist at the pins in [UPSTREAM](docs/UPSTREAM.md), under `../aftershock-upstream/{workshop,sidecar}`; optionally export `AFTERSHOCK_UPSTREAM_ROOT` to another root. Missing artifacts produce BLOCKED before container creation. This variable is optional and `.env` is not automatically loaded.
+
+The real run verifies zero-stake rejection, mines a clean staking transaction, then submits the identical post-stake foreign-storage candidate to both interfaces: canonical rejection, alternative admission and automatic inclusion, successful frames and an actual one-wei recipient increase. [Captured report](docs/evidence/staked-storage-boundary.json), [demo steps](docs/DEMO_GUIDE.md), [submission package](docs/SUBMISSION.md) and [testing status](docs/TESTING_REPORT.md) retain the evidence and limitations. Private hashes have no public explorer link. Before/after-stake candidates use different nonces and hashes.
+
 ## Local report viewer
 
 ```sh
@@ -50,7 +61,7 @@ npm run --silent aftershock -- serve
 # Optional: serve --port 4320
 ```
 
-Open http://127.0.0.1:4318 from the Linux-home checkout. The loopback-only viewer reads validated local reports and four clearly labeled reviewed examples, counting each run ID once. It supports filtering, scenario prerequisites, action timelines, RPC journals, JSON/Markdown exports, selected evidence checks, fresh-state replay guidance and compatible-run comparison. It exposes no transaction, shell, file-write or Docker controls and does not check live node connectivity. Stop with Ctrl+C. API/security and script interaction tests pass; the user manually verified Scenarios, Runs, Compare and Markdown downloads. Automated visual/mobile QA remains unverified. Exact snapshot replay and the remaining live protocol edge cases are still unfinished. `npm run test:upstream-rules` separately exercises exact TTL, status and integer fee boundaries in the cached pinned sidecar image with networking disabled; these are source-method tests, not live admission evidence.
+Open http://127.0.0.1:4318 from the Linux-home checkout. The loopback-only viewer reads validated local reports and five clearly labeled reviewed examples, counting each run ID once. It supports filtering, scenario prerequisites, action timelines, RPC journals, JSON/Markdown exports, selected evidence checks, fresh-state replay guidance and compatible-run comparison. It exposes no transaction, shell, file-write or Docker controls and does not check live node connectivity. Stop with Ctrl+C. API/security and script interaction tests pass; the user manually verified Scenarios, Runs, Compare and Markdown downloads. Automated visual/mobile QA remains unverified. Mined checkpoint restoration is supported for checkpoint-enabled keyed-nonce runs; exact historical timing and additional live protocol edges remain outside verified coverage. `npm run test:upstream-rules` separately exercises exact TTL, status and integer fee boundaries in the cached pinned sidecar image with networking disabled; these are source-method tests, not live admission evidence.
 
 ## Real transaction evidence
 
