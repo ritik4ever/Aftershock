@@ -54,8 +54,25 @@ async function request(path, options = {}) {
   )
     throw Object.assign(new Error(data.error || 'Request unavailable'), {
       status: response.status,
+      activeRun: response.status === 409 ? data.activeRun : undefined,
     });
   return data;
+}
+function showActiveWorkflow(target, error) {
+  const id = error.activeRun?.id;
+  if (error.status !== 409 || !/^[1-9][0-9]{0,15}$/.test(id || '')) return;
+  target.append(
+    node(
+      'p',
+      `Shared workflow ${id} is already queued or running. It may be testing another visitor's input; it is not a result for your requested test. No new job was started.`,
+      'muted',
+    ),
+  );
+  const link = node('a', 'Watch active GitHub workflow', 'button');
+  link.href = `https://github.com/ritik4ever/Aftershock/actions/runs/${id}`;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  target.append(link);
 }
 async function readRemoteJob(path) {
   for (let attempt = 0; ; attempt++) {
@@ -225,6 +242,7 @@ async function trackContractPlan(start) {
     target.replaceChildren(
       node('p', `Contract test unavailable: ${error.message}`, 'error-text'),
     );
+    showActiveWorkflow(target, error);
     if (contractJob) {
       const reconnect = node(
         'button',
@@ -1072,6 +1090,7 @@ async function trackExecution(start = false) {
     target.replaceChildren(
       node('p', `Fresh execution unavailable: ${error.message}`, 'error-text'),
     );
+    showActiveWorkflow(target, error);
     if (remoteAvailable && remoteJob) {
       target.append(
         node(

@@ -191,6 +191,29 @@ test('remote jobs enforce busy/rate guards and reuse observed request identity',
   assert.ok(!duplicate.calls.some((call) => call.method === 'POST'));
 });
 
+test('busy runner exposes a fixed public workflow link without dispatching another job', async () => {
+  const { proxy, calls } = setup({
+    recent: [
+      {
+        ...run,
+        display_title: `Aftershock:keyed-nonce-lifecycle:${randomUUID()}`,
+        status: 'in_progress',
+      },
+    ],
+  });
+  const response = await proxy(post());
+  assert.equal(response.status, 409);
+  const data = await response.json();
+  assert.deepEqual(data.activeRun, {
+    id: String(run.id),
+    state: 'RUNNING',
+    workflowUrl: `https://github.com/ritik4ever/Aftershock/actions/runs/${run.id}`,
+  });
+  assert.match(data.error, /Your test was not started/);
+  assert.ok(!calls.some((call) => call.method === 'POST'));
+  assert.doesNotMatch(JSON.stringify(data), /TEST_ONLY_GITHUB_TOKEN/);
+});
+
 test('remote custom contract dispatch and artifact verification bind the exact public plan', async () => {
   const dispatch = setup();
   assert.equal(

@@ -91,6 +91,7 @@ async function app(
   savedRemoteJob = '',
   remoteReadFailures = 0,
   failRemoteDetail = false,
+  busyRemote = false,
 ) {
   const elements = new Map(
     [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => [
@@ -171,6 +172,14 @@ async function app(
         const url = new URL(path, 'https://aftershock.example');
         if (options.method === 'POST') {
           assert.ok(remoteEnabled);
+          if (busyRemote)
+            return Response.json(
+              {
+                error: 'Shared runner is busy. Your test was not started.',
+                activeRun: { id: '789', workflowUrl: 'https://evil.example/' },
+              },
+              { status: 409 },
+            );
           const body = JSON.parse(String(options.body));
           if (body.scenarioId === 'custom-contract') {
             assert.deepEqual(body.plan, counterPlan);
@@ -549,6 +558,30 @@ test('hosted UI resumes its saved GitHub job without starting another workflow',
     /Fresh GitHub-hosted isolated run/,
   );
   assert.ok(ui.requests.includes('/api/runner?job=123'));
+});
+
+test('busy scenario and contract forms link to the active workflow without claiming another run as their result', async () => {
+  for (const contract of [false, true]) {
+    const ui = await app([], true, false, false, true, '', 0, false, true);
+    ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
+    if (contract) await ui.el('contract-example').trigger('click');
+    await ui.el(contract ? 'contract-start' : 'execute-start').trigger('click');
+    const target = ui.el(contract ? 'contract-result' : 'execute-result');
+    assert.match(target.textContent, /Your test was not started/);
+    assert.match(target.textContent, /not a result for your requested test/);
+    const link = target.children.find(
+      (child) => child.textContent === 'Watch active GitHub workflow',
+    );
+    assert.equal(
+      link?.href,
+      'https://github.com/ritik4ever/Aftershock/actions/runs/789',
+    );
+    assert.doesNotMatch(target.textContent, /Fresh run|: PASS/);
+    assert.equal(
+      ui.el(contract ? 'contract-start' : 'execute-start').disabled,
+      false,
+    );
+  }
 });
 
 test('hosted UI executes through configured GitHub API and renders the returned report separately from archives', async () => {

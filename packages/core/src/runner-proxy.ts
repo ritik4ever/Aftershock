@@ -112,10 +112,16 @@ export function createRunnerProxy(
             state: 'RUNNING',
             provider: 'GITHUB_ACTIONS',
           });
-        if (recent.some((run) => run.status !== 'completed'))
+        const active = recent.find((run) => run.status !== 'completed');
+        if (active)
           return json(409, {
             error:
-              'A remote run is already queued or running. Try again after it finishes.',
+              'Shared runner is busy. Your test was not started. Follow the active workflow, then try again after it finishes.',
+            activeRun: {
+              id: String(active.id),
+              state: 'RUNNING',
+              workflowUrl: `https://github.com/${repository}/actions/runs/${active.id}`,
+            },
           });
         if (
           recent.filter(
