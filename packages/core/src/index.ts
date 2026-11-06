@@ -29,3 +29,4 @@ export { checkEvidence } from './evidence-check.js';
 
 export { startViewer } from './viewer.js';
 export { localDoctor } from './local/doctor.js';
+export { runUserTest, userTestInput, publicTestReader } from './user-test.js';

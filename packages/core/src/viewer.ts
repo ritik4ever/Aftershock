@@ -10,6 +10,7 @@ import { compareRuns, replayPlan } from './replay.js';
 import { createLiveHandler } from './live.js';
 import { createExecutionJobs } from './execution.js';
 import { scenarioId } from './scenario.js';
+import { createUserTestHandler } from './user-test.js';
 
 const samples = {
   keyed: 'rpc-keyed-nonce-lifecycle.json',
@@ -79,6 +80,7 @@ export async function startViewer(root: string, port = 4318) {
   }
   let boundPort = 0;
   const live = createLiveHandler();
+  const userTest = createUserTestHandler();
   const execution = createExecutionJobs(root);
   const server = createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -115,7 +117,10 @@ export async function startViewer(root: string, port = 4318) {
     }
     if (
       req.method !== 'GET' &&
-      !(req.method === 'POST' && req.url === '/api/execute')
+      !(
+        req.method === 'POST' &&
+        ['/api/execute', '/api/test'].includes(req.url ?? '')
+      )
     ) {
       res.setHeader('Allow', 'GET');
       json(405, { error: 'Read-only viewer' });
@@ -127,6 +132,38 @@ export async function startViewer(root: string, port = 4318) {
     }
     const url = new URL(req.url, `http://${host}`);
     try {
+      if (url.pathname === '/api/test') {
+        let size = 0;
+        const chunks: Buffer[] = [];
+        const bodyTimer = setTimeout(() => req.destroy(), 8000);
+        try {
+          for await (const part of req) {
+            const chunk = Buffer.from(part);
+            size += chunk.length;
+            if (size > 49152) {
+              json(413, { error: 'Input too large' });
+              return;
+            }
+            chunks.push(chunk);
+          }
+        } finally {
+          clearTimeout(bodyTimer);
+        }
+        const response = await userTest(
+          new Request(url, {
+            method: req.method,
+            headers: {
+              'content-type': req.headers['content-type'] ?? '',
+              ...(req.headers.origin ? { origin: req.headers.origin } : {}),
+            },
+            ...(req.method === 'POST'
+              ? { body: Buffer.concat(chunks).toString('utf8') }
+              : {}),
+          }),
+        );
+        json(response.status, await response.json());
+        return;
+      }
       if (url.pathname === '/api/execute') {
         if (req.method === 'POST') {
           if (

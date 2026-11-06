@@ -15,10 +15,10 @@
         Aftershock</a
       >
       <nav aria-label="Main navigation">
-        <a href="#execute">Run test</a><a href="#live">Live checks</a
-        ><a href="#scenarios">Scenarios</a><a href="#runs">Runs</a
-        ><a href="#details">Evidence</a><a href="#comparison">Compare</a
-        ><a href="#guide">Guide</a
+        <a href="#test-input">Test yours</a><a href="#execute">Scenarios</a
+        ><a href="#live">Live checks</a><a href="#scenarios">Scenarios</a
+        ><a href="#runs">Runs</a><a href="#details">Evidence</a
+        ><a href="#comparison">Compare</a><a href="#guide">Guide</a
         ><a
           href="https://github.com/ritik4ever/Aftershock"
           target="_blank"
@@ -41,6 +41,95 @@
             >Run a fresh test <span>&#8594;</span></a
           ><a class="button" href="#live">Inspect live transaction</a>
         </div>
+      </section>
+      <section id="test-input" class="section">
+        <p class="eyebrow">YOUR TRANSACTION OR DEPLOYED CONTRACT</p>
+        <h2>Test your input<span class="accent">.</span></h2>
+        <p class="muted">
+          Dry-run on the sponsor EIP-8141 devnet (chain 1337). Provide public
+          transaction data only. Inputs are sent to the execution RPC for this
+          check. Nothing is signed, broadcast or stored by Aftershock. Never
+          paste private keys or credentials.
+        </p>
+        <label
+          >Test type<select id="user-kind">
+            <option value="transaction">Signed Frame Transaction</option>
+            <option value="contract">Deployed contract call</option>
+          </select></label
+        >
+        <div id="user-transaction">
+          <label
+            >Signed type-0x06 transaction bytes<textarea
+              id="user-raw"
+              name="rawTransaction"
+              rows="6"
+              maxlength="32770"
+              placeholder="0x06…"
+            ></textarea>
+          </label>
+          <p class="muted">
+            Use the official ethrex-eip8141-tracer codec. The sender and
+            contracts must exist on this devnet. Up to 16 KiB, 16 frames and 3
+            million declared gas. A transaction hash is not transaction bytes.
+          </p>
+        </div>
+        <div id="user-contract" hidden>
+          <button id="user-contract-example" class="button">
+            Fill documented WETH symbol() call
+          </button>
+          <div class="compare-controls">
+            <label
+              >Contract address<input
+                id="user-to"
+                name="contractAddress"
+                placeholder="0x…" /></label
+            ><label
+              >Caller address<input
+                id="user-from"
+                name="callerAddress"
+                placeholder="0x…"
+            /></label>
+          </div>
+          <label
+            >ABI-encoded call data<textarea
+              id="user-data"
+              name="callData"
+              rows="3"
+              maxlength="8194"
+              placeholder="0x…"
+            ></textarea>
+          </label>
+          <div class="compare-controls">
+            <label
+              >Value (hex wei)<input
+                id="user-value"
+                name="callValue"
+                value="0x0" /></label
+            ><label
+              >Gas cap (hex, up to 1,000,000)<input
+                id="user-gas"
+                name="callGas"
+                value="0xf4240"
+            /></label>
+          </div>
+          <label
+            >Expected return bytes (optional exact assertion)<input
+              id="user-expected"
+              name="expectedReturn"
+              placeholder="0x… or leave blank"
+              maxlength="32770"
+          /></label>
+          <p class="muted">
+            Runs eth_call against deployed code at one captured block. State
+            changes are discarded. Use a signed Frame Transaction above to test
+            account validation in a frame context. This call does not certify
+            EIP-8141 compatibility or test an undeployed contract.
+          </p>
+        </div>
+        <button id="user-test-start" class="button primary">
+          Run dry test
+        </button>
+        <div id="user-test-result" aria-live="polite"></div>
       </section>
       <section id="execute" class="section">
         <p class="eyebrow">FRESH ISOLATED EXECUTION</p>

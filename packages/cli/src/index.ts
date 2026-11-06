@@ -19,12 +19,18 @@ import {
   compareRuns,
   checkEvidence,
   startViewer,
+  runUserTest,
+  userTestInput,
+  publicTestReader,
 } from '@aftershock/core';
+import { open } from 'node:fs/promises';
+import { constants } from 'node:fs';
 
 const help = `Aftershock core integration
   npm run aftershock -- doctor
   npm run aftershock -- doctor --local
   npm run aftershock -- inspect <transaction-hash> [--save]
+  npm run aftershock -- test-input <input.json>
   npm run aftershock -- versions
   npm run aftershock -- scenarios
   npm run aftershock -- run <scenario-id> --local [--mine]
@@ -50,6 +56,41 @@ Receipt absence is unavailable evidence, not proof that execution failed.
 
 async function main(args: string[]): Promise<number> {
   const [command, ...rest] = args;
+  if (command === 'test-input' && rest.length === 1) {
+    const file = await open(
+      rest[0]!,
+      constants.O_RDONLY |
+        (constants.O_NOFOLLOW ?? 0) |
+        (constants.O_NONBLOCK ?? 0),
+    );
+    let input;
+    try {
+      const stat = await file.stat();
+      if (!stat.isFile() || stat.size > 49152)
+        throw new Error('Invalid input file');
+      const buffer = Buffer.alloc(49153);
+      let bytesRead = 0;
+      while (bytesRead < buffer.length) {
+        const chunk = await file.read(
+          buffer,
+          bytesRead,
+          buffer.length - bytesRead,
+          null,
+        );
+        if (!chunk.bytesRead) break;
+        bytesRead += chunk.bytesRead;
+      }
+      if (bytesRead > 49152) throw new Error('Input too large');
+      input = userTestInput.parse(
+        JSON.parse(buffer.toString('utf8', 0, bytesRead)),
+      );
+    } finally {
+      await file.close();
+    }
+    const result = await runUserTest(input, publicTestReader());
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return result.result === 'PASS' ? 0 : result.result === 'FAIL' ? 1 : 3;
+  }
   if (command === 'doctor' && rest.length === 1 && rest[0] === '--local') {
     const result = await localDoctor(process.cwd());
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);

@@ -6,7 +6,8 @@
   "outputDirectory": "dist",
   "functions": {
     "api/live.ts": { "maxDuration": 20 },
-    "api/runner.ts": { "maxDuration": 20 }
+    "api/runner.ts": { "maxDuration": 20 },
+    "api/test.ts": { "maxDuration": 60 }
   },
   "headers": [
     {

@@ -20,7 +20,7 @@ function resource(path) {
   url.searchParams.sort();
   if (
     url.origin === 'http://localhost' &&
-    ['/api/live', '/api/runner'].includes(url.pathname)
+    ['/api/live', '/api/runner', '/api/test'].includes(url.pathname)
   )
     return url.pathname + url.search;
   const file = globalThis.aftershockStatic[url.pathname + url.search];
@@ -30,11 +30,13 @@ function resource(path) {
 async function request(path, options = {}) {
   const response = await fetch(resource(path), {
     signal: AbortSignal.timeout(
-      path.startsWith('/api/runner')
-        ? 19000
-        : path.startsWith('/api/live')
-          ? 16000
-          : 10000,
+      path === '/api/test'
+        ? 55000
+        : path.startsWith('/api/runner')
+          ? 19000
+          : path.startsWith('/api/live')
+            ? 16000
+            : 10000,
     ),
     credentials: 'omit',
     ...options,
@@ -75,6 +77,85 @@ function notice(text) {
   $('notice').textContent = text;
   $('notice').hidden = !text;
 }
+function userTestMode() {
+  const contract = $('user-kind').value === 'contract';
+  $('user-transaction').hidden = contract;
+  $('user-contract').hidden = !contract;
+  $('user-test-result').replaceChildren();
+}
+$('user-kind').addEventListener('change', userTestMode);
+$('user-contract-example').addEventListener('click', () => {
+  $('user-to').value = '0x1b7d32025F7cA633943BbCC9Ec61a98ef66187b6';
+  $('user-from').value = '0x0000000000000000000000000000000000000001';
+  $('user-data').value = '0x95d89b41';
+  $('user-value').value = '0x0';
+  $('user-gas').value = '0xf4240';
+  $('user-expected').value =
+    '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045745544800000000000000000000000000000000000000000000000000000000';
+  $('user-test-result').replaceChildren(
+    node(
+      'p',
+      'Documented sponsor-devnet WETH address; availability is checked only when you run the test. You can replace every field with your own deployed contract call.',
+      'muted',
+    ),
+  );
+});
+$('user-test-start').addEventListener('click', async () => {
+  const button = $('user-test-start'),
+    target = $('user-test-result');
+  button.disabled = true;
+  target.replaceChildren(
+    node('p', 'Checking your input against current devnet state…', 'muted'),
+  );
+  const kind = $('user-kind').value;
+  try {
+    const expected = $('user-expected').value.trim();
+    const input =
+      kind === 'transaction'
+        ? { kind, raw: $('user-raw').value.trim() }
+        : {
+            kind,
+            to: $('user-to').value.trim(),
+            from: $('user-from').value.trim(),
+            data: $('user-data').value.trim() || '0x',
+            value: $('user-value').value.trim() || '0x0',
+            gas: $('user-gas').value.trim() || '0xf4240',
+            ...(expected ? { expectedReturn: expected } : {}),
+          };
+    const result = await request('/api/test', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+    const download = node('a', 'Download this dry-run report JSON ↓', 'button');
+    download.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(result, null, 2))}`;
+    download.setAttribute('download', `aftershock-${kind}-dry-run.json`);
+    target.replaceChildren(
+      node('h3', `Your ${kind} dry run: ${result.result}`),
+      node('p', result.scope, 'muted'),
+      node(
+        'p',
+        `Observed ${date(result.observedAt)} · Chain ${result.chainId} · Block ${result.block.number}`,
+        'muted',
+      ),
+      node(
+        'p',
+        'Alternative-mempool admission and mining: NOT TESTED. A PASS applies only to the checks below.',
+        'muted',
+      ),
+      download,
+      details('Input summary', result.summary),
+    );
+    for (const check of result.checks)
+      target.append(details(`${check.name}: ${check.result}`, check.observed));
+  } catch (error) {
+    target.replaceChildren(
+      node('p', `Your test is unavailable: ${error.message}`, 'error-text'),
+    );
+  } finally {
+    button.disabled = false;
+  }
+});
 function details(label, value) {
   const el = node('details');
   el.append(node('summary', label), pretty(value));

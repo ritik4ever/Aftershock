@@ -119,6 +119,7 @@ async function app(
   let finishCompare: ((response: Response) => void) | undefined;
   const requests: string[] = [];
   let liveUnavailable = false;
+  let userTestUnavailable = false;
   const completion = runInNewContext(source, {
     document: { getElementById: el, createElement: () => new Element() },
     AbortSignal,
@@ -136,6 +137,34 @@ async function app(
     ...(published ? { aftershockStatic: routes } : {}),
     matchMedia: () => ({ matches: true }),
     fetch: async (path: string, options: RequestInit) => {
+      if (path === '/api/test') {
+        requests.push(path);
+        assert.equal(options.method, 'POST');
+        const input = JSON.parse(String(options.body));
+        assert.ok(['contract', 'transaction'].includes(input.kind));
+        assert.ok(!Object.hasOwn(input, 'privateKey'));
+        if (userTestUnavailable)
+          return Response.json(
+            { error: 'Dry-run evidence unavailable' },
+            { status: 502 },
+          );
+        return Response.json({
+          kind: input.kind,
+          result: 'PASS',
+          scope: 'One actual input check; no certification.',
+          observedAt: new Date().toISOString(),
+          chainId: '0x539',
+          block: { number: '0x1' },
+          summary: input,
+          checks: [
+            {
+              name: 'expected-return',
+              result: 'PASS',
+              observed: { returned: '0x42' },
+            },
+          ],
+        });
+      }
       if (path.startsWith('/api/runner')) {
         requests.push(path);
         const url = new URL(path, 'https://aftershock.example');
@@ -301,6 +330,9 @@ async function app(
     failLive: () => {
       liveUnavailable = true;
     },
+    failUserTest: () => {
+      userTestUnavailable = true;
+    },
     recoverRemote: () => {
       remoteReadFailures = 0;
     },
@@ -317,6 +349,37 @@ async function app(
     },
   };
 }
+
+test('hosted UI sends visitor contract input to the live test API and displays assertions without archive fallback', async () => {
+  const ui = await app([], true);
+  assert.ok(!ui.requests.includes('/api/test'));
+  ui.el('user-kind').value = 'contract';
+  await ui.el('user-kind').trigger('change');
+  assert.equal(ui.el('user-transaction').hidden, true);
+  await ui.el('user-contract-example').trigger('click');
+  assert.equal(ui.el('user-data').value, '0x95d89b41');
+  await ui.el('user-test-start').trigger('click');
+  assert.match(ui.el('user-test-result').textContent, /expected-return: PASS/);
+  assert.match(ui.el('user-test-result').textContent, /mining: NOT TESTED/);
+  const download = ui
+    .el('user-test-result')
+    .children.find((element) =>
+      element.href.startsWith('data:application/json'),
+    );
+  assert.ok(download);
+  assert.equal(
+    JSON.parse(decodeURIComponent(download.href.split(',')[1]!)).kind,
+    'contract',
+  );
+  assert.equal(ui.el('user-test-start').disabled, false);
+  ui.failUserTest();
+  await ui.el('user-test-start').trigger('click');
+  assert.match(ui.el('user-test-result').textContent, /unavailable/);
+  assert.doesNotMatch(
+    ui.el('user-test-result').textContent,
+    /expected-return: PASS/,
+  );
+});
 
 test('shipped viewer script loads real report data, filters, exports and replay guidance', async () => {
   const ui = await app();
