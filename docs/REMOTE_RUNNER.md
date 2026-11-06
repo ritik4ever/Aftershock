@@ -14,7 +14,7 @@ The [workflow REST API](https://docs.github.com/en/rest/actions/workflows#create
 
 ## Boundaries and limits
 
-- Only payer, keyed-nonce and TTL scenarios are accepted. No user scripts, RPC targets, branches or shell commands are accepted.
+- Payer, keyed-nonce and TTL scenarios plus strict custom contract plans are accepted. No user scripts, RPC targets, branches or shell commands are accepted.
 - Starts are public. The API checks recent workflow runs for a four-per-hour limit and active work; these are best-effort checks, not an atomic distributed rate limiter. Workflow concurrency serializes runs; racing submissions may queue or be cancelled by GitHub. Limits are shared across all visitors. Public starts consume owner allowances; no bot protection or atomic budget is implemented. Remove the server token to disable execution.
 - Queueing, image preparation and mining take minutes. The site polls workflow status; detailed engine results arrive with the final report. The GitHub progress link shows provisioning/execution steps.
 - A request UUID supports retry deduplication against recent runs. Browser session storage retains accepted job IDs and pending request IDs. If storage is blocked, keep the tab open. Do not assume a timed-out dispatch means no job started.
@@ -23,3 +23,5 @@ The [workflow REST API](https://docs.github.com/en/rest/actions/workflows#create
 - Remote reports are displayed separately from the fixed published archive. They are not automatically added to archive comparisons. Artifact expiry, setup failure and missing evidence remain unavailable/error states; no saved example substitutes for a fresh run.
 
 No VM, tunnel, custom Solidity or new npm dependency is required for this design. User screenshots show hosted TTL (11 checks), payer (16) and keyed-nonce (18) runs passing with reports. Public starts without a shared code require verification after deployment.
+
+Custom contract plans use the same workflow and capacity limits, with an additional public JSON plan and SHA-256 input. The run name and returned report must match that hash. See [Contract lab](CONTRACT_LAB.md). No new environment variable is required. Never upload private code, credentials or keys.

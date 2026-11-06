@@ -6,6 +6,8 @@ Aftershock runs stateful EIP-8141 Frame Transaction tests against a real isolate
 
 Test your own signed Frame Transaction or deployed sponsor-devnet contract through **Test yours**. These are live, bounded dry runs with downloadable assertions, separate from the isolated lifecycle suites. [Input format and limits](docs/USER_INPUT.md).
 
+Deploy your compiled contract and execute ordered calls, mined transactions and Frame Transactions through **Contract lab**. Supply your own assertions; [plan format and supported account conventions](docs/CONTRACT_LAB.md).
+
 ## Run
 
 Use Linux or WSL, Node from `.nvmrc` and the locked npm dependencies:
@@ -22,7 +24,7 @@ Open http://127.0.0.1:4323. Restart an old viewer process after updating code. *
 
 ## Hosting on Vercel
 
-Import the repository with framework **Other**, Node **24.x**, build command `npm run build:static` and output directory `dist`. `vercel.json` supplies build settings, security headers and the read-only `/api/live` function; live checks need no environment variables. Optional browser execution uses `/api/runner` and the two server-only settings in [remote setup](docs/REMOTE_RUNNER.md). **Check network now** and **Inspect transaction now** query the fixed sponsor gateway at request time. Pending/missing receipts and upstream errors remain unavailable; saved results are never substituted. No signing keys, arbitrary transaction submission or Docker controls are exposed on Vercel.
+Import the repository with framework **Other**, Node **24.x**, build command `npm run build:static` and output directory `dist`. `vercel.json` supplies build settings, security headers and the read-only `/api/live` and bounded `/api/test` dry-run functions; live checks need no environment variables. Optional browser execution uses `/api/runner` and the server-only GitHub token in [remote setup](docs/REMOTE_RUNNER.md). **Check network now** and **Inspect transaction now** query the fixed sponsor gateway at request time. Pending/missing receipts and upstream errors remain unavailable; saved results are never substituted. No signing keys, arbitrary transaction submission or Docker controls are exposed on Vercel.
 
 Without remote execution configured, the hosted **Run a new test** section opens the local companion at port 4323; start it with the command above. Without remote execution configured, fresh runs use your own machine. The optional GitHub Actions integration executes fixed scenarios on disposable hosted Linux VMs, without requiring visitors to install Docker. Anyone can start a supported scenario without a shared code. Queue/setup delays and shared execution limits apply. The seven exported reports are genuine earlier runs, labeled **Recorded real run**; refreshing that list is not a new test. To rebuild records locally use `npm run build:static` with no existing `dist`. Deploy the repository root. The deployed live function was verified against the sponsor gateway on November 6, 2026; hosted Docker execution is not provided.
 
