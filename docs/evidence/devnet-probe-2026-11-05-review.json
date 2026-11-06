@@ -1,0 +1,59 @@
+{
+  "observedAt": "2026-11-05T16:23:12.142Z",
+  "endpointClass": "PUBLIC_DEVNET",
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "sourceCommitVerified": false,
+  "observations": [
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_chainId",
+        "params": []
+      },
+      "httpStatus": 200,
+      "result": "0x539"
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "skandha_explorer_info",
+        "params": []
+      },
+      "httpStatus": 200,
+      "result": {
+        "protocolVersion": 1,
+        "chainId": 1337,
+        "version": "v4.1.1",
+        "commit": "",
+        "bundlingMode": "manual",
+        "p2pEnabled": true,
+        "latestSeq": 307,
+        "oldestSeq": 1,
+        "historyCapacity": 10000,
+        "bootId": "bce7267923761e0d",
+        "minInclusionDenominator": 10,
+        "throttlingSlack": 10,
+        "banSlack": 50,
+        "faucetEnabled": true
+      }
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "skandha_config",
+        "params": []
+      },
+      "httpStatus": 200,
+      "result": {
+        "chainId": 1337,
+        "minStake": "10000000000000000",
+        "minUnstakeDelay": 0,
+        "useropsTTL": 300,
+        "bundleSize": 4
+      }
+    }
+  ]
+}

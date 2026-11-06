@@ -1,0 +1,356 @@
+{
+  "comparison": {
+    "mode": "FRESH_STATE_RERUN",
+    "exactHistoricalReplay": false,
+    "baselineRunId": "acc1216e-0374-48a8-b4f0-5e724d264979",
+    "baselineSha256": "af87212bf26057ea1338e21aa4de9b95f761d35c2c58e975ff6870a845a3722b",
+    "scenarioId": "paymaster-solvency",
+    "seed": 0,
+    "mining": true,
+    "command": "npm run --silent aftershock -- replay acc1216e-0374-48a8-b4f0-5e724d264979 --local --mine",
+    "requirements": [
+      "Cached pinned images",
+      "Local Docker engine",
+      "Fresh isolated fixture; no snapshot restoration"
+    ],
+    "limitations": [
+      "New keys, genesis, hashes, balances and timings; seed does not reproduce private state.",
+      "Comparison covers action verdicts and stable environment fields, not raw observations or exact execution.",
+      "Matching blocked or inconclusive results do not establish invariant success.",
+      "Checksums detect changes, not malicious authorship or fabricated evidence."
+    ],
+    "rerunRunId": "d83300ca-8089-4c41-9c5e-c047228bb268",
+    "rerunSha256": "1de33f589ac785a8c0efeb130a1fd7b4004d0829c19639e93cf2f874da0a10d2",
+    "baselineResult": "PASS",
+    "rerunResult": "PASS",
+    "environmentDifferences": [],
+    "verdictsMatch": true,
+    "actions": [
+      {
+        "id": "admit-base",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "confirm-solvency-boundary",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "reject-aggregate-overspend",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "accept-fee-bumped-replacement",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "verify-replacement-lifecycle",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "top-up-payer",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "admit-second-obligation",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "confirm-pending-order",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "balance-control",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "verify-control-survival",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "drain-payer",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "verify-solvency-eviction",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "verify-survivor-obligations",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "explorer-continuity",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "mined-state-transition",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      },
+      {
+        "id": "fixture-cleanup",
+        "baseline": "PASS",
+        "rerun": "PASS"
+      }
+    ],
+    "comparison": "VERDICTS_MATCH",
+    "bothRunsPassed": true
+  },
+  "rerun": {
+    "schemaVersion": 1,
+    "runId": "d83300ca-8089-4c41-9c5e-c047228bb268",
+    "scenarioId": "paymaster-solvency",
+    "seed": 0,
+    "endpointClass": "ISOLATED_LOCAL",
+    "startedAt": "2026-11-05T20:54:25.225Z",
+    "completedAt": "2026-11-05T21:02:37.418Z",
+    "sourcePins": {
+      "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+      "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+      "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+    },
+    "environment": {
+      "network": "aftershock-d83300ca-8089-4c41-9c5e-c047228bb268-net",
+      "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
+      "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
+      "chainId": "0x9",
+      "networkInternal": "true",
+      "publishedPorts": "none",
+      "bundlingMode": "manual",
+      "genesisSha256": "bae95a430c1b1b3141820aaf53569a9511d5d9b942fdd4d28f56472b7338ea27",
+      "consensusImage": "ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0",
+      "genesisGeneratorImage": "ethpandaops/ethereum-genesis-generator@sha256:51decce4284d8498dabfa38ae13ddce84cbf8c7be4f33a32b798ce10c9868e77",
+      "fixtureMode": "mining",
+      "readyBlock": "0x41",
+      "readyBlockHash": "0xcc5e0ca12dea9197f75da2680c3b4e09f789f40d20590b00fb164c638a9383b8",
+      "clientVersion": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1",
+      "useropsTTL": "300"
+    },
+    "steps": [
+      {
+        "id": "admit-base",
+        "at": "2026-11-05T21:02:04.750Z",
+        "result": "PASS",
+        "observed": {
+          "hash": "0xacfaed4e8f3d6de9ffc7545f63a56e98ed2d13015da5d8a8c8382124be1da875",
+          "expected": "ACCEPTED",
+          "actual": "ACCEPTED",
+          "maximumFee": "2000000000",
+          "priorityFee": "2000000000"
+        }
+      },
+      {
+        "id": "confirm-solvency-boundary",
+        "at": "2026-11-05T21:02:04.983Z",
+        "result": "PASS",
+        "observed": {
+          "maximumCost": "662898000000000",
+          "payerBalance": "1000000000000000"
+        }
+      },
+      {
+        "id": "reject-aggregate-overspend",
+        "at": "2026-11-05T21:02:05.153Z",
+        "result": "PASS",
+        "observed": {
+          "hash": "0xb1db143cac582638388ee7e30e4c9a7595e8f256a4cc9326a05a700c8f579b6d",
+          "expected": "BALANCE_OBLIGATIONS",
+          "actual": "BALANCE_OBLIGATIONS",
+          "code": -32602,
+          "maximumFee": "2000000000",
+          "priorityFee": "2000000000"
+        }
+      },
+      {
+        "id": "accept-fee-bumped-replacement",
+        "at": "2026-11-05T21:02:05.307Z",
+        "result": "PASS",
+        "observed": {
+          "hash": "0xa4cadc982beceee32b54689a5c78b4569c31462ea3a36efe2f9f0c6f3ad6821e",
+          "expected": "ACCEPTED",
+          "actual": "ACCEPTED",
+          "maximumFee": "2200000000",
+          "priorityFee": "2200000000"
+        }
+      },
+      {
+        "id": "verify-replacement-lifecycle",
+        "at": "2026-11-05T21:02:05.670Z",
+        "result": "PASS",
+        "observed": {
+          "oldHash": "0xacfaed4e8f3d6de9ffc7545f63a56e98ed2d13015da5d8a8c8382124be1da875",
+          "newHash": "0xa4cadc982beceee32b54689a5c78b4569c31462ea3a36efe2f9f0c6f3ad6821e",
+          "oldOutcome": "replaced",
+          "oldEntryRemoved": true
+        }
+      },
+      {
+        "id": "top-up-payer",
+        "at": "2026-11-05T21:02:07.644Z",
+        "result": "PASS",
+        "observed": {
+          "transactionHash": "0x540c12ff1736bb56be4acff79ec49ae5f18cc600608b14b6908ff2ac4489dec4",
+          "status": "0x1",
+          "blockNumber": "0x42",
+          "gasUsed": "0x5208",
+          "value": "800000000000000"
+        }
+      },
+      {
+        "id": "admit-second-obligation",
+        "at": "2026-11-05T21:02:08.913Z",
+        "result": "PASS",
+        "observed": {
+          "hash": "0xb1db143cac582638388ee7e30e4c9a7595e8f256a4cc9326a05a700c8f579b6d",
+          "expected": "ACCEPTED",
+          "actual": "ACCEPTED",
+          "maximumFee": "2000000000",
+          "priorityFee": "2000000000"
+        }
+      },
+      {
+        "id": "confirm-pending-order",
+        "at": "2026-11-05T21:02:09.136Z",
+        "result": "PASS",
+        "observed": {
+          "oldestHash": "0xa4cadc982beceee32b54689a5c78b4569c31462ea3a36efe2f9f0c6f3ad6821e",
+          "newestHash": "0xb1db143cac582638388ee7e30e4c9a7595e8f256a4cc9326a05a700c8f579b6d",
+          "oldestAt": "0x1a1ad84d1d8",
+          "newestAt": "0x1a1ad84dfe8"
+        }
+      },
+      {
+        "id": "balance-control",
+        "at": "2026-11-05T21:02:15.076Z",
+        "result": "PASS",
+        "observed": {
+          "transactionHash": "0xc68725c9270aa30bf2bc419b3b8a90acb89d1924a390d0bb6c93964a006fbfc0",
+          "status": "0x1",
+          "blockNumber": "0x43",
+          "gasUsed": "0x5208",
+          "value": "1"
+        }
+      },
+      {
+        "id": "verify-control-survival",
+        "at": "2026-11-05T21:02:23.336Z",
+        "result": "PASS",
+        "observed": {
+          "oldestStatus": "New",
+          "newestStatus": "New"
+        }
+      },
+      {
+        "id": "drain-payer",
+        "at": "2026-11-05T21:02:25.459Z",
+        "result": "PASS",
+        "observed": {
+          "transactionHash": "0xfa9ccc47e64746656ca4580932e72f04093894c7df913c3d249c780f078dacaa",
+          "status": "0x1",
+          "blockNumber": "0x45",
+          "gasUsed": "0x5208",
+          "value": "800000000000000"
+        }
+      },
+      {
+        "id": "verify-solvency-eviction",
+        "at": "2026-11-05T21:02:35.198Z",
+        "result": "PASS",
+        "observed": {
+          "oldestHash": "0xa4cadc982beceee32b54689a5c78b4569c31462ea3a36efe2f9f0c6f3ad6821e",
+          "newestHash": "0xb1db143cac582638388ee7e30e4c9a7595e8f256a4cc9326a05a700c8f579b6d",
+          "oldestStatus": "New",
+          "newestStatus": "Cancelled",
+          "balanceEnforcement": true
+        }
+      },
+      {
+        "id": "verify-survivor-obligations",
+        "at": "2026-11-05T21:02:35.198Z",
+        "result": "PASS",
+        "observed": {
+          "balance": "957995172897999",
+          "oldestCost": "729187800000000",
+          "newestCost": "662874000000000",
+          "combinedCost": "1392061800000000"
+        }
+      },
+      {
+        "id": "explorer-continuity",
+        "at": "2026-11-05T21:02:35.314Z",
+        "result": "PASS",
+        "observed": {
+          "bootId": "b6a896439c223500",
+          "gaps": ""
+        }
+      },
+      {
+        "id": "mined-state-transition",
+        "at": "2026-11-05T21:02:35.314Z",
+        "result": "PASS",
+        "observed": {
+          "fixtureMode": "mining",
+          "scope": "paymaster-solvency"
+        }
+      },
+      {
+        "id": "fixture-cleanup",
+        "at": "2026-11-05T21:02:37.418Z",
+        "result": "PASS",
+        "observed": {
+          "removedOwnedResources": true
+        }
+      }
+    ],
+    "result": "PASS",
+    "definition": {
+      "id": "paymaster-solvency",
+      "title": "Shared payer admission and replacement obligations",
+      "sourceRule": "MempoolService/checkBalanceObligations",
+      "sourceCommit": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+      "expectedInvariant": "Pending payer obligations fit its balance; a replacement excludes the displaced obligation.",
+      "preconditions": [
+        "Owned isolated pinned processes",
+        "One transaction fits the fresh payer balance but two do not",
+        "Manual bundling preserves pending entries during accounting observations"
+      ],
+      "actions": [
+        "admit-base",
+        "confirm-solvency-boundary",
+        "reject-aggregate-overspend",
+        "accept-fee-bumped-replacement",
+        "verify-replacement-lifecycle",
+        "top-up-payer",
+        "admit-second-obligation",
+        "confirm-pending-order",
+        "balance-control",
+        "verify-control-survival",
+        "drain-payer",
+        "verify-solvency-eviction",
+        "verify-survivor-obligations",
+        "explorer-continuity",
+        "mined-state-transition"
+      ]
+    },
+    "limitations": [
+      "Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.",
+      "Seed identifies action order, not private signing keys; fresh accounts are random.",
+      "Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run."
+    ],
+    "reproducer": "npm run --silent aftershock -- run paymaster-solvency --local --mine"
+  }
+}

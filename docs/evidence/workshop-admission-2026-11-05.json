@@ -1,0 +1,214 @@
+{
+  "runId": "d3311ad3-fca0-47cc-be3e-bf5199e8df4e",
+  "observedAt": "2026-11-05T16:41:26.395Z",
+  "purpose": "workshop-admission-baseline",
+  "endpointClass": "PUBLIC_DEVNET",
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "limitations": [
+    "This observation is not an original Aftershock lifecycle scenario.",
+    "Unknown node commit prevents source-specific invariant conclusions.",
+    "Projection omits signatures, calldata, logs and arbitrary server text.",
+    "Historical events before capture may already be unavailable."
+  ],
+  "evidence": {
+    "requestedHash": "0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c46319a1571fb61f1d0b8e1fa03",
+    "chainId": "0x539",
+    "before": {
+      "protocolVersion": 1,
+      "chainId": 1337,
+      "version": "v4.1.1",
+      "commit": "",
+      "bundlingMode": "manual",
+      "p2pEnabled": true,
+      "oldestSeq": 1,
+      "latestSeq": 376,
+      "historyCapacity": 10000,
+      "bootId": "bce7267923761e0d"
+    },
+    "after": {
+      "protocolVersion": 1,
+      "chainId": 1337,
+      "version": "v4.1.1",
+      "commit": "",
+      "bundlingMode": "manual",
+      "p2pEnabled": true,
+      "oldestSeq": 1,
+      "latestSeq": 376,
+      "historyCapacity": 10000,
+      "bootId": "bce7267923761e0d"
+    },
+    "admission": {
+      "hash": "0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c46319a1571fb61f1d0b8e1fa03",
+      "admission": {
+        "txHash": "0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c46319a1571fb61f1d0b8e1fa03",
+        "outcome": "included",
+        "at": 1793896539749,
+        "sender": "0x5D9957bf531F5bC0FbFA037E2dd5a47528880cF9",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "signature",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "simulation",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "execution",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "out-of-gas",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "OP-011",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "create",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "storage",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "COD-010",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "entrypoint-access",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "mempool",
+            "verdict": "pass",
+            "waived": false
+          }
+        ],
+        "frames": 2
+      },
+      "events": [
+        {
+          "seq": 368,
+          "txHash": "0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c46319a1571fb61f1d0b8e1fa03",
+          "at": 1793896539826,
+          "kind": "admitted",
+          "status": "New"
+        },
+        {
+          "seq": 370,
+          "txHash": "0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c46319a1571fb61f1d0b8e1fa03",
+          "at": 1793896565751,
+          "kind": "included",
+          "status": "OnChain"
+        }
+      ]
+    },
+    "status": {
+      "sender": "0x5D9957bf531F5bC0FbFA037E2dd5a47528880cF9",
+      "payer": "0x5D9957bf531F5bC0FbFA037E2dd5a47528880cF9",
+      "status": "OnChain",
+      "transaction": "0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c46319a1571fb61f1d0b8e1fa03"
+    },
+    "receipt": {
+      "blockNumber": "0x62bd6",
+      "status": "success",
+      "payer": "0x5d9957bf531f5bc0fbfa037e2dd5a47528880cf9",
+      "cumulativeGasUsed": "0x65f6",
+      "frameReceipts": [
+        {
+          "status": "success",
+          "gasUsed": {
+            "execution": "0x64",
+            "state": "0x0"
+          }
+        },
+        {
+          "status": "success",
+          "gasUsed": {
+            "execution": "0xbb8",
+            "state": "0x0"
+          }
+        }
+      ]
+    }
+  },
+  "result": {
+    "admissionObserved": true,
+    "executionSucceeded": true,
+    "evidenceConsistent": true,
+    "issues": [],
+    "sourceSpecificVerdict": "INCONCLUSIVE",
+    "reportedUnwaivedPassChecks": 17,
+    "skippedChecks": 0
+  }
+}

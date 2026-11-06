@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aftershock | Run explorer</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Aftershock home"
+        ><span class="brand-mark" aria-hidden="true">&#10035;</span>
+        Aftershock</a
+      >
+      <nav aria-label="Main navigation">
+        <a href="#scenarios">Scenarios</a><a href="#runs">Runs</a
+        ><a href="#details">Evidence</a><a href="#comparison">Compare</a
+        ><a href="#guide">Guide</a
+        ><a
+          href="https://github.com/ritik4ever/Aftershock"
+          target="_blank"
+          rel="noopener noreferrer"
+          >GitHub &#8599;</a
+        >
+      </nav>
+      <span class="local-pill">Local / Read only</span>
+    </header>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">FRAME TRANSACTION TESTING</p>
+        <h1>Find the failures.<br /><em>Follow the evidence.</em></h1>
+        <p class="hero-copy">
+          Explore transaction lifecycles, inspect recorded findings, and compare
+          reproducible test runs.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#runs"
+            >Explore runs <span>&#8594;</span></a
+          ><a class="button" href="#comparison">Compare results</a>
+        </div>
+      </section>
+      <section class="stats" aria-label="Run overview">
+        <div>
+          <strong id="stat-total">&mdash;</strong><span>Available runs</span>
+        </div>
+        <div>
+          <strong id="stat-pass">&mdash;</strong><span>Passing runs</span>
+        </div>
+        <div>
+          <strong id="stat-fail">&mdash;</strong><span>Runs with findings</span>
+        </div>
+        <div>
+          <strong id="stat-evidence">&mdash;</strong
+          ><span>Complete journals</span>
+        </div>
+      </section>
+      <div
+        id="notice"
+        class="notice"
+        role="status"
+        aria-live="polite"
+        hidden
+      ></div>
+      <section id="scenarios" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">THE TEST ENGINE</p>
+            <h2>Scenario coverage<span class="accent">.</span></h2>
+          </div>
+          <button id="refresh-scenarios" class="button small">
+            Refresh scenarios
+          </button>
+        </div>
+        <p class="muted">
+          Execution requires the CLI and cached isolated Docker images. This
+          viewer does not check node connectivity or run tests. Saved results
+          describe earlier executions.
+        </p>
+        <div id="scenario-list" class="detail-grid" aria-live="polite">
+          <p class="muted">Loading scenarios...</p>
+        </div>
+      </section>
+      <section id="runs" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">THE RECORD</p>
+            <h2>Run explorer<span class="accent">.</span></h2>
+          </div>
+          <button id="refresh" class="button small">Refresh runs</button>
+        </div>
+        <div class="filters">
+          <label class="search-label"
+            ><span>Search runs</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="Search scenario or run ID..." /></label
+          ><label
+            ><span>Verdict</span
+            ><select id="verdict">
+              <option value="">All verdicts</option>
+              <option>PASS</option>
+              <option>FAIL</option>
+              <option>BLOCKED</option>
+              <option>INCONCLUSIVE</option>
+              <option>SPEC_DIFFERENCE</option>
+            </select></label
+          ><label
+            ><span>Source</span
+            ><select id="source">
+              <option value="">All sources</option>
+              <option>Saved local run</option>
+              <option>Reviewed example</option>
+            </select></label
+          >
+        </div>
+        <p id="run-count" class="muted"></p>
+        <div id="run-list" class="run-list" aria-live="polite"></div>
+      </section>
+      <section id="comparison" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SIDE BY SIDE</p>
+            <h2>Compare outcomes<span class="accent">.</span></h2>
+          </div>
+        </div>
+        <p class="muted">
+          Choose two distinct runs of the same scenario. Comparison checks
+          verdicts and stable environment fields; it does not restore a
+          snapshot.
+        </p>
+        <div class="compare-controls">
+          <label
+            ><span>Baseline</span
+            ><select id="compare-left">
+              <option value="">Choose baseline...</option>
+            </select></label
+          ><label
+            ><span>Rerun</span
+            ><select id="compare-right">
+              <option value="">Choose rerun...</option>
+            </select></label
+          ><button id="compare-button" class="button primary">
+            Compare runs
+          </button>
+        </div>
+        <div id="compare-result" aria-live="polite"></div>
+      </section>
+      <section id="guide" class="section">
+        <p class="eyebrow">READING THE RESULTS</p>
+        <h2>Evidence, with limits<span class="accent">.</span></h2>
+        <p>
+          Frame transactions separate validation, payment and execution.
+          Admission is not proof that execution succeeded: inspect the recorded
+          receipt and each frame status.
+        </p>
+        <p>
+          PASS covers the declared scenario in its recorded environment. FAIL
+          identifies a failed check; it does not automatically establish an
+          exploit. BLOCKED and INCONCLUSIVE require more evidence.
+        </p>
+        <p>
+          Aftershock tests the pinned sidecar implementation. Draft
+          alternative-mempool rules and other client versions may differ. Read
+          the source pins and preconditions with each report.
+        </p>
+        <p>
+          Fresh-state replay creates fresh accounts and genesis, then compares
+          action verdicts and stable environment fields. Checkpoint-backed
+          keyed-nonce reset is also available through the CLI. Neither mode
+          reproduces historical timing. Commands are displayed for manual use
+          only.
+        </p>
+        <a
+          class="button"
+          href="https://github.com/ritik4ever/Aftershock/blob/main/README.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Project documentation &#8599;</a
+        >
+      </section>
+      <section id="details" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">UNDER THE SURFACE</p>
+            <h2>Run detail<span class="accent">.</span></h2>
+          </div>
+        </div>
+        <div id="detail-content">
+          <div class="empty">
+            Select a run to explore its timeline and evidence.
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <a class="brand" href="/">Aftershock</a>
+      <p>Find the failures before they reach Ethereum.</p>
+      <span>Local report viewer / No transaction controls</span>
+    </footer>
+  </body>
+</html>

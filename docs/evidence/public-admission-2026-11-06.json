@@ -1,0 +1,195 @@
+{
+  "purpose": "fresh-public-devnet-admission-check",
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "endpointClass": "PUBLIC_DEVNET",
+  "startedAt": "2026-11-06T09:40:29.267Z",
+  "completedAt": "2026-11-06T09:40:31.816Z",
+  "requestedHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+  "chainId": "0x539",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "before": {
+    "protocolVersion": 1,
+    "chainId": 1337,
+    "version": "v4.1.1",
+    "commit": "",
+    "bundlingMode": "manual",
+    "p2pEnabled": true,
+    "oldestSeq": 1,
+    "latestSeq": 199,
+    "historyCapacity": 10000,
+    "bootId": "9c7ea46a50c67b59"
+  },
+  "admission": {
+    "hash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+    "admission": {
+      "txHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+      "outcome": "accepted",
+      "at": 1793957866655,
+      "sender": "0xF6cc4d3F5b5D9616Bd2f47e63E2A88bC798d3959",
+      "nonce": "0x0",
+      "nonceKeys": [
+        "0x0"
+      ],
+      "checks": [
+        {
+          "rule": "gas-limit",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "recent-root",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "prefix",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "structure",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "signature",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "simulation",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "trace-alignment",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "OP-061",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "execution",
+          "verdict": "pass",
+          "waived": false
+        },
+        {
+          "rule": "trace-alignment",
+          "verdict": "pass",
+          "frameIndex": 0,
+          "entity": "payer",
+          "waived": false
+        },
+        {
+          "rule": "out-of-gas",
+          "verdict": "pass",
+          "frameIndex": 0,
+          "entity": "payer",
+          "waived": false
+        },
+        {
+          "rule": "OP-011",
+          "verdict": "pass",
+          "frameIndex": 0,
+          "entity": "payer",
+          "waived": false
+        },
+        {
+          "rule": "create",
+          "verdict": "pass",
+          "frameIndex": 0,
+          "entity": "payer",
+          "waived": false
+        },
+        {
+          "rule": "storage",
+          "verdict": "pass",
+          "frameIndex": 0,
+          "entity": "payer",
+          "waived": false
+        },
+        {
+          "rule": "COD-010",
+          "verdict": "pass",
+          "frameIndex": 0,
+          "entity": "payer",
+          "waived": false
+        },
+        {
+          "rule": "entrypoint-access",
+          "verdict": "pass",
+          "frameIndex": 0,
+          "entity": "payer",
+          "waived": false
+        },
+        {
+          "rule": "mempool",
+          "verdict": "pass",
+          "waived": false
+        }
+      ],
+      "frames": 2
+    },
+    "events": [
+      {
+        "seq": 193,
+        "txHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+        "at": 1793957866845,
+        "kind": "admitted",
+        "status": "New"
+      }
+    ]
+  },
+  "status": {
+    "sender": "0xF6cc4d3F5b5D9616Bd2f47e63E2A88bC798d3959",
+    "payer": "0xF6cc4d3F5b5D9616Bd2f47e63E2A88bC798d3959",
+    "status": "New"
+  },
+  "receipt": null,
+  "receiptFailure": {
+    "kind": "RPC",
+    "code": -32000
+  },
+  "after": {
+    "protocolVersion": 1,
+    "chainId": 1337,
+    "version": "v4.1.1",
+    "commit": "",
+    "bundlingMode": "manual",
+    "p2pEnabled": true,
+    "oldestSeq": 1,
+    "latestSeq": 199,
+    "historyCapacity": 10000,
+    "bootId": "9c7ea46a50c67b59"
+  },
+  "historyGaps": [],
+  "limitations": [
+    "Official pinned workshop step_2 was used; this is a baseline, not an original Aftershock scenario.",
+    "Live node commit is unknown; no source-specific invariant PASS.",
+    "Missing receipt does not establish mined execution success or failure.",
+    "Projected response fields only; no signatures, calldata, private keys or raw logs."
+  ],
+  "workshopExecution": {
+    "sourceCommit": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "funding": {
+      "exit": 0,
+      "ok": true,
+      "chainId": 1337,
+      "balanceWei": "1000000000000000000",
+      "funded": true
+    },
+    "submission": {
+      "exit": 1,
+      "ok": false,
+      "code": "TX_NOT_MINED"
+    },
+    "explorerUrl": "https://explorer.altmempool.wtf/"
+  }
+}

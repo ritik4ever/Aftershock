@@ -1,0 +1,10 @@
+{
+  "name": "@aftershock/cli",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@aftershock/core": "0.1.0"
+  }
+}

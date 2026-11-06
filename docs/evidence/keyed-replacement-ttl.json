@@ -1,0 +1,702 @@
+{
+  "schemaVersion": 1,
+  "runId": "5ededf77-aa85-419a-b11d-bef185919cbb",
+  "scenarioId": "keyed-replacement-ttl",
+  "seed": 0,
+  "endpointClass": "ISOLATED_LOCAL",
+  "startedAt": "2026-11-05T22:35:23.324Z",
+  "completedAt": "2026-11-05T22:36:09.620Z",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "environment": {
+    "network": "aftershock-5ededf77-aa85-419a-b11d-bef185919cbb-net",
+    "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
+    "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
+    "chainId": "0x9",
+    "networkInternal": "true",
+    "publishedPorts": "none",
+    "bundlingMode": "manual",
+    "genesisSha256": "17c56f90a7b565118ce21f07da3e1c861abdf0fa4b9406f384004ab09406f028",
+    "fixtureMode": "admission",
+    "clientVersion": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1",
+    "useropsTTL": "30"
+  },
+  "evidence": {
+    "format": "ALLOWLISTED_RPC_PROJECTIONS_V1",
+    "attempts": 29,
+    "omitted": 0,
+    "unavailable": 7,
+    "complete": true,
+    "entries": [
+      {
+        "seq": 1,
+        "at": "2026-11-05T22:35:24.922Z",
+        "channel": "EXECUTION",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": "0x9"
+      },
+      {
+        "seq": 2,
+        "at": "2026-11-05T22:35:25.174Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 3,
+        "at": "2026-11-05T22:35:25.895Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 4,
+        "at": "2026-11-05T22:35:27.468Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 5,
+        "at": "2026-11-05T22:35:28.460Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 6,
+        "at": "2026-11-05T22:35:29.269Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 7,
+        "at": "2026-11-05T22:35:30.148Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 8,
+        "at": "2026-11-05T22:35:31.050Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 9,
+        "at": "2026-11-05T22:35:31.767Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": "0x9"
+      },
+      {
+        "seq": 10,
+        "at": "2026-11-05T22:35:31.983Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_info",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": {
+          "protocolVersion": 1,
+          "chainId": 9,
+          "version": "v4.1.1",
+          "commit": "",
+          "bundlingMode": "manual",
+          "p2pEnabled": true,
+          "oldestSeq": 0,
+          "latestSeq": 0,
+          "historyCapacity": 10000,
+          "bootId": "06977c829791430d"
+        }
+      },
+      {
+        "seq": 11,
+        "at": "2026-11-05T22:35:32.213Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "web3_clientVersion",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1"
+      },
+      {
+        "seq": 12,
+        "at": "2026-11-05T22:35:32.505Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_config",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": {
+          "useropsTTL": 30
+        }
+      },
+      {
+        "seq": 13,
+        "at": "2026-11-05T22:35:32.866Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_sendFrameTransaction",
+        "requestSha256": "648499a0a3eadb3220270693b0dc3d9237f2fd74dfaf0abe8a696c82ee2e0a97",
+        "outcome": "RESULT",
+        "result": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147"
+      },
+      {
+        "seq": 14,
+        "at": "2026-11-05T22:35:33.165Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionByHash",
+        "requestSha256": "5ec8794204fd37bfb9ae3c8edcd379c7b58e31ae7eddbe22a0bd05756adeee43",
+        "requestHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "outcome": "RESULT",
+        "result": {
+          "txHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+          "submittedTime": "0x1a1adda6234",
+          "lastUpdatedTime": "0x1a1adda6247",
+          "balanceEnforcement": false
+        }
+      },
+      {
+        "seq": 15,
+        "at": "2026-11-05T22:35:33.371Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_frameTransactionStatus",
+        "requestSha256": "5ec8794204fd37bfb9ae3c8edcd379c7b58e31ae7eddbe22a0bd05756adeee43",
+        "requestHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "outcome": "RESULT",
+        "result": {
+          "sender": "0x1ADeFe0C43C1B2358984e265e2f09D060c8309B7",
+          "payer": "0x1ADeFe0C43C1B2358984e265e2f09D060c8309B7",
+          "status": "New"
+        }
+      },
+      {
+        "seq": 16,
+        "at": "2026-11-05T22:35:33.672Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_sendFrameTransaction",
+        "requestSha256": "784f2ed1ca5b19fc99e7be323081787554671385f17ffd7666ef5f42a89c0749",
+        "outcome": "RPC_ERROR",
+        "code": -32602,
+        "reason": "FEE_BUMP"
+      },
+      {
+        "seq": 17,
+        "at": "2026-11-05T22:35:33.867Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionByHash",
+        "requestSha256": "5ec8794204fd37bfb9ae3c8edcd379c7b58e31ae7eddbe22a0bd05756adeee43",
+        "requestHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "outcome": "RESULT",
+        "result": {
+          "txHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+          "submittedTime": "0x1a1adda6234",
+          "lastUpdatedTime": "0x1a1adda6247",
+          "balanceEnforcement": false
+        }
+      },
+      {
+        "seq": 18,
+        "at": "2026-11-05T22:36:05.667Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionByHash",
+        "requestSha256": "5ec8794204fd37bfb9ae3c8edcd379c7b58e31ae7eddbe22a0bd05756adeee43",
+        "requestHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "outcome": "RESULT",
+        "result": {
+          "txHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+          "submittedTime": "0x1a1adda6234",
+          "lastUpdatedTime": "0x1a1adda6247",
+          "balanceEnforcement": false
+        }
+      },
+      {
+        "seq": 19,
+        "at": "2026-11-05T22:36:05.898Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_frameTransactionStatus",
+        "requestSha256": "5ec8794204fd37bfb9ae3c8edcd379c7b58e31ae7eddbe22a0bd05756adeee43",
+        "requestHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "outcome": "RESULT",
+        "result": {
+          "sender": "0x1ADeFe0C43C1B2358984e265e2f09D060c8309B7",
+          "payer": "0x1ADeFe0C43C1B2358984e265e2f09D060c8309B7",
+          "status": "New"
+        }
+      },
+      {
+        "seq": 20,
+        "at": "2026-11-05T22:36:06.146Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_sendFrameTransaction",
+        "requestSha256": "648499a0a3eadb3220270693b0dc3d9237f2fd74dfaf0abe8a696c82ee2e0a97",
+        "outcome": "RPC_ERROR",
+        "code": -32602,
+        "reason": "DUPLICATE"
+      },
+      {
+        "seq": 21,
+        "at": "2026-11-05T22:36:06.470Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_sendFrameTransaction",
+        "requestSha256": "784f2ed1ca5b19fc99e7be323081787554671385f17ffd7666ef5f42a89c0749",
+        "outcome": "RESULT",
+        "result": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9"
+      },
+      {
+        "seq": 22,
+        "at": "2026-11-05T22:36:06.701Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionByHash",
+        "requestSha256": "7b36f037520c6650c99d1794c43daf5094ee77d01ba5e8e31da88600834361cd",
+        "requestHash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+        "outcome": "RESULT",
+        "result": {
+          "txHash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+          "submittedTime": "0x1a1addae56f",
+          "lastUpdatedTime": "0x1a1addae58c",
+          "balanceEnforcement": false
+        }
+      },
+      {
+        "seq": 23,
+        "at": "2026-11-05T22:36:06.970Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionByHash",
+        "requestSha256": "5ec8794204fd37bfb9ae3c8edcd379c7b58e31ae7eddbe22a0bd05756adeee43",
+        "requestHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 24,
+        "at": "2026-11-05T22:36:07.205Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "5ec8794204fd37bfb9ae3c8edcd379c7b58e31ae7eddbe22a0bd05756adeee43",
+        "requestHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+          "admission": {
+            "txHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+            "outcome": "replaced",
+            "at": 1793918132729,
+            "sender": "0x1ADeFe0C43C1B2358984e265e2f09D060c8309B7",
+            "nonce": "0x0",
+            "nonceKeys": [
+              "0x1"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 1,
+              "txHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+              "at": 1793918132817,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 4,
+              "txHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+              "at": 1793918166428,
+              "kind": "replaced"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 25,
+        "at": "2026-11-05T22:36:07.506Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_sendFrameTransaction",
+        "requestSha256": "c81b7d5a454427248ba84f2af20e0adfe44e06ce4157b5fd635eaac8f4e10570",
+        "outcome": "RPC_ERROR",
+        "code": -32602,
+        "reason": "FEE_BUMP"
+      },
+      {
+        "seq": 26,
+        "at": "2026-11-05T22:36:07.775Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionByHash",
+        "requestSha256": "7b36f037520c6650c99d1794c43daf5094ee77d01ba5e8e31da88600834361cd",
+        "requestHash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+        "outcome": "RESULT",
+        "result": {
+          "txHash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+          "submittedTime": "0x1a1addae56f",
+          "lastUpdatedTime": "0x1a1addae58c",
+          "balanceEnforcement": false
+        }
+      },
+      {
+        "seq": 27,
+        "at": "2026-11-05T22:36:08.043Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_frameTransactionStatus",
+        "requestSha256": "7b36f037520c6650c99d1794c43daf5094ee77d01ba5e8e31da88600834361cd",
+        "requestHash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+        "outcome": "RESULT",
+        "result": {
+          "sender": "0x1ADeFe0C43C1B2358984e265e2f09D060c8309B7",
+          "payer": "0x1ADeFe0C43C1B2358984e265e2f09D060c8309B7",
+          "status": "New"
+        }
+      },
+      {
+        "seq": 28,
+        "at": "2026-11-05T22:36:08.251Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionByHash",
+        "requestSha256": "17855373370f3c9d32435608b3e1453c5119a68ce20d7a254ba606ae66a8b611",
+        "requestHash": "0x2284ed4b3b62e159b246d51ba7d27d2b039b8688f283315adf11f1898bfd1b5e",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 29,
+        "at": "2026-11-05T22:36:08.409Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_info",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": {
+          "protocolVersion": 1,
+          "chainId": 9,
+          "version": "v4.1.1",
+          "commit": "",
+          "bundlingMode": "manual",
+          "p2pEnabled": true,
+          "oldestSeq": 1,
+          "latestSeq": 5,
+          "historyCapacity": 10000,
+          "bootId": "06977c829791430d"
+        }
+      }
+    ]
+  },
+  "steps": [
+    {
+      "id": "admit-base",
+      "at": "2026-11-05T22:35:32.867Z",
+      "result": "PASS",
+      "evidenceThrough": 13,
+      "observed": {
+        "hash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2000000000",
+        "priorityFee": "1000000000"
+      }
+    },
+    {
+      "id": "confirm-live-predecessor",
+      "at": "2026-11-05T22:35:33.372Z",
+      "result": "PASS",
+      "evidenceThrough": 15,
+      "observed": {
+        "hash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "lastUpdatedTime": "0x1a1adda6247",
+        "status": "New",
+        "ttlSeconds": 30
+      }
+    },
+    {
+      "id": "reject-fee-before-ttl",
+      "at": "2026-11-05T22:35:33.672Z",
+      "result": "PASS",
+      "evidenceThrough": 16,
+      "observed": {
+        "hash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+        "expected": "FEE_BUMP",
+        "actual": "FEE_BUMP",
+        "code": -32602,
+        "maximumFee": "2100000000",
+        "priorityFee": "1050000000"
+      }
+    },
+    {
+      "id": "wait-for-ttl",
+      "at": "2026-11-05T22:36:05.899Z",
+      "result": "PASS",
+      "evidenceThrough": 19,
+      "observed": {
+        "hash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "lastUpdatedTime": "0x1a1adda6247",
+        "status": "New",
+        "ttlSeconds": 30,
+        "waitMilliseconds": "30438"
+      }
+    },
+    {
+      "id": "reject-duplicate-after-ttl",
+      "at": "2026-11-05T22:36:06.146Z",
+      "result": "PASS",
+      "evidenceThrough": 20,
+      "observed": {
+        "hash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "expected": "DUPLICATE",
+        "actual": "DUPLICATE",
+        "code": -32602,
+        "maximumFee": "2000000000",
+        "priorityFee": "1000000000"
+      }
+    },
+    {
+      "id": "accept-fee-after-ttl",
+      "at": "2026-11-05T22:36:06.470Z",
+      "result": "PASS",
+      "evidenceThrough": 21,
+      "observed": {
+        "hash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2100000000",
+        "priorityFee": "1050000000"
+      }
+    },
+    {
+      "id": "verify-ttl-replacement",
+      "at": "2026-11-05T22:36:07.209Z",
+      "result": "PASS",
+      "evidenceThrough": 24,
+      "observed": {
+        "oldHash": "0xdea8bb433f3698eecf9e1e9ea103091ce3d6d2100a91b7de36a0146b604a4147",
+        "newHash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+        "oldLastUpdatedTime": "0x1a1adda6247",
+        "newLastUpdatedTime": "0x1a1addae58c",
+        "elapsedMilliseconds": "33605",
+        "ttlSeconds": 30,
+        "oldEntryRemoved": true
+      }
+    },
+    {
+      "id": "reject-fee-after-refresh",
+      "at": "2026-11-05T22:36:07.506Z",
+      "result": "PASS",
+      "evidenceThrough": 25,
+      "observed": {
+        "hash": "0x2284ed4b3b62e159b246d51ba7d27d2b039b8688f283315adf11f1898bfd1b5e",
+        "expected": "FEE_BUMP",
+        "actual": "FEE_BUMP",
+        "code": -32602,
+        "maximumFee": "2150000000",
+        "priorityFee": "1075000000"
+      }
+    },
+    {
+      "id": "verify-active-replacement",
+      "at": "2026-11-05T22:36:08.251Z",
+      "result": "PASS",
+      "evidenceThrough": 28,
+      "observed": {
+        "hash": "0x9c22af4d2ead29c2e6a4d23c73693a0858962becbfc06fea9bf02445c95958b9",
+        "status": "New",
+        "lastUpdatedTime": "0x1a1addae58c",
+        "rejectedEntryAbsent": true
+      }
+    },
+    {
+      "id": "explorer-continuity",
+      "at": "2026-11-05T22:36:08.409Z",
+      "result": "PASS",
+      "evidenceThrough": 29,
+      "observed": {
+        "bootId": "06977c829791430d",
+        "gaps": ""
+      }
+    },
+    {
+      "id": "fixture-cleanup",
+      "at": "2026-11-05T22:36:09.619Z",
+      "result": "PASS",
+      "evidenceThrough": 29,
+      "observed": {
+        "removedOwnedResources": true
+      }
+    }
+  ],
+  "result": "PASS",
+  "definition": {
+    "id": "keyed-replacement-ttl",
+    "title": "Keyed replacement TTL expiry and refresh",
+    "sourceRule": "FrameTxMempoolEntry/canReplaceWithTTL; MempoolService/validateReplaceability",
+    "sourceCommit": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "expectedInvariant": "Expiry permits a different below-bump same-slot candidate, but not a live duplicate; replacement refreshes the TTL.",
+    "preconditions": [
+      "Owned isolated pinned processes with verified 30-second TTL",
+      "Live New predecessor with unchanged lastUpdatedTime",
+      "No block production required; no exact boundary or terminal-state claim"
+    ],
+    "actions": [
+      "admit-base",
+      "confirm-live-predecessor",
+      "reject-fee-before-ttl",
+      "wait-for-ttl",
+      "reject-duplicate-after-ttl",
+      "accept-fee-after-ttl",
+      "verify-ttl-replacement",
+      "reject-fee-after-refresh",
+      "verify-active-replacement",
+      "explorer-continuity"
+    ]
+  },
+  "limitations": [
+    "Non-mining genesis fixture. No block-production/state-transition claims.",
+    "Seed identifies action order, not private signing keys; fresh accounts are random.",
+    "Admission-only TTL expiry/refresh case; no exact boundary, inclusion or terminal/submitted-entry claim."
+  ],
+  "reproducer": "npm run --silent aftershock -- run keyed-replacement-ttl --local"
+}

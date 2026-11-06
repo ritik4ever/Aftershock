@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "runId": "acc1216e-0374-48a8-b4f0-5e724d264979",
+  "scenarioId": "paymaster-solvency",
+  "seed": 0,
+  "endpointClass": "ISOLATED_LOCAL",
+  "startedAt": "2026-11-05T20:18:10.850Z",
+  "completedAt": "2026-11-05T20:26:14.423Z",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "environment": {
+    "network": "aftershock-acc1216e-0374-48a8-b4f0-5e724d264979-net",
+    "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
+    "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
+    "chainId": "0x9",
+    "networkInternal": "true",
+    "publishedPorts": "none",
+    "bundlingMode": "manual",
+    "genesisSha256": "518542cd31fe473146bfae4a74e100bad90850fb490ef402d393453467424898",
+    "consensusImage": "ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0",
+    "genesisGeneratorImage": "ethpandaops/ethereum-genesis-generator@sha256:51decce4284d8498dabfa38ae13ddce84cbf8c7be4f33a32b798ce10c9868e77",
+    "fixtureMode": "mining",
+    "readyBlock": "0x41",
+    "readyBlockHash": "0x4912da7d97279b76463099b75d89d1c4f1dcf52cfdb80cc9a396bce94bc4a222",
+    "clientVersion": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1",
+    "useropsTTL": "300"
+  },
+  "steps": [
+    {
+      "id": "admit-base",
+      "at": "2026-11-05T20:25:49.225Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x16ce21b3b9c119ed8a95a5f9f206a6882f4836f9cac192d0ff6cf7c1e9b50819",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
+      }
+    },
+    {
+      "id": "confirm-solvency-boundary",
+      "at": "2026-11-05T20:25:49.495Z",
+      "result": "PASS",
+      "observed": {
+        "maximumCost": "662874000000000",
+        "payerBalance": "1000000000000000"
+      }
+    },
+    {
+      "id": "reject-aggregate-overspend",
+      "at": "2026-11-05T20:25:49.648Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x864a0e5a65ec1a821734aa00355e32906dd90c959b4ef9ed6ab921bbb93d4153",
+        "expected": "BALANCE_OBLIGATIONS",
+        "actual": "BALANCE_OBLIGATIONS",
+        "code": -32602,
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
+      }
+    },
+    {
+      "id": "accept-fee-bumped-replacement",
+      "at": "2026-11-05T20:25:49.802Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0xff81718379e4cb52d16e15aa86bab2ff2f27e0abff0e3fdf1aa8f324be58c7d7",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2200000000",
+        "priorityFee": "2200000000"
+      }
+    },
+    {
+      "id": "verify-replacement-lifecycle",
+      "at": "2026-11-05T20:25:50.187Z",
+      "result": "PASS",
+      "observed": {
+        "oldHash": "0x16ce21b3b9c119ed8a95a5f9f206a6882f4836f9cac192d0ff6cf7c1e9b50819",
+        "newHash": "0xff81718379e4cb52d16e15aa86bab2ff2f27e0abff0e3fdf1aa8f324be58c7d7",
+        "oldOutcome": "replaced",
+        "oldEntryRemoved": true
+      }
+    },
+    {
+      "id": "top-up-payer",
+      "at": "2026-11-05T20:25:53.848Z",
+      "result": "PASS",
+      "observed": {
+        "transactionHash": "0xfc0e4b7684c2403960398409f5c8ed490def2245609f37ade8cd63b1f69f68f6",
+        "status": "0x1",
+        "blockNumber": "0x42",
+        "gasUsed": "0x5208",
+        "value": "800000000000000"
+      }
+    },
+    {
+      "id": "admit-second-obligation",
+      "at": "2026-11-05T20:25:55.128Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x864a0e5a65ec1a821734aa00355e32906dd90c959b4ef9ed6ab921bbb93d4153",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
+      }
+    },
+    {
+      "id": "confirm-pending-order",
+      "at": "2026-11-05T20:25:55.382Z",
+      "result": "PASS",
+      "observed": {
+        "oldestHash": "0xff81718379e4cb52d16e15aa86bab2ff2f27e0abff0e3fdf1aa8f324be58c7d7",
+        "newestHash": "0x864a0e5a65ec1a821734aa00355e32906dd90c959b4ef9ed6ab921bbb93d4153",
+        "oldestAt": "0x1a1ad639fbf",
+        "newestAt": "0x1a1ad63b49a"
+      }
+    },
+    {
+      "id": "balance-control",
+      "at": "2026-11-05T20:25:59.117Z",
+      "result": "PASS",
+      "observed": {
+        "transactionHash": "0xd706ee1f16496a51be5b2eb1db2df737e0278beb74efddc2af20891e12331f30",
+        "status": "0x1",
+        "blockNumber": "0x43",
+        "gasUsed": "0x5208",
+        "value": "1"
+      }
+    },
+    {
+      "id": "verify-control-survival",
+      "at": "2026-11-05T20:26:09.308Z",
+      "result": "PASS",
+      "observed": {
+        "oldestStatus": "New",
+        "newestStatus": "New"
+      }
+    },
+    {
+      "id": "drain-payer",
+      "at": "2026-11-05T20:26:11.501Z",
+      "result": "PASS",
+      "observed": {
+        "transactionHash": "0x283919eb758d7a2aba16a85873a90108e968fe117e258e6fedca8ba391d53fb7",
+        "status": "0x1",
+        "blockNumber": "0x45",
+        "gasUsed": "0x5208",
+        "value": "800000000000000"
+      }
+    },
+    {
+      "id": "verify-solvency-eviction",
+      "at": "2026-11-05T20:26:12.145Z",
+      "result": "PASS",
+      "observed": {
+        "oldestHash": "0xff81718379e4cb52d16e15aa86bab2ff2f27e0abff0e3fdf1aa8f324be58c7d7",
+        "newestHash": "0x864a0e5a65ec1a821734aa00355e32906dd90c959b4ef9ed6ab921bbb93d4153",
+        "oldestStatus": "New",
+        "newestStatus": "Cancelled",
+        "balanceEnforcement": true
+      }
+    },
+    {
+      "id": "verify-survivor-obligations",
+      "at": "2026-11-05T20:26:12.145Z",
+      "result": "PASS",
+      "observed": {
+        "balance": "957995172897999",
+        "oldestCost": "729187800000000",
+        "newestCost": "662874000000000",
+        "combinedCost": "1392061800000000"
+      }
+    },
+    {
+      "id": "explorer-continuity",
+      "at": "2026-11-05T20:26:12.263Z",
+      "result": "PASS",
+      "observed": {
+        "bootId": "49f6d899feacbd3b",
+        "gaps": ""
+      }
+    },
+    {
+      "id": "mined-state-transition",
+      "at": "2026-11-05T20:26:12.263Z",
+      "result": "PASS",
+      "observed": {
+        "fixtureMode": "mining",
+        "scope": "paymaster-solvency"
+      }
+    },
+    {
+      "id": "fixture-cleanup",
+      "at": "2026-11-05T20:26:14.423Z",
+      "result": "PASS",
+      "observed": {
+        "removedOwnedResources": true
+      }
+    }
+  ],
+  "result": "PASS",
+  "definition": {
+    "id": "paymaster-solvency",
+    "title": "Shared payer admission and replacement obligations",
+    "sourceRule": "MempoolService/checkBalanceObligations",
+    "sourceCommit": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "expectedInvariant": "Pending payer obligations fit its balance; a replacement excludes the displaced obligation.",
+    "preconditions": [
+      "Owned isolated pinned processes",
+      "One transaction fits the fresh payer balance but two do not",
+      "Manual bundling preserves pending entries during accounting observations"
+    ],
+    "actions": [
+      "admit-base",
+      "confirm-solvency-boundary",
+      "reject-aggregate-overspend",
+      "accept-fee-bumped-replacement",
+      "verify-replacement-lifecycle",
+      "top-up-payer",
+      "admit-second-obligation",
+      "confirm-pending-order",
+      "balance-control",
+      "verify-control-survival",
+      "drain-payer",
+      "verify-solvency-eviction",
+      "verify-survivor-obligations",
+      "explorer-continuity",
+      "mined-state-transition"
+    ]
+  },
+  "limitations": [
+    "Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.",
+    "Seed identifies action order, not private signing keys; fresh accounts are random.",
+    "Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run."
+  ],
+  "reproducer": "npm run --silent aftershock -- run paymaster-solvency --local --mine"
+}

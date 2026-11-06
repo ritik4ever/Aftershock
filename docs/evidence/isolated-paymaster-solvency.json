@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "runId": "d17a01dd-8aea-4dda-8098-d0b629de9eec",
+  "scenarioId": "paymaster-solvency",
+  "seed": 0,
+  "endpointClass": "ISOLATED_LOCAL",
+  "startedAt": "2026-11-05T17:48:10.945Z",
+  "completedAt": "2026-11-05T17:48:23.244Z",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "environment": {
+    "network": "aftershock-d17a01dd-8aea-4dda-8098-d0b629de9eec-net",
+    "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
+    "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
+    "chainId": "0x9",
+    "networkInternal": "true",
+    "publishedPorts": "none",
+    "genesisSha256": "0a57a6071593ba6003f29e271607a5a3ec9d74439a639b5e2f43f8f23dd29013",
+    "fixtureMode": "admission",
+    "clientVersion": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1",
+    "useropsTTL": "300"
+  },
+  "steps": [
+    {
+      "id": "admit-base",
+      "at": "2026-11-05T17:48:20.231Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0xa3ab3438c3b19bbb29bf8b601bd041ed1535e4c2b1c0ce4c5a821e7106226b7a",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
+      }
+    },
+    {
+      "id": "confirm-solvency-boundary",
+      "at": "2026-11-05T17:48:20.535Z",
+      "result": "PASS",
+      "observed": {
+        "maximumCost": "662922000000000",
+        "payerBalance": "1000000000000000"
+      }
+    },
+    {
+      "id": "reject-aggregate-overspend",
+      "at": "2026-11-05T17:48:20.748Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0xf710d14bf5c20d7274f5b04cabc851e6a74f7df550a9f6b0fed2a134bc0843e7",
+        "expected": "BALANCE_OBLIGATIONS",
+        "actual": "BALANCE_OBLIGATIONS",
+        "code": -32602,
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
+      }
+    },
+    {
+      "id": "accept-fee-bumped-replacement",
+      "at": "2026-11-05T17:48:20.936Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x484922616e883cb1bdf895d0f7603817a048a0c3e3d495c238b06c0e034744c8",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2200000000",
+        "priorityFee": "2200000000"
+      }
+    },
+    {
+      "id": "verify-replacement-lifecycle",
+      "at": "2026-11-05T17:48:21.435Z",
+      "result": "PASS",
+      "observed": {
+        "oldHash": "0xa3ab3438c3b19bbb29bf8b601bd041ed1535e4c2b1c0ce4c5a821e7106226b7a",
+        "newHash": "0x484922616e883cb1bdf895d0f7603817a048a0c3e3d495c238b06c0e034744c8",
+        "oldOutcome": "replaced",
+        "oldEntryRemoved": true
+      }
+    },
+    {
+      "id": "explorer-continuity",
+      "at": "2026-11-05T17:48:21.572Z",
+      "result": "PASS",
+      "observed": {
+        "bootId": "562aa21b5eb97481",
+        "gaps": ""
+      }
+    },
+    {
+      "id": "mined-state-transition",
+      "at": "2026-11-05T17:48:21.572Z",
+      "result": "BLOCKED",
+      "observed": {
+        "reason": "Pinned simple ethrex fixture does not produce Hegota blocks; mining stack required"
+      }
+    },
+    {
+      "id": "fixture-cleanup",
+      "at": "2026-11-05T17:48:23.244Z",
+      "result": "PASS",
+      "observed": {
+        "removedOwnedResources": true
+      }
+    }
+  ],
+  "result": "BLOCKED",
+  "definition": {
+    "id": "paymaster-solvency",
+    "title": "Shared payer admission and replacement obligations",
+    "sourceRule": "MempoolService/checkBalanceObligations",
+    "sourceCommit": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "expectedInvariant": "Pending payer obligations fit its balance; a replacement excludes the displaced obligation.",
+    "preconditions": [
+      "Owned isolated pinned processes",
+      "One transaction fits the fresh payer balance but two do not",
+      "No mining during pending-accounting observations"
+    ],
+    "actions": [
+      "admit-base",
+      "confirm-solvency-boundary",
+      "reject-aggregate-overspend",
+      "accept-fee-bumped-replacement",
+      "verify-replacement-lifecycle",
+      "explorer-continuity",
+      "mined-state-transition"
+    ]
+  },
+  "limitations": [
+    "Non-mining genesis fixture. No block-production/state-transition claims.",
+    "Seed identifies action order, not private signing keys; fresh accounts are random.",
+    "Only observed admission/replacement behavior is checked."
+  ],
+  "reproducer": "npm run --silent aftershock -- run paymaster-solvency --local"
+}

@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "runId": "3b2d8dee-6870-4ce3-9e83-af75ef4e5a4f",
+  "scenarioId": "keyed-nonce-lifecycle",
+  "seed": 0,
+  "endpointClass": "ISOLATED_LOCAL",
+  "startedAt": "2026-11-05T20:07:05.388Z",
+  "completedAt": "2026-11-05T20:15:04.541Z",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "environment": {
+    "network": "aftershock-3b2d8dee-6870-4ce3-9e83-af75ef4e5a4f-net",
+    "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
+    "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
+    "chainId": "0x9",
+    "networkInternal": "true",
+    "publishedPorts": "none",
+    "bundlingMode": "manual",
+    "genesisSha256": "4c0c736dda43ef34a146a65846cc40613dba1a2ab620530c84b46b6bc6d1629c",
+    "consensusImage": "ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0",
+    "genesisGeneratorImage": "ethpandaops/ethereum-genesis-generator@sha256:51decce4284d8498dabfa38ae13ddce84cbf8c7be4f33a32b798ce10c9868e77",
+    "fixtureMode": "mining",
+    "readyBlock": "0x42",
+    "readyBlockHash": "0x309e6db85bfe4bebae1223f38b14665ccf99f2913641d48836d7882e9e76988c",
+    "clientVersion": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1",
+    "useropsTTL": "300"
+  },
+  "steps": [
+    {
+      "id": "admit-base",
+      "at": "2026-11-05T20:14:44.111Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x2932951c59a907f183eedbf8844a0cc045c07b51710f257e30d63ee1bd74451b",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2000000000",
+        "priorityFee": "1000000000"
+      }
+    },
+    {
+      "id": "reject-duplicate",
+      "at": "2026-11-05T20:14:44.283Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x2932951c59a907f183eedbf8844a0cc045c07b51710f257e30d63ee1bd74451b",
+        "expected": "DUPLICATE",
+        "actual": "DUPLICATE",
+        "code": -32602,
+        "maximumFee": "2000000000",
+        "priorityFee": "1000000000"
+      }
+    },
+    {
+      "id": "admit-disjoint-key",
+      "at": "2026-11-05T20:14:44.424Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x343e245a9de8e3eabd24be7964b18723edb52f56535bac1d88cf1dad08d97450",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
+      }
+    },
+    {
+      "id": "reject-overlapping-set",
+      "at": "2026-11-05T20:14:44.559Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x2f12f0fe598cdc49de51dbde8e217564c77e28feafb152cf6efb699f1deb190c",
+        "expected": "KEY_CONFLICT",
+        "actual": "KEY_CONFLICT",
+        "code": -32602,
+        "maximumFee": "2000000000",
+        "priorityFee": "2000000000"
+      }
+    },
+    {
+      "id": "reject-low-fee-bump",
+      "at": "2026-11-05T20:14:44.694Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x49a61ca5b1eaedc48133c7815e16993f67c4f9b1761a32433425e4a0fa18bc68",
+        "expected": "FEE_BUMP",
+        "actual": "FEE_BUMP",
+        "code": -32602,
+        "maximumFee": "2100000000",
+        "priorityFee": "1100000000"
+      }
+    },
+    {
+      "id": "reject-low-priority-fee-bump",
+      "at": "2026-11-05T20:14:44.831Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x85aa493e444c850a700836cd60d05a67d6ee9f6c9c707af05b0704421f34d200",
+        "expected": "FEE_BUMP",
+        "actual": "FEE_BUMP",
+        "code": -32602,
+        "maximumFee": "2200000000",
+        "priorityFee": "1050000000"
+      }
+    },
+    {
+      "id": "accept-fee-bumped-replacement",
+      "at": "2026-11-05T20:14:44.976Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x63872db0dcc2a3242916629d16a4cf14e737f37b7d48cc0a7cba8ec3c0cfd7fa",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2200000000",
+        "priorityFee": "1100000000"
+      }
+    },
+    {
+      "id": "verify-replacement-lifecycle",
+      "at": "2026-11-05T20:14:45.368Z",
+      "result": "PASS",
+      "observed": {
+        "oldHash": "0x2932951c59a907f183eedbf8844a0cc045c07b51710f257e30d63ee1bd74451b",
+        "newHash": "0x63872db0dcc2a3242916629d16a4cf14e737f37b7d48cc0a7cba8ec3c0cfd7fa",
+        "oldOutcome": "replaced",
+        "oldEntryRemoved": true
+      }
+    },
+    {
+      "id": "canonical-submit-predecessor",
+      "at": "2026-11-05T20:14:45.487Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x63872db0dcc2a3242916629d16a4cf14e737f37b7d48cc0a7cba8ec3c0cfd7fa"
+      }
+    },
+    {
+      "id": "observe-inclusion",
+      "at": "2026-11-05T20:14:51.379Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x63872db0dcc2a3242916629d16a4cf14e737f37b7d48cc0a7cba8ec3c0cfd7fa",
+        "blockNumber": "0x43",
+        "status": "OnChain",
+        "frameStatuses": "success,success"
+      }
+    },
+    {
+      "id": "reject-stale-sequence",
+      "at": "2026-11-05T20:14:51.621Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x6816d6372d84a31a3cf7554d81fca724c352860f6e0ab88b9eee0f768e4144ea",
+        "expected": "NONCE_MISMATCH",
+        "actual": "NONCE_MISMATCH",
+        "code": -32500,
+        "maximumFee": "2420000000",
+        "priorityFee": "1210000000"
+      }
+    },
+    {
+      "id": "admit-next-sequence",
+      "at": "2026-11-05T20:14:51.931Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x2aac9faf995b4166ade4c6de21cdb9ba88ebd533bb2db229d5167fa86102a462",
+        "expected": "ACCEPTED",
+        "actual": "ACCEPTED",
+        "maximumFee": "2000000000",
+        "priorityFee": "1000000000"
+      }
+    },
+    {
+      "id": "canonical-submit-next-sequence",
+      "at": "2026-11-05T20:14:52.243Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x2aac9faf995b4166ade4c6de21cdb9ba88ebd533bb2db229d5167fa86102a462",
+        "sequence": "1"
+      }
+    },
+    {
+      "id": "observe-next-inclusion",
+      "at": "2026-11-05T20:15:00.686Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x2aac9faf995b4166ade4c6de21cdb9ba88ebd533bb2db229d5167fa86102a462",
+        "blockNumber": "0x44",
+        "frameStatuses": "success,success"
+      }
+    },
+    {
+      "id": "verify-disjoint-survivor",
+      "at": "2026-11-05T20:15:00.918Z",
+      "result": "PASS",
+      "observed": {
+        "hash": "0x343e245a9de8e3eabd24be7964b18723edb52f56535bac1d88cf1dad08d97450",
+        "status": "New"
+      }
+    },
+    {
+      "id": "explorer-continuity",
+      "at": "2026-11-05T20:15:01.152Z",
+      "result": "PASS",
+      "observed": {
+        "bootId": "7d5e2bda98f5f689",
+        "gaps": ""
+      }
+    },
+    {
+      "id": "mined-state-transition",
+      "at": "2026-11-05T20:15:01.152Z",
+      "result": "PASS",
+      "observed": {
+        "fixtureMode": "mining",
+        "scope": "keyed-nonce-lifecycle"
+      }
+    },
+    {
+      "id": "fixture-cleanup",
+      "at": "2026-11-05T20:15:04.540Z",
+      "result": "PASS",
+      "observed": {
+        "removedOwnedResources": true
+      }
+    }
+  ],
+  "result": "PASS",
+  "definition": {
+    "id": "keyed-nonce-lifecycle",
+    "title": "Key conflicts and replacement lifecycle",
+    "sourceRule": "MempoolService/checkNonceKeyConflict; FrameTxMempoolEntry/canReplaceWithTTL",
+    "sourceCommit": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "expectedInvariant": "Disjoint keys coexist; overlapping other slots conflict; same-slot replacement must satisfy both fee thresholds.",
+    "preconditions": [
+      "Owned isolated pinned processes",
+      "Fresh funded sender with sequence zero",
+      "All replacements occur before TTL expiry"
+    ],
+    "actions": [
+      "admit-base",
+      "reject-duplicate",
+      "admit-disjoint-key",
+      "reject-overlapping-set",
+      "reject-low-fee-bump",
+      "reject-low-priority-fee-bump",
+      "accept-fee-bumped-replacement",
+      "verify-replacement-lifecycle",
+      "canonical-submit-predecessor",
+      "observe-inclusion",
+      "reject-stale-sequence",
+      "admit-next-sequence",
+      "canonical-submit-next-sequence",
+      "observe-next-inclusion",
+      "verify-disjoint-survivor",
+      "explorer-continuity",
+      "mined-state-transition"
+    ]
+  },
+  "limitations": [
+    "Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.",
+    "Seed identifies action order, not private signing keys; fresh accounts are random.",
+    "Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run."
+  ],
+  "reproducer": "npm run --silent aftershock -- run keyed-nonce-lifecycle --local --mine"
+}
