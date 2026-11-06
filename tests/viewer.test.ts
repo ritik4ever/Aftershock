@@ -1,0 +1,207 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { request as httpRequest } from 'node:http';
+import { mkdtemp, mkdir, readFile, writeFile, symlink } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { startViewer } from '../packages/core/src/viewer.js';
+import { saveRun } from '../packages/core/src/report.js';
+import { runReport } from '../packages/core/src/scenario.js';
+
+const keyed = runReport.parse(
+  JSON.parse(
+    await readFile('docs/evidence/rpc-keyed-nonce-lifecycle.json', 'utf8'),
+  ),
+);
+const previous = runReport.parse(
+  JSON.parse(
+    await readFile('docs/evidence/mined-keyed-nonce-lifecycle.json', 'utf8'),
+  ),
+);
+const cancelled = runReport.parse(
+  JSON.parse(
+    await readFile('docs/evidence/cancelled-replacement.json', 'utf8'),
+  ),
+);
+
+async function fixture() {
+  const root = await mkdtemp(join(tmpdir(), 'aftershock-viewer-'));
+  await saveRun(root, keyed);
+  await saveRun(root, previous);
+  await mkdir(join(root, 'docs/evidence'), { recursive: true });
+  for (const name of [
+    'rpc-keyed-nonce-lifecycle',
+    'rpc-paymaster-solvency',
+    'keyed-replacement-ttl',
+    'cancelled-replacement',
+  ])
+    await writeFile(
+      join(root, 'docs/evidence', `${name}.json`),
+      await readFile(`docs/evidence/${name}.json`),
+    );
+  const viewer = await startViewer(root, 0);
+  return { root, ...viewer };
+}
+
+test('viewer serves real saved reports, reviewed examples and immutable exports', async () => {
+  const v = await fixture();
+  try {
+    const html = await fetch(v.url);
+    assert.equal(html.status, 200);
+    assert.match(await html.text(), /Find the failures/);
+    assert.match(
+      html.headers.get('content-security-policy')!,
+      /frame-ancestors 'none'/,
+    );
+    assert.equal(html.headers.get('cache-control'), 'no-store');
+    for (const asset of ['/app.js', '/style.css'])
+      assert.equal((await fetch(v.url + asset)).status, 200);
+    const runs = await (await fetch(v.url + '/api/runs')).json();
+    assert.equal(runs.runs.length, 6);
+    assert.equal(runs.unavailable, 0);
+    assert.equal(
+      runs.runs.filter(
+        (r: { source: string }) => r.source === 'Reviewed example',
+      ).length,
+      4,
+    );
+    const path = join(v.root, 'reports', `${keyed.runId}.scenario.json`);
+    const before = await readFile(path);
+    const detail = await (
+      await fetch(`${v.url}/api/run?key=local:${keyed.runId}`)
+    ).json();
+    assert.deepEqual(detail.report, keyed);
+    assert.equal(detail.checks.status, 'CONSISTENT');
+    const finding = await (
+      await fetch(v.url + '/api/run?key=sample:cancelled')
+    ).json();
+    assert.deepEqual(finding.report, cancelled);
+    assert.equal(finding.report.result, 'FAIL');
+    assert.equal(finding.checks.status, 'INSUFFICIENT');
+    const download = await fetch(
+      `${v.url}/api/download?key=local:${keyed.runId}&format=report`,
+    );
+    assert.match(download.headers.get('content-disposition')!, /attachment/);
+    assert.deepEqual(await download.json(), keyed);
+    const evidence = await (
+      await fetch(
+        `${v.url}/api/download?key=local:${keyed.runId}&format=evidence`,
+      )
+    ).json();
+    assert.deepEqual(evidence.evidence, keyed.evidence);
+    assert.deepEqual(await readFile(path), before);
+    const comparison = await fetch(
+      `${v.url}/api/compare?left=local:${keyed.runId}&right=local:${previous.runId}`,
+    );
+    assert.equal(comparison.status, 200);
+    assert.equal((await comparison.json()).exactHistoricalReplay, false);
+    assert.equal(
+      (
+        await fetch(
+          `${v.url}/api/compare?left=sample:keyed&right=local:${keyed.runId}`,
+        )
+      ).status,
+      422,
+    );
+    assert.equal(
+      (
+        await fetch(
+          `${v.url}/api/download?key=local:${previous.runId}&format=evidence`,
+        )
+      ).status,
+      404,
+    );
+  } finally {
+    await v.close();
+  }
+});
+
+test('viewer rejects cross-origin access, write requests and filesystem routes', async () => {
+  const v = await fixture();
+  try {
+    assert.equal(
+      (await fetch(v.url + '/api/runs', { method: 'POST' })).status,
+      405,
+    );
+    assert.equal(
+      (
+        await fetch(v.url + '/api/runs', {
+          headers: { origin: 'https://attacker.example' },
+        })
+      ).status,
+      403,
+    );
+    assert.equal(
+      (
+        await fetch(v.url + '/api/runs', {
+          headers: { 'sec-fetch-site': 'cross-site' },
+        })
+      ).status,
+      403,
+    );
+    const rebound = await new Promise<number>((resolve) => {
+      const req = httpRequest(
+        v.url + '/api/runs',
+        { headers: { host: 'attacker.example' } },
+        (res) => {
+          res.resume();
+          resolve(res.statusCode!);
+        },
+      );
+      req.end();
+    });
+    assert.equal(rebound, 403);
+    for (const route of [
+      '/.local/keys.json',
+      '/api/run?key=local:../secret',
+      '/api/run?key=sample:../../secret',
+      '/api/runs?path=.local',
+      '/api/run?key=sample:keyed&key=sample:payer',
+      '/api/download?key=sample:keyed&format=html',
+    ])
+      assert.ok((await fetch(v.url + route)).status >= 400, route);
+  } finally {
+    await v.close();
+  }
+});
+
+test('invalid and symlinked reports never become readable viewer data', async () => {
+  const v = await fixture();
+  try {
+    const id = '11111111-1111-4111-8111-111111111111';
+    await writeFile(
+      join(v.root, 'reports', `${id}.scenario.json`),
+      'PRIVATE_LOCAL_SENTINEL',
+    );
+    const response = await fetch(`${v.url}/api/run?key=local:${id}`);
+    assert.equal(response.status, 404);
+    assert.ok(!(await response.text()).includes('PRIVATE_LOCAL_SENTINEL'));
+    const alias = '22222222-2222-4222-8222-222222222222';
+    await symlink(
+      join(v.root, 'reports', `${keyed.runId}.scenario.json`),
+      join(v.root, 'reports', `${alias}.scenario.json`),
+    );
+    assert.equal(
+      (await fetch(`${v.url}/api/run?key=local:${alias}`)).status,
+      404,
+    );
+    assert.equal(
+      (await (await fetch(v.url + '/api/runs')).json()).unavailable,
+      1,
+    );
+  } finally {
+    await v.close();
+  }
+});
+
+test('an empty workspace gets a truthful empty listing', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'aftershock-viewer-empty-'));
+  const v = await startViewer(root, 0);
+  try {
+    const data = await (await fetch(v.url + '/api/runs')).json();
+    assert.deepEqual(data.runs, []);
+    assert.equal(data.unavailable, 4);
+  } finally {
+    await v.close();
+  }
+});

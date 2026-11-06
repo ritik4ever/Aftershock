@@ -14,6 +14,7 @@ import {
   replayPlan,
   compareRuns,
   checkEvidence,
+  startViewer,
 } from '@aftershock/core';
 
 const help = `Aftershock core integration
@@ -28,6 +29,7 @@ const help = `Aftershock core integration
   npm run aftershock -- evidence <run-id>
   npm run aftershock -- check-evidence <run-id>
   npm run aftershock -- compare <baseline-run-id> <rerun-run-id>
+  npm run aftershock -- serve [--port <1-65535>]
   npm run aftershock -- help
 
 Read-only public-devnet doctor/inspect commands. --save writes under reports/.
@@ -38,6 +40,22 @@ Receipt absence is unavailable evidence, not proof that execution failed.
 
 async function main(args: string[]): Promise<number> {
   const [command, ...rest] = args;
+  if (command === 'serve') {
+    if (
+      rest.length &&
+      (rest.length !== 2 ||
+        rest[0] !== '--port' ||
+        !/^[0-9]{1,5}$/.test(rest[1] ?? ''))
+    )
+      return 2;
+    const port = rest.length ? Number(rest[1]) : 4318;
+    if (port < 1 || port > 65535) return 2;
+    const viewer = await startViewer(process.cwd(), port);
+    process.stdout.write(
+      `Aftershock report viewer: ${viewer.url} (read only; Ctrl+C to stop)\n`,
+    );
+    return 0;
+  }
   if (command === 'check-evidence' && rest.length === 1) {
     if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(rest[0] ?? ''))
       return 2;

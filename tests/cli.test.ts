@@ -24,6 +24,10 @@ test('help and versions work offline and versions emits JSON', () => {
 
 test('invalid commands, arguments and paths are rejected before network work', () => {
   for (const args of [
+    ['serve', '--port', '0'],
+    ['serve', '--port', '65536'],
+    ['serve', '--port', 'abc'],
+    ['serve', '--host', '0.0.0.0'],
     ['check-evidence'],
     ['check-evidence', '../escape'],
     ['check-evidence', 'invalid', '--force'],

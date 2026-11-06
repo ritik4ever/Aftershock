@@ -19,3 +19,5 @@ export { saveRun, readRun, markdownReport } from './report.js';
 export { replayPlan, compareRuns } from './replay.js';
 
 export { checkEvidence } from './evidence-check.js';
+
+export { startViewer } from './viewer.js';

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aftershock ? Run explorer</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Aftershock home"
+        ><span class="brand-mark">?</span> Aftershock</a
+      >
+      <nav aria-label="Main navigation">
+        <a href="#runs">Runs</a><a href="#details">Evidence</a
+        ><a href="#comparison">Compare</a
+        ><a
+          href="https://github.com/ritik4ever/Aftershock"
+          target="_blank"
+          rel="noopener noreferrer"
+          >GitHub ?</a
+        >
+      </nav>
+      <span class="local-pill"><span class="dot"></span>Local ? Read only</span>
+    </header>
+    <main>
+      <section class="hero">
+        <p class="eyebrow">FRAME TRANSACTION TESTING</p>
+        <h1>Find the failures.<br /><em>Follow the evidence.</em></h1>
+        <p class="hero-copy">
+          Explore transaction lifecycles, inspect recorded findings, and compare
+          reproducible test runs.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#runs">Explore runs <span>?</span></a
+          ><a class="button" href="#comparison">Compare results</a>
+        </div>
+      </section>
+      <section class="stats" aria-label="Run overview">
+        <div><strong id="stat-total">?</strong><span>Available runs</span></div>
+        <div>
+          <strong id="stat-pass">?</strong><span>Passing scenarios</span>
+        </div>
+        <div>
+          <strong id="stat-fail">?</strong><span>Scenarios with findings</span>
+        </div>
+        <div>
+          <strong id="stat-evidence">?</strong><span>Complete journals</span>
+        </div>
+      </section>
+      <div
+        id="notice"
+        class="notice"
+        role="status"
+        aria-live="polite"
+        hidden
+      ></div>
+      <section id="runs" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">THE RECORD</p>
+            <h2>Run explorer<span class="accent">.</span></h2>
+          </div>
+          <button id="refresh" class="button small">Refresh runs ?</button>
+        </div>
+        <div class="filters">
+          <label class="search-label"
+            ><span>Search runs</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="Search scenario or run ID?" /></label
+          ><label
+            ><span>Verdict</span
+            ><select id="verdict">
+              <option value="">All verdicts</option>
+              <option>PASS</option>
+              <option>FAIL</option>
+              <option>BLOCKED</option>
+              <option>INCONCLUSIVE</option>
+              <option>SPEC_DIFFERENCE</option>
+            </select></label
+          ><label
+            ><span>Source</span
+            ><select id="source">
+              <option value="">All sources</option>
+              <option>Saved local run</option>
+              <option>Reviewed example</option>
+            </select></label
+          >
+        </div>
+        <p id="run-count" class="muted"></p>
+        <div id="run-list" class="run-list" aria-live="polite"></div>
+      </section>
+      <section id="comparison" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SIDE BY SIDE</p>
+            <h2>Compare outcomes<span class="accent">.</span></h2>
+          </div>
+        </div>
+        <p class="muted">
+          Choose two distinct runs of the same scenario. Comparison checks
+          verdicts and stable environment fields; it does not restore a
+          snapshot.
+        </p>
+        <div class="compare-controls">
+          <label
+            ><span>Baseline</span
+            ><select id="compare-left">
+              <option value="">Choose baseline?</option>
+            </select></label
+          ><label
+            ><span>Rerun</span
+            ><select id="compare-right">
+              <option value="">Choose rerun?</option>
+            </select></label
+          ><button id="compare-button" class="button primary">
+            Compare runs ?
+          </button>
+        </div>
+        <div id="compare-result" aria-live="polite"></div>
+      </section>
+      <section id="details" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">UNDER THE SURFACE</p>
+            <h2>Run detail<span class="accent">.</span></h2>
+          </div>
+        </div>
+        <div id="detail-content">
+          <div class="empty">
+            Select a run to explore its timeline and evidence.
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <a class="brand" href="/">? Aftershock</a>
+      <p>Find the failures before they reach Ethereum.</p>
+      <span>Local report viewer ? No transaction controls</span>
+    </footer>
+  </body>
+</html>
