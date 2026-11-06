@@ -102,7 +102,7 @@ test('static export publishes only reviewed evidence with working reports, downl
     'published captures must support a genuine compatible comparison',
   );
   const html = await readFile(join(output.directory, 'index.html'), 'utf8');
-  assert.match(html, /Records \+ live checks/);
+  assert.match(html, /Hosted workspace/);
   assert.match(html, /id="execute-controls" hidden/);
   assert.doesNotMatch(html, /id="local-runner-link" hidden/);
   assert.match(html, /block 2020/);

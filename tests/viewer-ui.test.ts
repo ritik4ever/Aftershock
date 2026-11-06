@@ -86,6 +86,8 @@ async function app(
   published = false,
   existingJob = false,
   jobFailure = false,
+  remoteEnabled = false,
+  savedRemoteJob = '',
 ) {
   const elements = new Map(
     [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => [
@@ -119,12 +121,46 @@ async function app(
     document: { getElementById: el, createElement: () => new Element() },
     AbortSignal,
     URL,
+    crypto: { randomUUID: () => '44444444-4444-4444-8444-444444444444' },
+    sessionStorage: {
+      getItem: (key: string) =>
+        key === 'aftershock-remote-job' ? savedRemoteJob : null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
     setTimeout: (callback: () => void) => {
       void setImmediate().then(callback);
     },
     ...(published ? { aftershockStatic: routes } : {}),
     matchMedia: () => ({ matches: true }),
     fetch: async (path: string, options: RequestInit) => {
+      if (path.startsWith('/api/runner')) {
+        requests.push(path);
+        const url = new URL(path, 'https://aftershock.example');
+        if (options.method === 'POST') {
+          assert.ok(remoteEnabled);
+          const body = JSON.parse(String(options.body));
+          assert.equal(body.accessCode, 'DEMO_CODE_ONLY');
+          assert.equal(body.scenarioId, 'keyed-nonce-lifecycle');
+          return Response.json(
+            { id: '123', state: 'RUNNING' },
+            { status: 202 },
+          );
+        }
+        if (!url.search)
+          return Response.json({
+            available: remoteEnabled,
+            scenarios: ['keyed-nonce-lifecycle'],
+          });
+        if (url.searchParams.get('format') === 'detail')
+          return Response.json({ report, checks: checkEvidence(report) });
+        return Response.json({
+          id: '123',
+          state: 'COMPLETED',
+          runId: report.runId,
+          result: report.result,
+        });
+      }
       if (path === '/api/execute' && options.method === 'POST') {
         assert.equal(options.method, 'POST');
         assert.deepEqual(JSON.parse(String(options.body)), {
@@ -302,7 +338,11 @@ test('published viewer loads exported snapshot files and maps download links wit
   assert.equal(ui.el('stat-total').textContent, '1');
   assert.ok(ui.el('detail-content').textContent.includes(report.runId));
   assert.ok(ui.requests.length >= 4);
-  assert.ok(ui.requests.every((path) => path.startsWith('/snapshot-')));
+  assert.ok(
+    ui.requests.every(
+      (path) => path.startsWith('/snapshot-') || path === '/api/runner',
+    ),
+  );
   const descendants = (el: Element): Element[] => [
     el,
     ...el.children.flatMap(descendants),
@@ -372,6 +412,37 @@ test('failed execution shows its safe guidance and observed stage without claimi
   assert.match(ui.el('execute-result').textContent, /image-provenance/);
   assert.doesNotMatch(ui.el('execute-result').textContent, /Fresh run/);
   assert.equal(ui.el('execute-start').disabled, false);
+});
+
+test('hosted UI resumes its saved GitHub job without starting another workflow', async () => {
+  const ui = await app([], true, false, false, true, '123');
+  for (let i = 0; i < 30 && ui.el('execute-start').disabled; i++)
+    await setImmediate();
+  assert.match(
+    ui.el('detail-content').textContent,
+    /Fresh GitHub-hosted isolated run/,
+  );
+  assert.ok(ui.requests.includes('/api/runner?job=123'));
+});
+
+test('hosted UI executes through configured GitHub API and renders the returned report separately from archives', async () => {
+  const ui = await app([], true, false, false, true);
+  assert.equal(ui.el('execute-controls').hidden, false);
+  assert.equal(ui.el('local-runner-link').hidden, true);
+  ui.el('runner-code').value = 'DEMO_CODE_ONLY';
+  ui.el('execute-scenario').value = 'keyed-nonce-lifecycle';
+  await ui.el('execute-start').trigger('click');
+  assert.match(ui.el('execute-result').textContent, /Fresh run/);
+  assert.match(
+    ui.el('detail-content').textContent,
+    /Fresh GitHub-hosted isolated run/,
+  );
+  assert.ok(
+    ui.requests.some((path) =>
+      path.includes('/api/runner?format=detail&job=123'),
+    ),
+  );
+  assert.ok(!ui.requests.some((path) => path.startsWith('/api/execute')));
 });
 
 test('local UI starts and polls a fresh execution job while published UI only links to the local companion', async () => {

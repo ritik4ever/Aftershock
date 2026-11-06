@@ -170,7 +170,7 @@ export async function buildStaticViewer(root: string) {
       '<script src="/app.js" defer></script>',
       '<script src="/static-config.js" defer></script>\n    <script src="/app.js" defer></script>',
     )
-    .replace('Local / Isolated runner', 'Records + live checks / Read only')
+    .replace('Local / Isolated runner', 'Hosted workspace')
     .replace('id="execute-controls"', 'id="execute-controls" hidden')
     .replace('id="local-runner-link" hidden', 'id="local-runner-link"')
     .replace('id="live-hash"', `id="live-hash" value="${proof.requestedHash}"`)

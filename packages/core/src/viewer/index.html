@@ -45,7 +45,7 @@
       <section id="execute" class="section">
         <p class="eyebrow">FRESH ISOLATED EXECUTION</p>
         <h2>Run a new test<span class="accent">.</span></h2>
-        <p class="muted">
+        <p id="execution-description" class="muted">
           Runs real signed transactions and state transitions on your owned
           WSL/Docker stack. Creates a new report; it never reuses an example as
           a new result. Mining cases take several minutes. Keep this process
@@ -78,8 +78,8 @@
         </div>
         <div id="local-runner-link" hidden>
           <p>
-            Vercel does not run Docker. Start the companion on your machine,
-            then open its execution page:
+            Live network checks work on this website. To run a fresh isolated
+            test, start the local runner on your machine, then open it below:
           </p>
           <pre class="data">
 npm run --silent aftershock -- serve --port 4323</pre>
@@ -91,6 +91,16 @@ npm run --silent aftershock -- serve --port 4323</pre>
             >Open local test runner</a
           >
         </div>
+        <label id="remote-access" hidden
+          >Demo access code
+          <input
+            id="runner-code"
+            type="password"
+            autocomplete="off"
+            maxlength="128"
+          />
+        </label>
+        <p id="remote-status" class="muted" aria-live="polite"></p>
         <div id="execute-result" aria-live="polite"></div>
       </section>
       <section id="live" class="section">

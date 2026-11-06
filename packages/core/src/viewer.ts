@@ -96,13 +96,19 @@ export async function startViewer(root: string, port = 4318) {
       res.end(JSON.stringify(value));
     };
     const host = req.headers.host;
+    // External links may open the page, but cannot read APIs or start jobs.
+    const pageNavigation =
+      req.method === 'GET' &&
+      req.url === '/' &&
+      req.headers['sec-fetch-mode'] === 'navigate' &&
+      req.headers['sec-fetch-dest'] === 'document';
     if (
       ![`127.0.0.1:${boundPort}`, `localhost:${boundPort}`].includes(
         host ?? '',
       ) ||
       (req.headers.origin !== undefined &&
         req.headers.origin !== `http://${host}`) ||
-      req.headers['sec-fetch-site'] === 'cross-site'
+      (req.headers['sec-fetch-site'] === 'cross-site' && !pageNavigation)
     ) {
       json(403, { error: 'Local same-origin requests only' });
       return;

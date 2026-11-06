@@ -14,6 +14,7 @@
   "scripts": {
     "aftershock": "tsx packages/cli/src/index.ts",
     "build:static": "tsx scripts/build-static.ts",
+    "remote:run": "tsx scripts/run-remote-scenario.ts",
     "test:fixtures": "tsx --test tests/fixture-capabilities.integration.ts",
     "test:upstream-rules": "tsx --test tests/replacement-rules.source.test.ts",
     "test:cancelled": "tsx --test tests/cancelled.integration.ts",
@@ -30,7 +31,7 @@
     "test:replay:sponsor": "tsx --test tests/sponsor-replay.integration.ts",
     "test:lifecycle": "tsx --test tests/lifecycle.integration.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/core.test.ts tests/evidence.test.ts tests/evidence-check.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts tests/mining.test.ts tests/viewer.test.ts tests/viewer-ui.test.ts tests/static.test.ts tests/live.test.ts tests/execution.test.ts tests/reset.test.ts tests/checkpoint.test.ts tests/checkpoint-replay.test.ts tests/sponsor.test.ts tests/fixture-cleanup.test.ts tests/doctor.test.ts && node --test tests/probe-devnet.test.mjs",
+    "test": "tsx --test tests/core.test.ts tests/evidence.test.ts tests/evidence-check.test.ts tests/rpc.test.ts tests/cli.test.ts tests/scenario.test.ts tests/mining.test.ts tests/viewer.test.ts tests/viewer-ui.test.ts tests/static.test.ts tests/live.test.ts tests/execution.test.ts tests/runner.test.ts tests/reset.test.ts tests/checkpoint.test.ts tests/checkpoint-replay.test.ts tests/sponsor.test.ts tests/fixture-cleanup.test.ts tests/doctor.test.ts && node --test tests/probe-devnet.test.mjs",
     "lint": "oxlint --deny-warnings packages tests scripts api",
     "format": "prettier --write packages api tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json",
     "format:check": "prettier --check packages api tests/*.ts package.json tsconfig.json .oxlintrc.json .prettierrc.json"

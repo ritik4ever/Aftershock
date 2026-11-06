@@ -1,0 +1,75 @@
+name: Remote scenario
+run-name: 'Aftershock:${{ inputs.scenario }}:${{ inputs.request_id }}'
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: Fixed isolated scenario
+        type: choice
+        required: true
+        options:
+          [keyed-replacement-ttl, paymaster-solvency, keyed-nonce-lifecycle]
+      request_id:
+        description: Unique request UUID
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aftershock-remote-scenarios
+  cancel-in-progress: false
+
+jobs:
+  scenario:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      AFTERSHOCK_SCENARIO: ${{ inputs.scenario }}
+      AFTERSHOCK_REQUEST_ID: ${{ inputs.request_id }}
+    steps:
+      - name: Validate request
+        shell: bash
+        run: |
+          case "$AFTERSHOCK_SCENARIO" in
+            keyed-replacement-ttl|paymaster-solvency|keyed-nonce-lifecycle) ;;
+            *) exit 2 ;;
+          esac
+          [[ "$AFTERSHOCK_REQUEST_ID" =~ ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$ ]]
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Prepare pinned nodes
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/aftershock-sidecar"
+          git init "$source_dir"
+          git -C "$source_dir" remote add origin https://github.com/forshtat/mempool-workshop-sidecar.git
+          git -C "$source_dir" fetch --depth=1 origin 2e22ff0a2898e69ea4bf5275bce1be8581a8582a
+          git -C "$source_dir" checkout --detach FETCH_HEAD
+          bash scripts/build-local-sidecar.sh "$source_dir"
+          if [ "$AFTERSHOCK_SCENARIO" != keyed-replacement-ttl ]; then
+            docker pull ethpandaops/ethereum-genesis-generator@sha256:51decce4284d8498dabfa38ae13ddce84cbf8c7be4f33a32b798ce10c9868e77
+            docker pull ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0
+          fi
+      - name: Run real isolated scenario
+        run: npm run remote:run
+      - name: Publish validated report only
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: aftershock-result
+          path: .local/remote-export/result.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 5
+          compression-level: 6

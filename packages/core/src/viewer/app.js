@@ -18,7 +18,10 @@ function resource(path) {
   if (!globalThis.aftershockStatic) return path;
   const url = new URL(path, 'http://localhost');
   url.searchParams.sort();
-  if (url.origin === 'http://localhost' && url.pathname === '/api/live')
+  if (
+    url.origin === 'http://localhost' &&
+    ['/api/live', '/api/runner'].includes(url.pathname)
+  )
     return url.pathname + url.search;
   const file = globalThis.aftershockStatic[url.pathname + url.search];
   if (!file) throw new Error('Unavailable in this published snapshot');
@@ -26,14 +29,24 @@ function resource(path) {
 }
 async function request(path, options = {}) {
   const response = await fetch(resource(path), {
-    signal: AbortSignal.timeout(path.startsWith('/api/live') ? 16000 : 10000),
+    signal: AbortSignal.timeout(
+      path.startsWith('/api/runner')
+        ? 19000
+        : path.startsWith('/api/live')
+          ? 16000
+          : 10000,
+    ),
     credentials: 'omit',
     ...options,
   });
   const data = await response.json();
   if (
     !response.ok ||
-    (data.error && !(path.startsWith('/api/execute') && data.state === 'ERROR'))
+    (data.error &&
+      !(
+        (path.startsWith('/api/execute') || path.startsWith('/api/runner')) &&
+        data.state === 'ERROR'
+      ))
   )
     throw Object.assign(new Error(data.error || 'Request unavailable'), {
       status: response.status,
@@ -277,7 +290,7 @@ function renderDetail(report, checks, key, replayResult) {
     node('h3', report.definition.title),
     node(
       'div',
-      `${key.startsWith('sample:') ? 'Reviewed example' : 'Saved local run'} / ${report.runId}`,
+      `${key.startsWith('remote:') ? 'Fresh GitHub-hosted isolated run' : key.startsWith('sample:') ? 'Reviewed example' : 'Saved local run'} / ${report.runId}`,
       'context-line',
     ),
     node(
@@ -297,7 +310,9 @@ function renderDetail(report, checks, key, replayResult) {
     if (format === 'evidence' && !report.evidence) continue;
     const link = node('a', `${label} \u2193`);
     link.href = resource(
-      `/api/download?key=${encodeURIComponent(key)}&format=${format}`,
+      key.startsWith('remote:')
+        ? `/api/runner?job=${encodeURIComponent(key.slice(7))}&format=${format}`
+        : `/api/download?key=${encodeURIComponent(key)}&format=${format}`,
     );
     link.download = `${report.runId}.${format === 'md' ? 'md' : `${format}.json`}`;
     actions.append(link);
@@ -626,8 +641,45 @@ if (globalThis.aftershockStatic) {
   $('local-runner-link').hidden = false;
 }
 let trackingExecution = false;
+let remoteAvailable = false;
+let remoteJob = '';
+let remoteRequest = '';
+function remoteRequestId() {
+  if (!remoteRequest) remoteRequest = globalThis.crypto.randomUUID();
+  try {
+    globalThis.sessionStorage?.setItem(
+      'aftershock-remote-request',
+      remoteRequest,
+    );
+  } catch {
+    $('remote-status').textContent =
+      'Retry recovery unavailable. Check the GitHub workflow if a request times out.';
+  }
+  return remoteRequest;
+}
+function storeRemoteJob(id) {
+  remoteJob = id;
+  try {
+    globalThis.sessionStorage?.setItem('aftershock-remote-job', id);
+  } catch {
+    $('remote-status').textContent =
+      'Browser storage unavailable. Keep this tab open until the run finishes.';
+  }
+}
 function executionDetails(job) {
   const parts = [];
+  if (
+    job.workflowUrl &&
+    /^https:\/\/github\.com\/ritik4ever\/Aftershock\/actions\/runs\/[0-9]+$/.test(
+      job.workflowUrl,
+    )
+  ) {
+    const link = node('a', 'Open live GitHub workflow progress');
+    link.href = job.workflowUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    parts.push(link);
+  }
   if (job.startedAt)
     parts.push(
       node(
@@ -654,22 +706,46 @@ function executionDetails(job) {
   return parts;
 }
 async function trackExecution(start = false) {
-  if (globalThis.aftershockStatic || trackingExecution) return;
+  if ((globalThis.aftershockStatic && !remoteAvailable) || trackingExecution)
+    return;
   trackingExecution = true;
   const target = $('execute-result');
   $('execute-start').disabled = true;
   try {
-    let job = (await request('/api/execute')).job;
+    let job = remoteAvailable
+      ? remoteJob
+        ? await request(`/api/runner?job=${encodeURIComponent(remoteJob)}`)
+        : null
+      : (await request('/api/execute')).job;
+    if (remoteAvailable && start && job?.state !== 'RUNNING') job = null;
     if (!job && !start) return;
     if (!job) {
       try {
-        job = await request('/api/execute', {
+        job = await request(remoteAvailable ? '/api/runner' : '/api/execute', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ scenarioId: $('execute-scenario').value }),
+          body: JSON.stringify({
+            scenarioId: $('execute-scenario').value,
+            ...(remoteAvailable
+              ? {
+                  requestId: remoteRequestId(),
+                  accessCode: $('runner-code').value,
+                }
+              : {}),
+          }),
         });
+        if (remoteAvailable) {
+          storeRemoteJob(job.id);
+          remoteRequest = '';
+          try {
+            globalThis.sessionStorage?.removeItem('aftershock-remote-request');
+          } catch {
+            $('remote-status').textContent =
+              'The job was accepted. Refresh recovery may be unavailable.';
+          }
+        }
       } catch (error) {
-        if (error.status !== 409) throw error;
+        if (remoteAvailable || error.status !== 409) throw error;
         job = (await request('/api/execute')).job;
         if (!job) throw error;
       }
@@ -678,13 +754,15 @@ async function trackExecution(start = false) {
       target.replaceChildren(
         node(
           'p',
-          `Real isolated run ${job.id} is running. Waiting for node observations; no verdict yet.`,
+          `${remoteAvailable ? 'GitHub-hosted' : 'Real'} isolated run ${job.id} is queued or running. Waiting for observations; no verdict yet.`,
           'muted',
         ),
         ...executionDetails(job),
       );
       await new Promise((resolve) => setTimeout(resolve, 5000));
-      job = await request(`/api/execute?job=${encodeURIComponent(job.id)}`);
+      job = await request(
+        `${remoteAvailable ? '/api/runner' : '/api/execute'}?job=${encodeURIComponent(job.id)}`,
+      );
     }
     if (job.state !== 'COMPLETED') {
       target.replaceChildren(
@@ -706,7 +784,20 @@ async function trackExecution(start = false) {
       ...executionDetails(job),
     );
     await loadRuns();
-    await selectRun(`local:${job.runId}`, true);
+    if (remoteAvailable) {
+      const data = await request(
+        `/api/runner?job=${encodeURIComponent(job.id)}&format=detail`,
+      );
+      selection += 1;
+      selected = '';
+      renderDetail(data.report, data.checks, `remote:${job.id}`, {
+        status: 'rejected',
+        reason: new Error(
+          'Start a new remote scenario to rerun it. Private signing state is not published.',
+        ),
+      });
+      $('details').scrollIntoView({ behavior: 'smooth' });
+    } else await selectRun(`local:${job.runId}`, true);
   } catch (error) {
     target.replaceChildren(
       node('p', `Fresh execution unavailable: ${error.message}`, 'error-text'),
@@ -718,3 +809,45 @@ async function trackExecution(start = false) {
 }
 $('execute-start').addEventListener('click', () => trackExecution(true));
 if (!globalThis.aftershockStatic) void trackExecution();
+else {
+  void (async () => {
+    try {
+      const capability = await request('/api/runner');
+      if (!capability.available) return;
+      remoteAvailable = true;
+      $('execution-description').textContent =
+        'Runs real signed transactions and state transitions on an isolated GitHub-hosted Linux VM. No local Docker installation is required. The job creates a new report; it does not reuse an archived result.';
+      $('execute-controls').hidden = false;
+      $('remote-access').hidden = false;
+      $('local-runner-link').hidden = true;
+      $('remote-status').textContent =
+        'Fresh runs execute on GitHub-hosted Linux, not your computer. An access code is required to start a run. Queue and setup can take several minutes; closing your laptop does not stop the job.';
+      const select = $('execute-scenario');
+      select.replaceChildren();
+      for (const id of capability.scenarios) {
+        const option = node('option', id);
+        option.value = id;
+        select.append(option);
+      }
+      select.value = capability.scenarios[0];
+      try {
+        const saved = globalThis.sessionStorage?.getItem(
+          'aftershock-remote-job',
+        );
+        if (/^[1-9][0-9]{0,15}$/.test(saved || '')) remoteJob = saved;
+        const pending = globalThis.sessionStorage?.getItem(
+          'aftershock-remote-request',
+        );
+        if (/^[a-f0-9-]{36}$/i.test(pending || '')) remoteRequest = pending;
+      } catch {
+        $('remote-status').append(
+          node('p', 'Refresh recovery unavailable in this browser.'),
+        );
+      }
+      if (remoteJob) await trackExecution();
+    } catch {
+      $('remote-status').textContent =
+        'Remote execution is unavailable. Live public checks and recorded reports remain separate.';
+    }
+  })();
+}

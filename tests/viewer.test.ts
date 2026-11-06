@@ -175,6 +175,61 @@ test('viewer serves real saved reports, reviewed examples and immutable exports'
   }
 });
 
+test('external links can open only the top-level page while local APIs remain protected', async () => {
+  const v = await fixture();
+  const navigation = {
+    'sec-fetch-site': 'cross-site',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-dest': 'document',
+  };
+  const get = (path: string, headers: Record<string, string>, method = 'GET') =>
+    new Promise<{ status: number; body: string }>((resolve, reject) => {
+      const req = httpRequest(v.url + path, { method, headers }, (res) => {
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk: string) => {
+          body += chunk;
+        });
+        res.on('end', () => resolve({ status: res.statusCode!, body }));
+      });
+      req.on('error', reject);
+      req.end();
+    });
+  try {
+    const page = await get('/', navigation);
+    assert.equal(page.status, 200);
+    assert.match(page.body, /Aftershock/);
+    for (const path of [
+      '/api/execute',
+      '/api/runs',
+      '/api/live',
+      '/app.js',
+      '/?job=anything',
+    ])
+      assert.equal((await get(path, navigation)).status, 403, path);
+    assert.equal(
+      (await get('/', { ...navigation, 'sec-fetch-dest': 'iframe' })).status,
+      403,
+    );
+    assert.equal(
+      (await get('/', { ...navigation, 'sec-fetch-mode': 'cors' })).status,
+      403,
+    );
+    assert.equal(
+      (await get('/', { ...navigation, origin: 'https://attacker.example' }))
+        .status,
+      403,
+    );
+    assert.equal(
+      (await get('/', { ...navigation, host: 'attacker.example' })).status,
+      403,
+    );
+    assert.equal((await get('/api/execute', navigation, 'POST')).status, 403);
+  } finally {
+    await v.close();
+  }
+});
+
 test('viewer rejects cross-origin access, write requests and filesystem routes', async () => {
   const v = await fixture();
   try {

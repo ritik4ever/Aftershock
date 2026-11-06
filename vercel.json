@@ -4,7 +4,10 @@
   "installCommand": "npm ci --ignore-scripts",
   "buildCommand": "npm run build:static",
   "outputDirectory": "dist",
-  "functions": { "api/live.ts": { "maxDuration": 20 } },
+  "functions": {
+    "api/live.ts": { "maxDuration": 20 },
+    "api/runner.ts": { "maxDuration": 20 }
+  },
   "headers": [
     {
       "source": "/(.*)",
