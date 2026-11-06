@@ -21,6 +21,8 @@ export {
   compareRuns,
   genesisResetPlan,
   compareGenesisResetRuns,
+  minedCheckpointPlan,
+  compareMinedCheckpointRuns,
 } from './replay.js';
 
 export { checkEvidence } from './evidence-check.js';

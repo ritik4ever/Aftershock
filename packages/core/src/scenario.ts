@@ -13,7 +13,9 @@ import { hash, quantity, explorerInfo } from './schema.js';
 import { fixtureTransaction } from './local/codec.js';
 import { startFixture, FixtureSetupError } from './local/fixture.js';
 import { resetSource } from './local/reset.js';
-import type { ResetSource } from './local/reset.js';
+import type { ResetSource, MinedResetSource } from './local/reset.js';
+import { minedResetSource } from './local/reset.js';
+import { createMinedCheckpoint } from './local/checkpoint.js';
 import { localRpc, LocalRpcError, waitForRpc } from './local/rpc.js';
 import { waitForMining } from './local/lifecycle.js';
 import { keyedReplacementTTL } from './local/ttl.js';
@@ -362,13 +364,28 @@ export function runScenario(
   seed = 0,
   mining = false,
   reset?: ResetSource,
+  checkpoint?: { capture?: boolean; restore?: MinedResetSource },
 ): Promise<RunReport> {
   if (reset) {
     resetSource.parse(reset);
     if (id !== 'keyed-replacement-ttl' || mining)
       throw new Error('Unsupported reset scenario');
   }
-  return withRpcEvidence(() => executeScenario(id, root, seed, mining, reset));
+  if (checkpoint) {
+    if (
+      !mining ||
+      id !== 'keyed-nonce-lifecycle' ||
+      reset ||
+      Boolean(checkpoint.capture) === Boolean(checkpoint.restore)
+    )
+      throw new Error(
+        'Checkpoint replay supports the mined keyed-nonce scenario only',
+      );
+    if (checkpoint.restore) minedResetSource.parse(checkpoint.restore);
+  }
+  return withRpcEvidence(() =>
+    executeScenario(id, root, seed, mining, reset, checkpoint),
+  );
 }
 
 async function executeScenario(
@@ -377,6 +394,7 @@ async function executeScenario(
   seed = 0,
   mining = false,
   reset?: ResetSource,
+  checkpoint?: { capture?: boolean; restore?: MinedResetSource },
 ): Promise<RunReport> {
   scenarioId.parse(id);
   z.number().int().nonnegative().parse(seed);
@@ -389,28 +407,44 @@ async function executeScenario(
     startedAt: new Date().toISOString(),
     completedAt: new Date().toISOString(),
     sourcePins: UPSTREAM,
-    environment: reset
-      ? { fixtureInputMode: 'GENESIS_RESET', resetBaselineRunId: reset.runId }
-      : {},
+    environment: checkpoint?.restore
+      ? {
+          fixtureInputMode: 'MINED_CHECKPOINT_RESET',
+          resetBaselineRunId: checkpoint.restore.runId,
+        }
+      : reset
+        ? { fixtureInputMode: 'GENESIS_RESET', resetBaselineRunId: reset.runId }
+        : {},
     steps: [],
     result: 'INCONCLUSIVE',
     definition: definitions[id],
     limitations: [
-      mining
-        ? 'Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.'
-        : 'Non-mining genesis fixture. No block-production/state-transition claims.',
-      reset
-        ? 'Private disposable keys and pinned genesis reused; timestamps and explorer history are new.'
-        : 'Seed identifies action order, not private signing keys; fresh accounts are random.',
+      checkpoint?.restore
+        ? 'Restored pre-scenario mined fixture; new isolated processes and network.'
+        : mining
+          ? 'Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.'
+          : 'Non-mining genesis fixture. No block-production/state-transition claims.',
+      checkpoint?.restore
+        ? 'Original disposable keys and checkpoint disk state reused; historical clock and explorer memory are not restored.'
+        : reset
+          ? 'Private disposable keys and pinned genesis reused; timestamps and explorer history are new.'
+          : 'Seed identifies action order, not private signing keys; fresh accounts are random.',
+      ...(checkpoint
+        ? [
+            'Mined checkpoint restores private pre-scenario state; explorer boot history and wall-clock timing are new.',
+          ]
+        : []),
       id === 'cancelled-replacement'
         ? 'Cancelled predecessor only; no OnChain/Finalized/Reverted, exact TTL-boundary or Submitted/Pending claims.'
         : id === 'keyed-replacement-ttl'
           ? 'Admission-only TTL expiry/refresh case; no exact boundary, inclusion or terminal/submitted-entry claim.'
           : 'Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run.',
     ],
-    reproducer: reset
-      ? `npm run --silent aftershock -- replay ${reset.runId} --local --reset`
-      : `npm run --silent aftershock -- run ${id} --local${mining ? ' --mine' : ''}`,
+    reproducer: checkpoint?.restore
+      ? `npm run --silent aftershock -- replay ${checkpoint.restore.runId} --local --mine --reset`
+      : reset
+        ? `npm run --silent aftershock -- replay ${reset.runId} --local --reset`
+        : `npm run --silent aftershock -- run ${id} --local${mining ? ' --mine' : ''}${checkpoint?.capture ? ' --checkpoint' : ''}`,
   };
   let fixture: Awaited<ReturnType<typeof startFixture>> | undefined;
   const add = (
@@ -433,6 +467,8 @@ async function executeScenario(
       'manual',
       id === 'keyed-replacement-ttl' ? 30 : 300,
       reset,
+      Boolean(checkpoint),
+      checkpoint?.restore,
     );
     report.runId = fixture.runId;
     report.environment = fixture.fingerprint;
@@ -458,6 +494,15 @@ async function executeScenario(
       const ready = await waitForMining(executionUrl);
       report.environment.readyBlock = ready.number;
       report.environment.readyBlockHash = ready.hash;
+    }
+    if (checkpoint?.capture) {
+      const saved = await createMinedCheckpoint(root, fixture);
+      Object.assign(report.environment, {
+        checkpointId: saved.metadata.checkpointId,
+        checkpointManifestSha256: saved.metadata.manifestSha256,
+        checkpointBlockNumber: saved.metadata.head.number,
+        checkpointBlockHash: saved.metadata.head.hash,
+      });
     }
     const before = await localRpc(
       sidecarUrl,

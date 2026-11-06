@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { definitions, runReport } from './scenario.js';
 import type { RunReport } from './scenario.js';
-import { resetSource } from './local/reset.js';
+import { resetSource, minedResetSource } from './local/reset.js';
 
 const fingerprintFields = [
   'executionImage',
@@ -230,7 +230,144 @@ export function compareGenesisResetRuns(
 
 export function compareRuns(baseline: RunReport, rerun: RunReport) {
   const parsed = runReport.parse(rerun);
+  if (parsed.environment.fixtureInputMode === 'MINED_CHECKPOINT_RESET')
+    return compareMinedCheckpointRuns(baseline, parsed);
   return parsed.environment.fixtureInputMode === 'GENESIS_RESET'
     ? compareGenesisResetRuns(baseline, parsed)
     : compareFreshRuns(baseline, parsed);
+}
+
+function checkpointHeadObserved(
+  report: RunReport,
+  number: string,
+  blockHash: string,
+) {
+  const first =
+    report.evidence?.entries.find(
+      (entry) => entry.method === 'eth_sendFrameTransaction',
+    )?.seq ?? 0;
+  return (
+    report.evidence?.entries.some((entry) => {
+      const value = entry.result as { number?: unknown; hash?: unknown } | null;
+      return (
+        entry.seq < first &&
+        entry.channel === 'EXECUTION' &&
+        entry.method === 'eth_getBlockByNumber' &&
+        entry.outcome === 'RESULT' &&
+        value?.number === number &&
+        value.hash === blockHash
+      );
+    }) ?? false
+  );
+}
+
+export function minedCheckpointPlan(input: RunReport) {
+  const report = runReport.parse(input);
+  const plan = replayPlan(report);
+  const env = report.environment;
+  if (
+    !plan.mining ||
+    report.scenarioId !== 'keyed-nonce-lifecycle' ||
+    env.runtimeStateMode !== 'MANAGED_PRIVATE_DIRECTORIES' ||
+    env.useropsTTL !== '300' ||
+    !report.evidence?.complete ||
+    !['PASS', 'FAIL'].includes(report.result) ||
+    !report.steps.some(
+      (step) => step.id === 'fixture-cleanup' && step.result === 'PASS',
+    ) ||
+    !checkpointHeadObserved(
+      report,
+      env.checkpointBlockNumber ?? '',
+      env.checkpointBlockHash ?? '',
+    )
+  )
+    throw new Error(
+      'Mined reset requires a complete checkpoint-enabled keyed-nonce run',
+    );
+  const fixtureSource = minedResetSource.parse({
+    runId: report.runId,
+    genesisSha256: env.genesisSha256,
+    executionImage: env.executionImage,
+    sidecarImage: env.sidecarImage,
+    initialBlockHash: env.checkpointBlockHash,
+    initialBlockNumber: env.checkpointBlockNumber,
+    checkpointId: env.checkpointId,
+    manifestSha256: env.checkpointManifestSha256,
+    consensusImage: env.consensusImage,
+    genesisGeneratorImage: env.genesisGeneratorImage,
+  });
+  return {
+    ...plan,
+    mode: 'MINED_CHECKPOINT_RERUN' as const,
+    fixtureSource,
+    command: `npm run --silent aftershock -- replay ${report.runId} --local --mine --reset`,
+    requirements: [
+      'Identical cached pinned images',
+      'Private Linux .local/<baseline-run-id> keys and version-2 checkpoint',
+      'Stopped original fixture; fresh owned isolated containers and network',
+    ],
+    limitations: [
+      'Restores pre-scenario execution, beacon, validator and sidecar disk state.',
+      'Explorer memory/boot IDs, wall-clock time and subsequent block hashes/timing are new.',
+      'Compares signing request digests, restored head, environment and action verdicts; not exact historical execution.',
+      'Private checksums establish consistency, not independent attestation.',
+    ],
+  };
+}
+
+export function compareMinedCheckpointRuns(
+  baselineInput: RunReport,
+  rerunInput: RunReport,
+) {
+  const baseline = runReport.parse(baselineInput);
+  const rerun = runReport.parse(rerunInput);
+  const plan = minedCheckpointPlan(baseline);
+  const basic = compareFreshRuns(baseline, rerun);
+  const source = plan.fixtureSource;
+  const requests = (report: RunReport) =>
+    report.evidence?.entries
+      .filter(
+        (entry) =>
+          ['eth_sendFrameTransaction', 'eth_sendRawTransaction'].includes(
+            entry.method,
+          ) && entry.purpose === 'SCENARIO',
+      )
+      .map(
+        (entry) => `${entry.channel}:${entry.method}:${entry.requestSha256}`,
+      ) ?? [];
+  const original = requests(baseline);
+  const resetChecks = {
+    linkedBaseline:
+      rerun.environment.fixtureInputMode === 'MINED_CHECKPOINT_RESET' &&
+      rerun.environment.resetBaselineRunId === baseline.runId,
+    sameCheckpoint:
+      rerun.environment.checkpointId === source.checkpointId &&
+      rerun.environment.checkpointManifestSha256 === source.manifestSha256,
+    sameGenesis: rerun.environment.genesisSha256 === source.genesisSha256,
+    sameInitialBlock:
+      rerun.environment.restoredBlockNumber === source.initialBlockNumber &&
+      rerun.environment.restoredBlockHash === source.initialBlockHash &&
+      checkpointHeadObserved(
+        rerun,
+        source.initialBlockNumber,
+        source.initialBlockHash,
+      ),
+    sameSignedRequests:
+      baseline.evidence?.complete === true &&
+      rerun.evidence?.complete === true &&
+      original.length === 11 &&
+      isDeepStrictEqual(original, requests(rerun)),
+  };
+  const resetInputsMatch = Object.values(resetChecks).every(Boolean);
+  return {
+    ...basic,
+    ...plan,
+    resetChecks,
+    resetInputsMatch,
+    comparison:
+      !basic.environmentDifferences.length && !resetInputsMatch
+        ? 'RESET_INPUTS_DIFFER'
+        : basic.comparison,
+    bothRunsPassed: basic.bothRunsPassed && resetInputsMatch,
+  };
 }

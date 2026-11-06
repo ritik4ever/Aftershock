@@ -15,6 +15,15 @@ export const resetSource = z
   .strict();
 export type ResetSource = z.infer<typeof resetSource>;
 
+export const minedResetSource = resetSource.extend({
+  checkpointId: z.uuid(),
+  manifestSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  initialBlockNumber: z.string().regex(/^0x[1-9a-f][a-f0-9]*$/),
+  consensusImage: z.string().min(1),
+  genesisGeneratorImage: z.string().min(1),
+});
+export type MinedResetSource = z.infer<typeof minedResetSource>;
+
 export async function readResetKeys(root: string, input: ResetSource) {
   try {
     const source = resetSource.parse(input);

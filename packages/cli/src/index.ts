@@ -13,6 +13,7 @@ import {
   markdownReport,
   replayPlan,
   genesisResetPlan,
+  minedCheckpointPlan,
   compareGenesisResetRuns,
   compareRuns,
   checkEvidence,
@@ -25,11 +26,14 @@ const help = `Aftershock core integration
   npm run aftershock -- versions
   npm run aftershock -- scenarios
   npm run aftershock -- run <scenario-id> --local [--mine]
+  npm run aftershock -- run keyed-nonce-lifecycle --local --mine --checkpoint
   npm run aftershock -- report <run-id> --format json|md
   npm run aftershock -- replay <run-id> --plan
   npm run aftershock -- replay <run-id> --local [--mine]
   npm run aftershock -- replay <run-id> --plan --reset
   npm run aftershock -- replay <run-id> --local --reset
+  npm run aftershock -- replay <run-id> --plan --mine --reset
+  npm run aftershock -- replay <run-id> --local --mine --reset
   npm run aftershock -- evidence <run-id>
   npm run aftershock -- check-evidence <run-id>
   npm run aftershock -- compare <baseline-run-id> <rerun-run-id>
@@ -39,7 +43,7 @@ const help = `Aftershock core integration
 Read-only public-devnet doctor/inspect commands. --save writes under reports/.
 run --local creates owned isolated Docker fixtures and never contacts public nodes.
 Receipt absence is unavailable evidence, not proof that execution failed.
---mine uses cached mining images and waits for staged forks. Exact replay remains unimplemented.
+--mine uses cached mining images and waits for staged forks. Checkpoint reset does not reproduce historical timing.
 `;
 
 async function main(args: string[]): Promise<number> {
@@ -100,7 +104,12 @@ async function main(args: string[]): Promise<number> {
   }
   if (
     command === 'run' &&
-    (rest.length === 2 || (rest.length === 3 && rest[2] === '--mine')) &&
+    (rest.length === 2 ||
+      (rest.length === 3 && rest[2] === '--mine') ||
+      (rest.length === 4 &&
+        rest[2] === '--mine' &&
+        rest[3] === '--checkpoint' &&
+        rest[0] === 'keyed-nonce-lifecycle')) &&
     rest[1] === '--local'
   ) {
     const selected = scenarioId.safeParse(rest[0]);
@@ -110,6 +119,8 @@ async function main(args: string[]): Promise<number> {
       process.cwd(),
       0,
       rest[2] === '--mine',
+      undefined,
+      rest[3] === '--checkpoint' ? { capture: true } : undefined,
     );
     await saveRun(process.cwd(), report);
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -117,7 +128,11 @@ async function main(args: string[]): Promise<number> {
   }
   if (
     command === 'replay' &&
-    ((rest.length === 2 && ['--plan', '--local'].includes(rest[1] ?? '')) ||
+    ((rest.length === 4 &&
+      ['--plan', '--local'].includes(rest[1] ?? '') &&
+      rest[2] === '--mine' &&
+      rest[3] === '--reset') ||
+      (rest.length === 2 && ['--plan', '--local'].includes(rest[1] ?? '')) ||
       (rest.length === 3 && rest[1] === '--local' && rest[2] === '--mine') ||
       (rest.length === 3 &&
         ['--plan', '--local'].includes(rest[1] ?? '') &&
@@ -126,9 +141,11 @@ async function main(args: string[]): Promise<number> {
     if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(rest[0] ?? ''))
       return 2;
     const baseline = await readRun(process.cwd(), rest[0]!);
+    const minedPlan =
+      rest[3] === '--reset' ? minedCheckpointPlan(baseline) : undefined;
     const resetPlan =
       rest[2] === '--reset' ? genesisResetPlan(baseline) : undefined;
-    const plan = resetPlan ?? replayPlan(baseline);
+    const plan = minedPlan ?? resetPlan ?? replayPlan(baseline);
     if (rest[1] === '--plan') {
       process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`);
       return 0;
@@ -145,6 +162,7 @@ async function main(args: string[]): Promise<number> {
       plan.seed,
       plan.mining,
       resetPlan?.fixtureSource,
+      minedPlan ? { restore: minedPlan.fixtureSource } : undefined,
     );
     await saveRun(process.cwd(), rerun);
     const comparison = resetPlan

@@ -8,7 +8,8 @@ function cli(...args: string[]) {
     ['--import', 'tsx', 'packages/cli/src/index.ts', ...args],
     {
       encoding: 'utf8',
-      timeout: 3000,
+      // Allow cold TypeScript loading while isolated consensus tests run.
+      timeout: 10_000,
     },
   );
 }
@@ -17,6 +18,7 @@ test('help and versions work offline and versions emits JSON', () => {
   const help = cli('help');
   assert.equal(help.status, 0);
   assert.match(help.stdout, /Read-only public-devnet/);
+  assert.match(help.stdout, /--checkpoint/);
   const versions = cli('versions');
   assert.equal(versions.status, 0);
   assert.equal(JSON.parse(versions.stdout).sourcePins.sidecar.length, 40);
@@ -47,6 +49,9 @@ test('invalid commands, arguments and paths are rejected before network work', (
     ['replay', 'invalid', '--mine'],
     ['replay', 'invalid', '--local', '--mine', '--extra'],
     ['run'],
+    ['run', 'paymaster-solvency', '--local', '--mine', '--checkpoint'],
+    ['run', 'keyed-nonce-lifecycle', '--local', '--checkpoint'],
+    ['replay', 'invalid', '--plan', '--mine', '--reset'],
     ['run', 'keyed-nonce-lifecycle', '--mine'],
     ['run', 'unknown', '--local', '--mine'],
     ['run', 'keyed-nonce-lifecycle', '--local', '--mine', '--extra'],

@@ -6,8 +6,11 @@ import { resolve, relative } from 'node:path';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { z } from 'zod';
 import { UPSTREAM } from '../inspect.js';
-import { readResetKeys, resetSource } from './reset.js';
-import type { ResetSource } from './reset.js';
+import { readResetKeys, resetSource, minedResetSource } from './reset.js';
+import type { ResetSource, MinedResetSource } from './reset.js';
+import { prepareMinedCheckpoint } from './checkpoint.js';
+import { localRpc, waitForRpc } from './rpc.js';
+import { hash, quantity } from '../schema.js';
 import {
   generateMiningGenesis,
   LIGHTHOUSE_IMAGE,
@@ -49,11 +52,23 @@ export async function startFixture(
   useropsTTL = 300,
   reset?: ResetSource,
   checkpointMining = false,
+  minedReset?: MinedResetSource,
 ) {
   z.uuid().parse(runId);
   z.number().int().min(10).max(300).parse(useropsTTL);
   if (checkpointMining && (!mining || reset || process.platform !== 'linux'))
     throw new Error('Managed checkpoints require a fresh Linux mining fixture');
+  if (minedReset) {
+    minedResetSource.parse(minedReset);
+    if (
+      !checkpointMining ||
+      !mining ||
+      bundlingMode !== 'manual' ||
+      reset ||
+      minedReset.runId === runId
+    )
+      throw new Error('Unsupported mined checkpoint fixture');
+  }
   if (reset) {
     resetSource.parse(reset);
     if (mining || bundlingMode !== 'manual' || useropsTTL !== 30)
@@ -132,11 +147,12 @@ export async function startFixture(
     ) {
       throw new Error('Pinned image source revision mismatch');
     }
-    if (reset) {
+    const identity = reset ?? minedReset;
+    if (identity) {
       stage = 'reset-image-identity';
       for (const [image, expected] of [
-        [ETHREX_IMAGE, reset.executionImage],
-        [SIDECAR_IMAGE, reset.sidecarImage],
+        [ETHREX_IMAGE, identity.executionImage],
+        [SIDECAR_IMAGE, identity.sidecarImage],
       ]) {
         if (
           (await docker('image', 'inspect', image!, '--format', '{{.Id}}')) !==
@@ -176,8 +192,14 @@ export async function startFixture(
     if (genesis.config.chainId !== 9)
       throw new Error('Unexpected fixture chain');
     stage = reset ? 'reset-private-inputs' : 'fresh-private-inputs';
-    const keys = reset
-      ? await readResetKeys(root, reset)
+    const keys = identity
+      ? await readResetKeys(root, {
+          runId: identity.runId,
+          genesisSha256: identity.genesisSha256,
+          executionImage: identity.executionImage,
+          sidecarImage: identity.sidecarImage,
+          initialBlockHash: identity.initialBlockHash,
+        })
       : Array.from({ length: 5 }, () => generatePrivateKey());
     // Preserve protocol predeploys, remove every shared funded EOA from the upstream template.
     genesis.alloc = Object.fromEntries(
@@ -190,7 +212,28 @@ export async function startFixture(
         balance: index === 3 ? '1000000000000000' : '1000000000000000000',
       };
     });
-    if (mining) {
+    if (minedReset) {
+      stage = 'mined-checkpoint-inputs';
+      if (
+        minedReset.consensusImage !== LIGHTHOUSE_IMAGE ||
+        minedReset.genesisGeneratorImage !== GENESIS_IMAGE ||
+        (await docker(
+          'ps',
+          '-q',
+          '--filter',
+          `label=aftershock.run=${minedReset.runId}`,
+        ))
+      )
+        throw new Error(
+          'Checkpoint images differ or original fixture is still running',
+        );
+      const restored = await prepareMinedCheckpoint(
+        root,
+        directory,
+        minedReset,
+      );
+      genesis = JSON.parse(restored.genesisText) as Genesis;
+    } else if (mining) {
       stage = 'mining-genesis';
       genesis = (
         await generateMiningGenesis(directory, keys, runId, docker, (name) =>
@@ -212,7 +255,7 @@ export async function startFixture(
     await writeFile(`${directory}/keys.json`, JSON.stringify(keys), {
       mode: 0o600,
     });
-    if (checkpointMining) {
+    if (checkpointMining && !minedReset) {
       await mkdir(`${directory}/runtime`, { mode: 0o700 });
       for (const name of ['execution', 'beacon', 'sidecar'])
         await mkdir(`${directory}/runtime/${name}`, { mode: 0o700 });
@@ -300,6 +343,64 @@ export async function startFixture(
         : []),
     );
     owned.push(execution);
+    const executionUrl: LocalEndpoint = {
+      executor: sidecar,
+      url: `http://${execution}:8545`,
+    };
+    stage = 'sidecar-start';
+    await docker(
+      'run',
+      '--pull',
+      'never',
+      '-d',
+      '--name',
+      sidecar,
+      ...common,
+      '-v',
+      `${directory}/sidecar.json:/aftershock/config.json:ro`,
+      ...(checkpointMining
+        ? ['-v', `${directory}/runtime/sidecar:/aftershock/state`]
+        : []),
+      identity?.sidecarImage ?? SIDECAR_IMAGE,
+      'node',
+      '--configFile',
+      '/aftershock/config.json',
+      '--dataDir',
+      checkpointMining ? '/aftershock/state' : '/tmp/aftershock',
+      '--api.address',
+      '0.0.0.0',
+      '--api.port',
+      '14337',
+      '--api.wsPort',
+      '14337',
+      '--p2p.host',
+      '0.0.0.0',
+      '--p2p.enrHost',
+      '127.0.0.1',
+      '--p2p.port',
+      '4337',
+      '--p2p.enrPort',
+      '4337',
+      '--executor.bundlingMode',
+      bundlingMode,
+      '--explorer.enable',
+    );
+    owned.push(sidecar);
+    if (minedReset) {
+      stage = 'mined-checkpoint-head';
+      await waitForRpc(executionUrl);
+      const actual = await localRpc(
+        executionUrl,
+        'eth_getBlockByNumber',
+        ['latest', false],
+        z.object({ number: quantity, hash }),
+      );
+      if (
+        actual.hash !== minedReset.initialBlockHash ||
+        actual.number !== minedReset.initialBlockNumber
+      )
+        throw new Error('Restored mined checkpoint head differs from baseline');
+    }
     if (mining) {
       stage = 'consensus-start';
       const beacon = `${prefix}-beacon`;
@@ -364,49 +465,6 @@ export async function startFixture(
       );
       owned.push(validator);
     }
-    const executionUrl: LocalEndpoint = {
-      executor: sidecar,
-      url: `http://${execution}:8545`,
-    };
-    stage = 'sidecar-start';
-    await docker(
-      'run',
-      '--pull',
-      'never',
-      '-d',
-      '--name',
-      sidecar,
-      ...common,
-      '-v',
-      `${directory}/sidecar.json:/aftershock/config.json:ro`,
-      ...(checkpointMining
-        ? ['-v', `${directory}/runtime/sidecar:/aftershock/state`]
-        : []),
-      reset?.sidecarImage ?? SIDECAR_IMAGE,
-      'node',
-      '--configFile',
-      '/aftershock/config.json',
-      '--dataDir',
-      checkpointMining ? '/aftershock/state' : '/tmp/aftershock',
-      '--api.address',
-      '0.0.0.0',
-      '--api.port',
-      '14337',
-      '--api.wsPort',
-      '14337',
-      '--p2p.host',
-      '0.0.0.0',
-      '--p2p.enrHost',
-      '127.0.0.1',
-      '--p2p.port',
-      '4337',
-      '--p2p.enrPort',
-      '4337',
-      '--executor.bundlingMode',
-      bundlingMode,
-      '--explorer.enable',
-    );
-    owned.push(sidecar);
     stage = 'isolation-verification';
     const sidecarUrl: LocalEndpoint = {
       executor: sidecar,
@@ -474,6 +532,16 @@ export async function startFixture(
         .digest('hex'),
       ...(reset
         ? { fixtureInputMode: 'GENESIS_RESET', resetBaselineRunId: reset.runId }
+        : {}),
+      ...(minedReset
+        ? {
+            fixtureInputMode: 'MINED_CHECKPOINT_RESET',
+            resetBaselineRunId: minedReset.runId,
+            checkpointId: minedReset.checkpointId,
+            checkpointManifestSha256: minedReset.manifestSha256,
+            restoredBlockNumber: minedReset.initialBlockNumber,
+            restoredBlockHash: minedReset.initialBlockHash,
+          }
         : {}),
       ...(checkpointMining
         ? { runtimeStateMode: 'MANAGED_PRIVATE_DIRECTORIES' }

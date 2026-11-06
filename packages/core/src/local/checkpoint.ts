@@ -1,4 +1,4 @@
-import { createReadStream } from 'node:fs';
+import { createReadStream, constants } from 'node:fs';
 import {
   cp,
   mkdir,
@@ -6,9 +6,10 @@ import {
   readdir,
   realpath,
   chmod,
-  readFile,
+  open,
   writeFile,
   rm,
+  rename,
 } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import { resolve, relative } from 'node:path';
@@ -17,6 +18,8 @@ import { docker } from './fixture.js';
 import type { startFixture } from './fixture.js';
 import { localRpc, waitForRpc } from './rpc.js';
 import { hash, quantity, explorerInfo } from '../schema.js';
+import { minedResetSource } from './reset.js';
+import type { MinedResetSource } from './reset.js';
 
 const MAX_BYTES = 2_147_483_648;
 const MAX_FILES = 10_000;
@@ -30,11 +33,12 @@ const fileEntry = z
   .strict();
 const manifestSchema = z
   .object({
-    version: z.literal(1),
+    version: z.literal(2),
     runId: z.uuid(),
     checkpointId: z.uuid(),
     head: block,
     files: z.array(fileEntry).max(MAX_FILES),
+    bootFiles: z.array(fileEntry).max(MAX_FILES),
   })
   .strict();
 type Fixture = Awaited<ReturnType<typeof startFixture>>;
@@ -51,6 +55,112 @@ async function privateDirectory(path: string) {
   const info = await lstat(path);
   if (!info.isDirectory() || info.uid !== process.getuid() || info.mode & 0o077)
     throw new Error('Unsafe checkpoint directory');
+}
+
+async function privateFile(path: string, limit: number) {
+  const file = await open(
+    path,
+    constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
+  );
+  try {
+    const info = await file.stat();
+    if (
+      !info.isFile() ||
+      info.uid !== process.getuid!() ||
+      info.mode & 0o077 ||
+      info.size > limit
+    )
+      throw new Error('Unsafe checkpoint file');
+    const bytes = Buffer.alloc(limit + 1);
+    let size = 0;
+    while (size < bytes.length) {
+      const next = await file.read(bytes, size, bytes.length - size, null);
+      if (!next.bytesRead) break;
+      size += next.bytesRead;
+    }
+    if (size > limit) throw new Error('Checkpoint file exceeds its size bound');
+    return bytes.toString('utf8', 0, size);
+  } finally {
+    await file.close();
+  }
+}
+
+// Restores into a NEW private fixture directory. Original snapshot files and
+// validator inputs are never opened for writing or reused by a live old stack.
+export async function prepareMinedCheckpoint(
+  root: string,
+  destination: string,
+  input: MinedResetSource,
+) {
+  const source = minedResetSource.parse(input);
+  const base = await realpath(root);
+  const local = resolve(base, '.local');
+  const original = resolve(local, source.runId);
+  await privateDirectory(local);
+  await privateDirectory(original);
+  await privateDirectory(destination);
+  if (resolve(destination, '..') !== local || destination === original)
+    throw new Error('Checkpoint destination must be a new fixture');
+  const snapshot = resolve(original, `checkpoint-${source.checkpointId}`);
+  await privateDirectory(snapshot);
+  const text = await privateFile(resolve(snapshot, 'manifest.json'), 2_097_152);
+  if (digest(text) !== source.manifestSha256)
+    throw new Error('Checkpoint manifest changed');
+  const manifest = manifestSchema.parse(JSON.parse(text));
+  if (
+    manifest.runId !== source.runId ||
+    manifest.checkpointId !== source.checkpointId ||
+    manifest.head.hash !== source.initialBlockHash ||
+    manifest.head.number !== source.initialBlockNumber
+  )
+    throw new Error('Checkpoint identity differs from baseline');
+  for (const [name, expected] of [
+    ['runtime', manifest.files],
+    ['boot', manifest.bootFiles],
+  ] as const) {
+    if (
+      JSON.stringify(await checkpointInventory(resolve(snapshot, name))) !==
+      JSON.stringify(expected)
+    )
+      throw new Error('Checkpoint data changed');
+  }
+  if (
+    JSON.stringify((await readdir(resolve(snapshot, 'boot'))).sort()) !==
+    JSON.stringify(['consensus', 'genesis.json', 'jwt'])
+  )
+    throw new Error('Unexpected checkpoint boot files');
+  const bootCopy = resolve(destination, 'boot-inputs');
+  await cp(resolve(snapshot, 'boot'), bootCopy, {
+    recursive: true,
+    force: false,
+    errorOnExist: true,
+  });
+  if (
+    JSON.stringify(await checkpointInventory(bootCopy)) !==
+    JSON.stringify(manifest.bootFiles)
+  )
+    throw new Error('Copied checkpoint boot files differ from snapshot');
+  for (const entry of ['consensus', 'genesis.json', 'jwt'])
+    await rename(resolve(bootCopy, entry), resolve(destination, entry));
+  await rm(bootCopy, { recursive: true });
+  await cp(resolve(snapshot, 'runtime'), resolve(destination, 'runtime'), {
+    recursive: true,
+    force: false,
+    errorOnExist: true,
+  });
+  if (
+    JSON.stringify(
+      await checkpointInventory(resolve(destination, 'runtime')),
+    ) !== JSON.stringify(manifest.files)
+  )
+    throw new Error('Copied checkpoint differs from snapshot');
+  const genesisText = await privateFile(
+    resolve(destination, 'genesis.json'),
+    1_048_576,
+  );
+  if (digest(JSON.stringify(JSON.parse(genesisText))) !== source.genesisSha256)
+    throw new Error('Checkpoint genesis differs from baseline');
+  return { genesisText, head: manifest.head };
 }
 
 // Only stopped, owned runtime trees are copied. Special files and symlinks are
@@ -284,13 +394,25 @@ export async function createMinedCheckpoint(root: string, fixture: Fixture) {
     const files = await checkpointInventory(resolve(snapshot, 'runtime'), true);
     if (JSON.stringify(files) !== JSON.stringify(original))
       throw new Error('Checkpoint copy differs from stopped state');
+    await mkdir(resolve(snapshot, 'boot'), { mode: 0o700 });
+    for (const entry of ['consensus', 'genesis.json', 'jwt'])
+      await cp(resolve(directory, entry), resolve(snapshot, 'boot', entry), {
+        recursive: true,
+        force: false,
+        errorOnExist: true,
+      });
+    const bootFiles = await checkpointInventory(
+      resolve(snapshot, 'boot'),
+      true,
+    );
     manifestText = JSON.stringify(
       manifestSchema.parse({
-        version: 1,
+        version: 2,
         runId: fixture.runId,
         checkpointId,
         head,
         files,
+        bootFiles,
       }),
     );
     if (Buffer.byteLength(manifestText) > 2_097_152)
@@ -326,7 +448,7 @@ export async function createMinedCheckpoint(root: string, fixture: Fixture) {
         info.mode & 0o077
       )
         throw new Error('Unsafe checkpoint manifest');
-      const text = await readFile(manifestPath, 'utf8');
+      const text = await privateFile(manifestPath, 2_097_152);
       if (digest(text) !== manifestSha256)
         throw new Error('Checkpoint manifest changed');
       const manifest = manifestSchema.parse(JSON.parse(text));
