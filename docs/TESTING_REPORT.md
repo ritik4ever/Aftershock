@@ -55,3 +55,29 @@ An earlier native attempt, `3fd28fe0-c9af-4cc7-bc3f-c42c4eb0ec5e`, was BLOCKED b
 | Recording, Git publication and dashboard submission | NOT VERIFIED / user action | No video, acceptance, registered track or private-dashboard deadline claimed |
 
 The known Cancelled explorer inconsistency remains a scenario FAIL and an upstream finding, even though its reproducer regression passes. Broader terminal states, contract-paymaster policy mutation and exact historical-clock replay are outside implemented coverage. Nothing in this milestone authorizes public adversarial tests or automatic Git publication.
+
+## Follow-up hardening checkpoint, 2026-11-06
+
+Two confirmed defects were reproduced with failing tests and fixed:
+
+1. Fresh replay required manual bundling for every scenario, rejecting a genuine automatic-bundling sponsor report. Replay now requires automatic mining for this scenario and retains the original manual-mode requirements for other scenarios. Its prerequisites include the pinned workshop/sidecar source objects. Viewer replay planning is covered by an HTTP regression test.
+2. Setup-error log write failure could bypass fixture teardown after a resource had been created. The diagnostic write is now optional, so cleanup still runs. A separate Linux process-boundary regression forces the write failure and verifies the owned template container's removal command. It uses a fake executable, never contacts Docker and never produces chain/admission evidence.
+
+The viewer guide was also corrected to distinguish fresh-state replay from the existing checkpoint-backed keyed-nonce reset. No transaction controls were added.
+
+Latest executed checks: `npm test` PASS (77 TypeScript + 10 JavaScript tests, zero failed/skipped); typecheck, lint, formatting, JavaScript syntax, shell syntax and `npm ls --all` PASS. Both Aftershock npm audits returned zero advisories. A scoped scan of 101 tracked/unignored files excluding deferred prompts found no secret-pattern candidates; ignore probes passed. No installation, external deployment or Git mutation was performed by Codex.
+
+`npm run test:replay:sponsor` exited 0: 1 native integration test, approximately 501 seconds. Baseline `1d533d00-1d6c-411a-9131-5d4a242d3e0f` was replayed as **fresh-state** run `a6fb04a8-6c02-4d1b-b428-e185b352a580`, from `2026-11-06T07:44:24.268Z` to `2026-11-06T07:52:46.170Z`. Both runs passed, all action verdicts and compared stable environment fields matched, and the baseline report remained byte-for-byte unchanged. Fresh genesis differed; no snapshot or historical-clock reproduction is claimed.
+
+The rerun has 16 PASS steps and 96 complete projected journal entries, with no omissions. Transaction `0xd8a3d73fec093e455721446121b90a0edf54de3142fcc03352115b541fd616ce` was canonically rejected and alternatively admitted, then included at block `0x48` with two successful frames and unwaived storage checks. The recipient gained one wei and wallet nonce increased from 9 to 10. Native teardown assertions and a subsequent check found no containers/network for this run. The full validated report remains in ignored Linux `reports/`; original published baseline evidence is unchanged. These are private-chain observations, without a public explorer URL.
+
+| Follow-up requirement | Status |
+| --- | --- |
+| Sponsor fresh replay and native CLI comparison | PASS |
+| Viewer sponsor replay-plan endpoint | PASS |
+| Diagnostic-write failure cleanup regression | PASS, process-boundary unit test |
+| Current default checks and Aftershock dependency audits | PASS |
+| New public-devnet observation | NOT VERIFIED; not attempted this checkpoint |
+| Exhaustive repository-wide self-audit, clean-machine install and visual/mobile QA | NOT VERIFIED; still remaining |
+
+Review scope included report/observation persistence, RPC parsing and projections, replay/checkpoint boundaries, scenario verdicts, private fixture setup/teardown and viewer APIs/script handling. This focused review does not claim every dependency, existing test and documentation statement has received a complete fresh audit. Existing upstream advisories and the Cancelled explorer finding remain disclosed. No custom Solidity was necessary; the native replay reused the same pinned upstream artifacts.

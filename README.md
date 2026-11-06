@@ -48,6 +48,7 @@ It drains/restores a fresh EOA payer through mined transfers and checks Cancelle
 ```sh
 npm run --silent aftershock -- run staked-storage-boundary --local --mine
 npm run test:sponsor
+npm run test:replay:sponsor
 ```
 
 This deploys the pinned upstream `Foreign`, `ViolatingWallet` and staking registry artifacts in the private mining fixture. No new Solidity or local compiler is required. Source Git objects must exist at the pins in [UPSTREAM](docs/UPSTREAM.md), under `../aftershock-upstream/{workshop,sidecar}`; optionally export `AFTERSHOCK_UPSTREAM_ROOT` to another root. Missing artifacts produce BLOCKED before container creation. This variable is optional and `.env` is not automatically loaded.
