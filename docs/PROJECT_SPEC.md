@@ -30,6 +30,8 @@ Verified sequence: admit disjoint keys, reject overlaps/duplicates and independe
 
 The separate keyed-replacement-ttl case uses a verified 30-second local TTL. The same below-bump signed candidate is rejected before expiry and admitted after expiry; an identical live hash remains a duplicate. Actual entry timestamps, replacement history, removal of the old hash and a subsequent below-bump rejection check that replacement refreshes the TTL. This is admission-only coverage, not an exact comparison-boundary test or an included/terminal predecessor case.
 
+The separate cancelled-replacement case requires mining and targets Cancelled only. Two actual payer drains/restorations establish a below-bump replacement and identical resubmission while observed timestamps remain within the 300-second TTL. Live duplicate/fee guards must apply again after reactivation. Explorer readmission metadata is checked independently of active mempool state; an inconsistency remains a scenario FAIL rather than being waived because the pinned implementation reproduces it. Source-backed limitations and actual results are recorded in PROTOCOL_COMPATIBILITY.md and ENVIRONMENT.md.
+
 ## Delivery and evidence
 
 Current layout: packages/core, packages/cli, tests, scripts and docs. Strict TypeScript, Zod schemas, the official-codec signing adapter, private Docker orchestration and one npm lockfile are implemented. No alternate codec or web UI exists.
@@ -43,8 +45,8 @@ Offline check-evidence rechecks selected saved outputs and explicitly lists unsu
 ## Current scope
 
 - Implemented: doctor, inspect, versions, scenarios, run --local [--mine], report JSON/Markdown, replay planning/reruns, offline compare, evidence export and selected evidence consistency checks.
-- Verified: both original mined suites and fresh-state reruns have genuine scoped passing captures. Current commands/results and historical live executions are recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
+- Verified: both original mined suites and fresh-state reruns have genuine scoped passing captures. The separate Cancelled case has complete genuine evidence of working reactivation guards and one upstream explorer consistency FAIL; it is not an all-PASS scenario. Current commands/results and historical live executions are recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
 - Baseline: the real upstream workshop transaction on chain 1337 executed in block 404438 with two successful frames. This is upstream functionality, not Aftershock originality.
 - Contract scope: no custom Solidity contracts or deployed contract-based paymaster fixture. Current scenarios use fresh EOAs and attributed upstream protocol predeploys; the shared payer has a separate payment signature. The declared suites work without custom contract deployment, and do not establish contract-based paymaster coverage.
-- Remaining: terminal/submitted-entry edges and the exact TTL boundary, exact snapshot/reset replay, fuller raw evidence where safely exportable, local read-only UI, independent review and judge demo/submission documents. Existing sidecar dependency advisories remain unresolved.
+- Remaining: OnChain/Finalized/Reverted and Submitted/Pending edges, the exact TTL boundary, exact snapshot/reset replay, fuller raw evidence where safely exportable, local read-only UI, independent review and judge demo/submission documents. Existing sidecar dependency advisories remain unresolved.
 - License: MIT, selected after the user delegated the choice.

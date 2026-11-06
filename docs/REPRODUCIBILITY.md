@@ -166,3 +166,16 @@ npm run test:ttl
 Uses the existing two-process isolated cached-image fixture with a verified 30-second TTL; the original suites retain 300 seconds. A bounded wait is computed from the actual lastUpdatedTime with a scheduling margin; accepted replacement timestamps must differ by strictly more than the configured TTL. Missing/changed entries, clock preconditions or unrelated RPC errors cannot pass. No timestamps, chain state or sidecar status are edited. This case can PASS without --mine because its definition covers admission only. Exact boundary and terminal-status cases remain open.
 
 The integration test checks the native CLI verdict and immutable report, evidence export equality, replay planning and cleanup. Offline check-evidence currently has no TTL-specific checker: it must return INSUFFICIENT/native 3 with every step unreevaluated even for a live PASS. The redacted journal cannot reconstruct signed fee/nonce parameters. Actual results and the filtered capture are recorded in ENVIRONMENT.md.
+
+## Cancelled predecessor replacement/readmission
+
+```sh
+npm run --silent aftershock -- run cancelled-replacement --local --mine
+npm run test:cancelled
+```
+
+Requires the same cached four-process mining fixture and several minutes of fork warm-up. Without --mine this case is BLOCKED and submits no scenario transactions. A fresh shared payer is drained by 800000000000000 wei plus actual gas, restored from a separate fresh funded EOA, then drained/restored again. Native balances, simulation maxCost, successful canonical receipts and real Cancelled lifecycle observations establish the state transitions. No contract, timestamp/status injection, admin method or public endpoint is used.
+
+The case verifies a different below-bump replacement after the first cancellation and identical signed resubmission after the second, each within the actual 300-second lastUpdatedTime window. It then verifies live guards and checks explorer outcome separately from active status. A pinned explorer inconsistency must remain FAIL/native 1; test:cancelled can pass by accurately reproducing that known finding and verifying all other checks. This is not a green invariant run. The offline checker currently covers none of these action IDs and must report INSUFFICIENT/native 3. Replay planning is checked; a fresh replay execution is not claimed here.
+
+For this longer case only, fork readiness is polled every 15 seconds instead of the original 5-second default. Cancellation waits poll compact status responses before collecting explorer history. These changes reduce redundant observations within the existing 256-entry/65536-byte journal limit; they do not drop recorded entries, enlarge the limit or waive incomplete evidence. Every state-changing transaction and required lifecycle observation is still recorded.

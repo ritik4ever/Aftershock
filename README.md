@@ -34,6 +34,15 @@ npm run test:ttl
 
 It verifies a 30-second local TTL, below-bump rejection before expiry, live duplicate rejection after expiry, replacement after expiry and fee rejection after timestamp refresh. It makes no mining or exact-boundary claim. See [coverage](docs/TEST_SCENARIOS.md).
 
+A separate cancellation/readmission case uses the cached mining stack:
+
+```sh
+npm run --silent aftershock -- run cancelled-replacement --local --mine
+npm run test:cancelled
+```
+
+It drains/restores a fresh EOA payer through mined transfers and checks Cancelled fee exemptions, identical reactivation and live guards. It also checks explorer metadata against the active entry. A scenario FAIL remains a finding even when its regression test successfully reproduces the pinned behavior. See [compatibility notes](docs/PROTOCOL_COMPATIBILITY.md) and [actual results](docs/ENVIRONMENT.md).
+
 ## Real transaction evidence
 
 Transaction `0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c46319a1571fb61f1d0b8e1fa03` was mined in block 404438 on chain 1337; both frame receipts show success. [Captured evidence](docs/evidence/workshop-admission-2026-11-05.json) includes the actual admitted/included events and receipt.
@@ -110,7 +119,7 @@ The probe needs Node >=20.12 and no installed packages. It only reads the config
 - [Current architecture](docs/ARCHITECTURE.md)
 - [Reproducing the baseline](docs/REPRODUCIBILITY.md)
 
-Remaining work: exact replay, fuller redacted evidence, terminal/submitted-entry cases and exact TTL-boundary coverage. Public node source commit remains unknown. UI work follows the core engine checkpoints.
+Remaining work: exact replay, fuller redacted evidence, remaining OnChain/Finalized/Reverted and Submitted/Pending cases and exact TTL-boundary coverage. Public node source commit remains unknown. UI work follows the core engine checkpoints.
 
 The upstream workshop, sidecar and codec are existing projects credited in UPSTREAM.md. No upstream protocol implementation is vendored. The mining fork schedule and builder-predeploy workaround are adapted from the attributed upstream fixtures. Aftershock is [MIT licensed](LICENSE).
 
