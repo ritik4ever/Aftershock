@@ -11,8 +11,8 @@ Aftershock is devnet research software, not proof of production safety.
 | Evidence | Check transaction identities, explorer boot/sequence continuity and successful frame receipts; admission alone is insufficient |
 | Files | Validated IDs, containment, bounded regular-file reads, no-follow leaf opens, exclusive writes and checksum/semantic validation |
 | Local browser runner | Loopback and same-origin/Host checks; JSON-only bounded scenario-start requests, fixed IDs, one active job/process; no arbitrary scripts, endpoint selection or credentials |
-| Hosted site | Reviewed captures, GET-only `/api/live`, and optional access-code-gated `/api/runner`; fixed repository/workflow/scenarios, server-only token, no arbitrary shell or private-directory discovery |
-| Remote execution | Disposable GitHub-hosted VMs; bounded/digest-checked artifacts, workflow/request/source identity checks, no wallet/log uploads; best-effort start limits plus workflow concurrency |
+| Hosted site | Reviewed captures, GET-only `/api/live`, and optional public `/api/runner`; fixed repository/workflow/scenarios, server-only token, no arbitrary shell or private-directory discovery |
+| Remote execution | Disposable GitHub-hosted VMs; bounded/digest-checked artifacts, workflow/request/source identity checks, no wallet/log uploads; public starts consume shared capacity; best-effort start limits plus workflow concurrency are not bot protection or an atomic budget |
 | Live public reads | Fixed gateway/method allowlist, 2.5-second read deadlines, schema/identity checks, no-store responses, two concurrent checks/instance; no archive fallback. This is not a global rate limiter |
 | Replay | Built-in actions only, verified private inputs and image/state checks; no arbitrary report-supplied execution |
 
