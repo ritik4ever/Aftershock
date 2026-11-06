@@ -151,7 +151,10 @@ export async function startViewer(root: string, port = 4318) {
         ];
         const runs = [];
         const seen = new Set<string>();
-        let unavailable = 0;
+        const unavailableReports: Array<{
+          key: string;
+          reason: 'FORMAT_OR_SCHEMA' | 'MISSING' | 'UNREADABLE_OR_INTEGRITY';
+        }> = [];
         for (const key of keys) {
           try {
             const report = await load(key);
@@ -170,12 +173,25 @@ export async function startViewer(root: string, port = 4318) {
                 ? 'Reviewed example'
                 : 'Saved local run',
             });
-          } catch {
-            unavailable += 1;
+          } catch (error) {
+            unavailableReports.push({
+              key,
+              reason:
+                error instanceof z.ZodError || error instanceof SyntaxError
+                  ? 'FORMAT_OR_SCHEMA'
+                  : (error as NodeJS.ErrnoException)?.code === 'ENOENT'
+                    ? 'MISSING'
+                    : 'UNREADABLE_OR_INTEGRITY',
+            });
           }
         }
         runs.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
-        json(200, { runs, unavailable, limited: names.length > 100 });
+        json(200, {
+          runs,
+          unavailable: unavailableReports.length,
+          unavailableReports,
+          limited: names.length > 100,
+        });
         return;
       }
       if (

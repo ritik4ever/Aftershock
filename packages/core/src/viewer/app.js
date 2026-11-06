@@ -152,10 +152,34 @@ async function loadRuns() {
     $('stat-evidence').textContent = String(
       runs.filter((r) => r.complete).length,
     );
-    if (data.unavailable || data.limited)
+    if (data.unavailable || data.limited) {
       notice(
-        `${data.unavailable} reports/examples unavailable.${data.limited ? ' Local listing is limited to 100 report files.' : ''}`,
+        `${data.unavailable} reports/examples could not be loaded; valid runs remain available.${data.limited ? ' Local listing is limited to 100 report files.' : ''}`,
       );
+      if (data.unavailableReports?.length) {
+        const reasons = {
+          FORMAT_OR_SCHEMA:
+            'Invalid or unsupported report format/action validation',
+          MISSING: 'File missing',
+          UNREADABLE_OR_INTEGRITY:
+            'Unreadable, unsafe or integrity check failed',
+        };
+        const detail = node('details');
+        detail.append(
+          node('summary', 'Show unavailable report IDs'),
+          node(
+            'p',
+            'Original files are retained. Older formats are not silently upgraded; rerun the current CLI for new evidence.',
+          ),
+          list(
+            data.unavailableReports.map(
+              (item) => `${item.key}: ${reasons[item.reason] || 'Unavailable'}`,
+            ),
+          ),
+        );
+        $('notice').append(detail);
+      }
+    }
     for (const id of ['compare-left', 'compare-right']) {
       const select = $(id),
         previous = select.value;

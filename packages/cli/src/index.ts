@@ -65,7 +65,21 @@ async function main(args: string[]): Promise<number> {
       return 2;
     const port = rest.length ? Number(rest[1]) : 4318;
     if (port < 1 || port > 65535) return 2;
-    const viewer = await startViewer(process.cwd(), port);
+    let viewer: Awaited<ReturnType<typeof startViewer>>;
+    try {
+      viewer = await startViewer(process.cwd(), port);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        (error as NodeJS.ErrnoException).code === 'EADDRINUSE'
+      ) {
+        process.stderr.write(
+          `Port ${port} is already in use. If Aftershock is already running, open http://127.0.0.1:${port}. Otherwise choose another port with serve --port <port>.\n`,
+        );
+        return 1;
+      }
+      throw error;
+    }
     process.stdout.write(
       `Aftershock report viewer: ${viewer.url} (read only; Ctrl+C to stop)\n`,
     );

@@ -1,6 +1,27 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { createServer } from 'node:net';
+
+test('occupied viewer ports produce actionable output without hiding the original listener', async () => {
+  const server = createServer();
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const address = server.address();
+    assert.ok(address && typeof address !== 'string');
+    const result = cli('serve', '--port', String(address.port));
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, '');
+    assert.match(result.stderr, /already in use/);
+    assert.ok(result.stderr.includes(`http://127.0.0.1:${address.port}`));
+    assert.match(result.stderr, /serve --port/);
+    assert.equal(server.listening, true);
+  } finally {
+    await new Promise<void>((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});
 
 function cli(...args: string[]) {
   return spawnSync(

@@ -81,7 +81,9 @@ const report = runReport.parse(
   ),
 );
 
-async function app() {
+async function app(
+  unavailableReports: Array<{ key: string; reason: string }> = [],
+) {
   const elements = new Map(
     [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => [
       match[1]!,
@@ -126,7 +128,8 @@ async function app() {
                   startedAt: report.startedAt,
                 },
               ],
-          unavailable: 0,
+          unavailable: unavailableReports.length,
+          unavailableReports,
           limited: false,
         });
       if (url.pathname === '/api/scenarios')
@@ -211,6 +214,18 @@ test('refreshing an empty listing clears a previously selected report', async ()
   assert.match(ui.el('detail-content').textContent, /No available report/);
   assert.ok(!ui.el('detail-content').textContent.includes(report.runId));
   assert.equal(ui.el('refresh').disabled, false);
+});
+
+test('viewer explains unavailable reports with safe text while retaining usable runs', async () => {
+  const key = 'local:11111111-1111-4111-8111-111111111111';
+  const ui = await app([{ key, reason: 'FORMAT_OR_SCHEMA' }]);
+  assert.equal(ui.el('notice').hidden, false);
+  assert.match(ui.el('notice').textContent, /valid runs remain available/);
+  assert.match(ui.el('notice').textContent, /Invalid or unsupported/);
+  assert.ok(ui.el('notice').textContent.includes(key));
+  assert.equal(ui.el('stat-total').textContent, '1');
+  await ui.el('refresh').trigger('click');
+  assert.equal(ui.el('notice').textContent.split(key).length - 1, 1);
 });
 
 test('changing comparison inputs discards a late response for the previous selection', async () => {

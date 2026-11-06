@@ -294,10 +294,34 @@ test('invalid and symlinked reports never become readable viewer data', async ()
       (await fetch(`${v.url}/api/run?key=local:${alias}`)).status,
       404,
     );
-    assert.equal(
-      (await (await fetch(v.url + '/api/runs')).json()).unavailable,
-      1,
+    const listingText = await (await fetch(v.url + '/api/runs')).text();
+    assert.ok(!listingText.includes('PRIVATE_LOCAL_SENTINEL'));
+    const listing = JSON.parse(listingText);
+    assert.equal(listing.unavailable, 1);
+    assert.deepEqual(listing.unavailableReports, [
+      { key: `local:${id}`, reason: 'FORMAT_OR_SCHEMA' },
+    ]);
+  } finally {
+    await v.close();
+  }
+});
+
+test('viewer reports integrity failures without exposing or rewriting report contents', async () => {
+  const v = await fixture();
+  try {
+    const path = join(v.root, 'reports', `${keyed.runId}.scenario.json`);
+    const envelope = JSON.parse(await readFile(path, 'utf8'));
+    envelope.sha256 = '0'.repeat(64);
+    const damaged = JSON.stringify(envelope);
+    await writeFile(path, damaged);
+    const listing = await (await fetch(v.url + '/api/runs')).json();
+    assert.deepEqual(listing.unavailableReports, [
+      { key: `local:${keyed.runId}`, reason: 'UNREADABLE_OR_INTEGRITY' },
+    ]);
+    assert.ok(
+      listing.runs.some((run: { key: string }) => run.key === 'sample:keyed'),
     );
+    assert.equal(await readFile(path, 'utf8'), damaged);
   } finally {
     await v.close();
   }
@@ -310,6 +334,12 @@ test('an empty workspace gets a truthful empty listing', async () => {
     const data = await (await fetch(v.url + '/api/runs')).json();
     assert.deepEqual(data.runs, []);
     assert.equal(data.unavailable, 5);
+    assert.equal(data.unavailableReports.length, 5);
+    assert.ok(
+      data.unavailableReports.every(
+        (item: { reason: string }) => item.reason === 'MISSING',
+      ),
+    );
   } finally {
     await v.close();
   }
