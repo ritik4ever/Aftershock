@@ -14,13 +14,22 @@ let runs = [],
   selection = 0,
   refresh = 0,
   comparison = 0;
+function resource(path) {
+  if (!globalThis.aftershockStatic) return path;
+  const url = new URL(path, 'http://localhost');
+  url.searchParams.sort();
+  const file = globalThis.aftershockStatic[url.pathname + url.search];
+  if (!file) throw new Error('Unavailable in this published snapshot');
+  return file;
+}
 async function request(path) {
-  const response = await fetch(path, {
+  const response = await fetch(resource(path), {
     signal: AbortSignal.timeout(10000),
     credentials: 'omit',
   });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Request unavailable');
+  if (!response.ok || data.error)
+    throw new Error(data.error || 'Request unavailable');
   return data;
 }
 function notice(text) {
@@ -279,7 +288,10 @@ function renderDetail(report, checks, key, replayResult) {
   ]) {
     if (format === 'evidence' && !report.evidence) continue;
     const link = node('a', `${label} \u2193`);
-    link.href = `/api/download?key=${encodeURIComponent(key)}&format=${format}`;
+    link.href = resource(
+      `/api/download?key=${encodeURIComponent(key)}&format=${format}`,
+    );
+    link.download = `${report.runId}.${format === 'md' ? 'md' : `${format}.json`}`;
     actions.append(link);
   }
   intro.append(

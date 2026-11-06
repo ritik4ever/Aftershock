@@ -18,6 +18,12 @@ npm run --silent aftershock -- serve --port 4323
 
 Open http://127.0.0.1:4323. An occupied port may mean the viewer is already running; choose another port if needed. The viewer reads saved reports; it does not execute transactions or control Docker.
 
+## Hosting on Vercel
+
+Import the repository with framework **Other**, Node **24.x**, build command `npm run build:static` and output directory `dist`. `vercel.json` supplies installation/build settings and security headers; no environment variables are needed. The build exports seven fixed reviewed captures, downloads, comparison results and the recorded public receipt. It never scans private reports or starts the local server. Deploy the repository root, not `packages/cli`.
+
+To check the export locally, run `npm run build:static` in a clean checkout/output directory (`dist` must not already exist). The public UI is labeled **Published snapshot / Read only**; its refresh actions reread exported files, not live nodes. Updating evidence requires a reviewed rebuild/deployment. No keys or Docker infrastructure are hosted. Deployment itself remains pending until a real Vercel URL is verified.
+
 The existing development installation is `/home/ritik/aftershock-build` in WSL. The Windows review checkout has no installed dependencies. Other machines can use any Linux-home checkout.
 
 ## Real evidence
@@ -65,7 +71,7 @@ npm test
 npm audit
 ```
 
-The last checkpoint passed 93 default tests and quality gates. Integration results and known failures are in [TESTING_REPORT](docs/TESTING_REPORT.md). Desktop/mobile flows were manually verified; automated visual testing is not claimed.
+The last checkpoint passed 96 default tests and quality gates. Integration results and known failures are in [TESTING_REPORT](docs/TESTING_REPORT.md). Desktop/mobile flows were manually verified for the local viewer; automated visual testing and the deployed static viewer are not yet verified.
 
 This is a research tool, not a security certification. The pinned sidecar has separate dependency advisories and a reproduced Cancelled explorer inconsistency. Thirteen historical private reports fail current validation and remain preserved. Broader lifecycle edges, full raw traces and exact historical replay are outside verified coverage.
 
