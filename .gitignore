@@ -26,3 +26,4 @@ genesis.values.env
 out/
 cache/
 artifacts/
+prompts/

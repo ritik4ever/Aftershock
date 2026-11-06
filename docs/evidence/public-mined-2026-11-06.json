@@ -1,0 +1,235 @@
+{
+  "runId": "bc55d563-aa01-41d4-b08f-e259c2600e23",
+  "observedAt": "2026-11-06T09:51:30.331Z",
+  "purpose": "workshop-admission-baseline",
+  "endpointClass": "PUBLIC_DEVNET",
+  "endpoint": "https://altmempoolgateway.forshtat.com/rpc",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "limitations": [
+    "This observation is not an original Aftershock lifecycle scenario.",
+    "Unknown node commit prevents source-specific invariant conclusions.",
+    "Projection omits signatures, calldata, logs and arbitrary server text.",
+    "Historical events before capture may already be unavailable."
+  ],
+  "evidence": {
+    "requestedHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+    "chainId": "0x539",
+    "before": {
+      "protocolVersion": 1,
+      "chainId": 1337,
+      "version": "v4.1.1",
+      "commit": "",
+      "bundlingMode": "auto",
+      "p2pEnabled": true,
+      "oldestSeq": 1,
+      "latestSeq": 249,
+      "historyCapacity": 10000,
+      "bootId": "9c7ea46a50c67b59"
+    },
+    "after": {
+      "protocolVersion": 1,
+      "chainId": 1337,
+      "version": "v4.1.1",
+      "commit": "",
+      "bundlingMode": "auto",
+      "p2pEnabled": true,
+      "oldestSeq": 1,
+      "latestSeq": 249,
+      "historyCapacity": 10000,
+      "bootId": "9c7ea46a50c67b59"
+    },
+    "admission": {
+      "hash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+      "admission": {
+        "txHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+        "outcome": "included",
+        "at": 1793957866655,
+        "sender": "0xF6cc4d3F5b5D9616Bd2f47e63E2A88bC798d3959",
+        "nonce": "0x0",
+        "nonceKeys": [
+          "0x0"
+        ],
+        "checks": [
+          {
+            "rule": "gas-limit",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "recent-root",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "prefix",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "structure",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "signature",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "simulation",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "OP-061",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "execution",
+            "verdict": "pass",
+            "waived": false
+          },
+          {
+            "rule": "trace-alignment",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "out-of-gas",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "OP-011",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "create",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "storage",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "COD-010",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "entrypoint-access",
+            "verdict": "pass",
+            "frameIndex": 0,
+            "entity": "payer",
+            "waived": false
+          },
+          {
+            "rule": "mempool",
+            "verdict": "pass",
+            "waived": false
+          }
+        ],
+        "frames": 2
+      },
+      "events": [
+        {
+          "seq": 193,
+          "txHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+          "at": 1793957866845,
+          "kind": "admitted",
+          "status": "New"
+        },
+        {
+          "seq": 243,
+          "txHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+          "at": 1793958640496,
+          "kind": "admitted",
+          "status": "New"
+        },
+        {
+          "seq": 244,
+          "txHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+          "at": 1793958641503,
+          "kind": "statusChanged",
+          "status": "Submitted"
+        },
+        {
+          "seq": 245,
+          "txHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+          "at": 1793958651477,
+          "kind": "statusChanged",
+          "status": "Submitted"
+        },
+        {
+          "seq": 246,
+          "txHash": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9",
+          "at": 1793958661444,
+          "kind": "included",
+          "status": "OnChain"
+        }
+      ]
+    },
+    "status": {
+      "sender": "0xF6cc4d3F5b5D9616Bd2f47e63E2A88bC798d3959",
+      "payer": "0xF6cc4d3F5b5D9616Bd2f47e63E2A88bC798d3959",
+      "status": "OnChain",
+      "transaction": "0x5609b38df43a2dc3eb354913434354a2cc656eac8cb5074b99ebb9d265f7b3d9"
+    },
+    "receipt": {
+      "blockNumber": "0x7e4",
+      "status": "success",
+      "payer": "0xf6cc4d3f5b5d9616bd2f47e63e2a88bc798d3959",
+      "cumulativeGasUsed": "0x65f6",
+      "frameReceipts": [
+        {
+          "status": "success",
+          "gasUsed": {
+            "execution": "0x64",
+            "state": "0x0"
+          }
+        },
+        {
+          "status": "success",
+          "gasUsed": {
+            "execution": "0xbb8",
+            "state": "0x0"
+          }
+        }
+      ]
+    }
+  },
+  "result": {
+    "admissionObserved": true,
+    "executionSucceeded": true,
+    "evidenceConsistent": true,
+    "issues": [],
+    "sourceSpecificVerdict": "INCONCLUSIVE",
+    "reportedUnwaivedPassChecks": 17,
+    "skippedChecks": 0
+  }
+}

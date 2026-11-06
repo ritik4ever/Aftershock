@@ -1,46 +1,20 @@
 # Protocol compatibility
 
-Source inspection, public observation and private integration are separate evidence classes. Pins and implementation paths: [UPSTREAM](UPSTREAM.md). Private admission/replacement behavior is verified; public source identity remains unknown.
+Rules below describe the [pinned implementation](UPSTREAM.md), not every EIP/ERC draft.
 
-| Topic | Draft / website description | Pinned implementation / observation |
-| --- | --- | --- |
-| Entity execution budgets | Draft 100k unstaked / 1M staked; landing-page description 250k / 2.5M | Neither pair is the sidecar's structural rule: validate() calls validateStructuralRules() unconditionally, with no stake override for the prefix bounds below |
-| Prefix bounds | Rule sets differ | Total prefix execution plus signature cost <=100k; prefix state <=500k, enforced before signature and entity-compliance checks |
-| IDs | BUDGET-010, STORAGE-021, REPUTATION-220 | Source uses gas-limit, storage, prefix, OP-011 and other IDs; preserve actual returned IDs |
-| Pending cap | Draft describes 4 per key and 64 per unstaked sender | Dedicated unstaked linear sender bucket: 4, with stake/whitelist exceptions. Self-relay is gated through payer reputation, not that flat bucket. Keyed own-sender entries bypass the count cap but not ban/throttle restrictions; third-party entity limits remain |
-| Identity | Sender, key set and sequence | Also chain-scoped; exact ordered key-set slot; overlapping other slots conflict |
-| Reputation labels | ACTIVE / THROTTLED / BANNED | Explorer wire: ok / throttled / banned |
-| Unstake delay | Draft 86,400 seconds | Source default and public skandha_config: 0; workshop requests 86,400 |
-| Replacement | Version-specific lifecycle rules | Both fee thresholds use integer 11/10; TTL and terminal-state exceptions apply |
-| Solvency | Do not assume accounting model | Aggregate per-account local obligations with callback; replacement excludes old entry; Submitted cannot be evicted by balance enforcement |
-| State limits | Draft differences page describes removal of state cap | Pinned prefix validator retains state cap; distinguish execution/state gas |
+| Topic | Pinned behavior / qualification |
+| --- | --- |
+| Validation budget | Structural prefix <=100k execution including signatures; <=500k state. No staking override for these bounds; do not claim >100k support from website values |
+| Rule names | Preserve returned IDs such as `gas-limit`, `storage`, `prefix`, `OP-011`; documentation families are not literal verdict IDs |
+| Pending identity | Chain, sender, ordered key set and sequence; intersecting distinct keyed slots conflict |
+| Limits | Unstaked linear sender bucket 4 with exceptions; keyed sender entries bypass that count, not reputation/entity restrictions. Draft 4-per-key/64-per-sender is not equivalent |
+| Replacement | Both fees meet `old * 11n / 10n` (integer truncation). Duplicate guard includes OnChain; terminal bypass is status > OnChain |
+| TTL | Strict elapsed time > TTL*1000 from lastUpdatedTime; replacement refreshes the timestamp |
+| Solvency | Aggregate local per-account obligations; exclude displaced entry. Balance enforcement evicts eligible New entries newest first; Pending/Submitted obligations can remain |
+| Wire | Sidecar submission takes signed JSON; ethrex simulation/canonical submission takes raw type-0x06 RLP |
+| Receipt | Missing receipt may return -32000. Inclusion is not execution success; inspect every frame |
+| Reputation / delay | Explorer uses `ok/throttled/banned`; default unstake delay 0 differs from draft 86400 |
 
-The draft/landing comparisons above are summaries of the [documentation differences table](https://docs.altmempool.wtf/project/differences/), not separately pinned ERC draft research. They are SPEC_DIFFERENCE candidates, never automatic vulnerabilities.
+The Cancelled readmission case has active New state but explorer outcome `replaced`. Its genuine verdict remains FAIL, even when a regression test correctly reproduces it. See [capture](evidence/cancelled-replacement.json).
 
-## Wire and evidence boundaries
-
-- Configured gateway is https://altmempoolgateway.forshtat.com/rpc. The documented path is /rpc/; the configured /rpc responded successfully. No direct miner connectivity is assumed.
-- Sidecar eth_sendFrameTransaction takes signed JSON via the official encoder. Ethrex simulation takes raw type-0x06 RLP. They are different interfaces. The pinned workshop and Aftershock's private scenarios exercise normal sidecar submission. Public CLI doctor/inspect commands remain read-only.
-- Do not implement ERC-4337 methods or privileged relay calls. Live read verification also covers skandha_explorer_getTransaction, skandha_frameTransactionStatus and eth_getFrameTransactionReceipt. Only the separate official workshop invoked the public faucet and public transaction submission. Aftershock submits scenario transactions only to owned private fixtures.
-- Sidecar receipt status is success/reverted; per-frame statuses also include skipped. Raw execution receipts use 0x1/0x0 instead. Confirmed in packages/types/src/executor/validation/frameTxReceipt.ts and ReceiptService/index.ts, and in the real successful response. The adapter must not compare sidecar status to 0x1.
-- Explorer requires enablement; history is bounded and volatile. Track bootId and sequence bounds, preserve cursors, limit pages to 200. Included is not execution success; skipped/waived reports do not independently prove enforcement.
-- Use bigint or hex for amounts, fees, sequences and nonce keys. Validate numeric metadata separately.
-- Live explorer returned version v4.1.1 and an empty commit. Source-dependent lifecycle claims remain unverified against that node. Manual bundling can delay mining; never invoke shared bundling controls to force progress.
-
-Source references for the confirmed structural gate: [validate()](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/services/UserOpValidation/validators/frameTx.ts#L310) and [validateStructuralRules()](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/services/UserOpValidation/utils/validationPrefix.ts#L282). This contradicts descriptions suggesting larger staked prefix budgets for this exact implementation; it is not a tested runtime exploit.
-
-Private integration verifies signed JSON admission, raw-RLP simulation, replacement, keyed conflicts, canonical frame inclusion and mined balance transitions against pinned processes. Negative admission cases require the inspected code/channel/message family: -32602 for balance obligations, keyed conflict, duplicate and fee bump; -32500 for the native Nonce mismatch rejection after inclusion. An unrelated error never counts as a successful rejection. Non-mining runs still block their omitted mined actions.
-
-Separate private mining verification now covers a successful ordinary Frame Transaction after staged Fulu/Gloas/Heze activation. The pinned ReceiptService throws -32000 with transaction receipt not found for the requested hash while no receipt exists, rather than returning null; the mining poll recognizes only that exact response as unavailable and retries within its bound. This behavior does not establish that an unknown hash is pending.
-
-The RPC wire for eth_getFrameTransactionByHash represents submittedTime/lastUpdatedTime as hex despite numeric internal TypeScript fields. A genuine response probe established this and the mined payer report preserves the observed hex values. Ordering uses BigInt(submittedTime ?? lastUpdatedTime). Manual sidecar mode still reconciles blocks in the inspected service implementation; it only disables relaying. Both original mined suites rely on that executable behavior, not the stale contrary comment in an upstream test header.
-
-Both suites have passing --local --mine runs for their declared scope. Open: full documentation-family mapping, operator overrides, Submitted/Pending and remaining OnChain/Finalized/Reverted cases, exact TTL-boundary coverage, fuller evidence and exact snapshot replay. No draft/implementation discrepancy is labeled an exploit.
-
-## Observed explorer inconsistency: identical Cancelled readmission
-
-At pinned sidecar 2e22ff0a2898e69ea4bf5275bce1be8581a8582a, the real isolated cancelled-replacement run reactivated the identical signed transaction as active New after restoring payer affordability. Its explorer admission outcome was replaced rather than accepted. The [complete filtered capture](evidence/cancelled-replacement.json) records both responses for the same hash. The scenario remains FAIL for explorer-reactivation-consistency; its regression harness passes only when it reproduces that exact finding and every other required assertion passes. The derived whole-case mined-state-transition summary remains INCONCLUSIVE, although all four canonical funding transfers succeeded.
-
-Source cause: [eth.ts admission bookkeeping](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/modules/eth.ts#L218-L233) records the new admission then calls markReplaced even when replacedTxHash equals txHash. [ExplorerService.markReplaced](https://github.com/forshtat/mempool-workshop-sidecar/blob/2e22ff0a2898e69ea4bf5275bce1be8581a8582a/packages/executor/src/services/ExplorerService/service.ts#L132-L139) changes that same admission to replaced and records a replacement event. Active mempool reactivation and its restored duplicate/fee guards worked in this run.
-
-This is a version-specific explorer metadata consistency finding on our private fixture, not proof of a money-loss exploit, all-node behavior or an independent audit. Upstream source/images remain pinned and unchanged; the issue is open. Aftershock does not rewrite the response or waive the failed assertion. OnChain/Finalized/Reverted and Pending/Submitted exceptions remain unverified by this case.
+[Documentation differences](https://docs.altmempool.wtf/project/differences/) and [RPC reference](https://docs.altmempool.wtf/reference/rpc-methods/) warn of draft/stale guidance. No draft difference is automatically a vulnerability. The public gateway commit is empty, so public observations cannot prove source-specific invariants. Manual sidecar mode still reconciles blocks at the pinned source; it disables relaying, not reconciliation.

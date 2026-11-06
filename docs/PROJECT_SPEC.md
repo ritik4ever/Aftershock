@@ -1,60 +1,19 @@
-# Aftershock project spec
+# Scope and scenarios
 
-Status: core CLI, both declared private mined suites, fresh-state reruns, admission-only TTL genesis-reset reruns, checkpoint-backed mined keyed-nonce reruns, projected RPC evidence, selected offline consistency checks, a separate keyed TTL expiry/refresh case and the local read-only report viewer are implemented. The staked-storage sponsor scenario and fresh replay are also implemented. Desktop/mobile flows are user-verified. Other mined reset scenarios and exact historical timing remain outside verified MVP coverage. PASS covers the declared live checks, not every protocol edge case. The original lifecycle suites remain BLOCKED without mining; the admission-only TTL case has no mined actions.
+Aftershock is a fixed-scenario runner, invariant checker and evidence viewer for pinned EIP-8141 infrastructure. It does not implement a new wallet protocol or transaction codec.
 
-Requirements now follow the user-approved Version 2 master specification. The source-based [contract audit](CONTRACT_FIXTURES.md) maps every declared action and records why no new Solidity is required for current coverage. A future contract-based sponsorship predicate needs its own justified scenario and integration evidence; contract count is not a milestone.
+| Scenario | Real actions and assertions | Coverage limit |
+| --- | --- | --- |
+| `paymaster-solvency` | Shared EOA payer; aggregate rejection; replacement accounting; mined top-up/control/drain; newest eligible New-entry cancellation and surviving obligation | Not contract paymaster-policy coverage; Pending/Submitted obligations may not be evictable |
+| `keyed-nonce-lifecycle` | Disjoint keys, overlap/duplicate rejection, independent fee thresholds, replacement, mined predecessor/next sequence and stale rejection | Broader terminal/status edges excluded |
+| `keyed-replacement-ttl` | Below-bump rejection before expiry, acceptance after actual expiry, duplicate handling and TTL refresh | Admission-only; not exact live boundary testing |
+| `cancelled-replacement` | Mined payer drains/restorations; Cancelled replacement and identical resubmission within TTL; renewed live guards | Known explorer mismatch remains FAIL |
+| `staked-storage-boundary` | Existing artifacts; unstaked rejection; real stake; same post-stake candidate rejected canonically and included through sidecar | Adapted workshop demo, not a third original suite |
 
-Aftershock runs reproducible multi-step Frame Transaction scenarios, checks version-specific invariants and exports evidence through a CLI. The local read-only report UI was added after core integration. The user supplied a visual reference with a light background, dark typography, orange accents and rounded controls. Use that style for the later Aftershock report viewer; the screenshot does not change its read-only product scope. The contribution is lifecycle automation, explicit assertions and reproducible reports; transaction sending, admission debugging, keyed nonces and recent roots already exist upstream.
+The first two are the original stateful suites. Their non-mining mode remains BLOCKED for omitted mined actions. The CLI runs actual node transactions; mocks are confined to unit tests.
 
-## Proposed source-backed invariants
+Reports identify source pins, environment, ordered actions, observations and verdicts. PASS requires sufficient evidence for declared checks; FAIL is not automatically an exploit. Missing/ambiguous evidence is BLOCKED or INCONCLUSIVE. SPEC_DIFFERENCE distinguishes rule variants.
 
-Both suites target sidecar commit `2e22ff0a2898e69ea4bf5275bce1be8581a8582a`; links and qualifiers are in [UPSTREAM](UPSTREAM.md).
+Implemented: CLI, scoped real integration, JSON/Markdown export, bounded RPC journals, selected offline checks, fresh-state reruns, TTL genesis reset, keyed mined checkpoint reset and a read-only viewer. Outside coverage: recent-root lifecycle suite, every terminal/Pending/Submitted edge, full raw request reconstruction and exact historical timing.
 
-### Paymaster obligations
-
-With the balance callback enabled, admission must reject a candidate whose per-account pending obligations exceed the current account balance, excluding the entry it replaces. Payer obligations use simulation maxCost when available, otherwise the lower frame-limit estimate; sender obligations add top-level frame values. Self-pay combines both. This is local bookkeeping, not a chain escrow or a guarantee across other nodes.
-
-After a controlled balance decrease, the enforceBalances stage cancels eligible New entries newest first until its obligation total fits or no eligible entries remain. Earlier reconciliation stages can already cancel or include entries; assert ordering only among entries still present when enforceBalances starts, not across the entire block pass. Pending and Submitted obligations count but are not evictable by this stage; do not assert universal post-block solvency when non-evictable entries alone exceed the balance. Equal timestamps require additional investigation before asserting an exact eviction order.
-
-Verified sequence: fit one obligation, reject aggregate overspend, replace it without double-counting, top up the payer and admit a second obligation, confirm distinct entry ordering, mine a small balance-change control, then mine a larger drain leaving each entry individually affordable but their sum unaffordable. The newest New entry is cancelled by balance enforcement while the older one survives and fits. Ordinary EIP-1559 transfers use fresh fixture keys; no contract deployment or privileged/admin RPC is needed. Submitted-entry cases and exact reset/replay remain unfinished.
-
-### Keyed nonce identity and replacement
-
-For the same chain and sender, a pending keyed transaction sharing any key with another slot must be rejected. An identical ordered key set and sequence is the same slot and follows replacement rules. Disjoint keys may coexist subject to all remaining admission rules.
-
-Before TTL expiry, with a live predecessor, replacements must meet both integer thresholds `oldFee * 11n / 10n` for priority and maximum fees. This truncates; do not substitute floating-point percentages or ceiling arithmetic. Identical transaction hashes are duplicates while live. TTL and terminal-status exceptions must be separate cases.
-
-Precisely, pending means status < OnChain. Duplicate rejection still includes OnChain; the fee bypass is status > OnChain, not >= OnChain. TTL bypass requires a strict elapsed-time comparison `> ttl * 1000`, measured from lastUpdatedTime rather than initial admission. Passing this replacement check does not bypass simulation, nonce or balance checks.
-
-Verified sequence: admit disjoint keys, reject overlaps/duplicates and independently insufficient fee components, replace the base, submit it through ordinary canonical eth_sendRawTransaction, observe successful inclusion, reject a stale sequence, then admit and mine the next sequence. The disjoint key remains New. Actual sidecar/execution responses and explorer continuity are checked; acceptance is never inferred solely from keys or fees.
-
-The separate keyed-replacement-ttl case uses a verified 30-second local TTL. The same below-bump signed candidate is rejected before expiry and admitted after expiry; an identical live hash remains a duplicate. Actual entry timestamps, replacement history, removal of the old hash and a subsequent below-bump rejection check that replacement refreshes the TTL. This is admission-only coverage, not an exact comparison-boundary test or an included/terminal predecessor case.
-
-The separate cancelled-replacement case requires mining and targets Cancelled only. Two actual payer drains/restorations establish a below-bump replacement and identical resubmission while observed timestamps remain within the 300-second TTL. Live duplicate/fee guards must apply again after reactivation. Explorer readmission metadata is checked independently of active mempool state; an inconsistency remains a scenario FAIL rather than being waived because the pinned implementation reproduces it. Source-backed limitations and actual results are recorded in PROTOCOL_COMPATIBILITY.md and ENVIRONMENT.md.
-
-## Delivery and evidence
-
-Current layout: packages/core, packages/cli, tests, scripts and docs. Strict TypeScript, Zod schemas, the official-codec signing adapter, private Docker orchestration, one npm lockfile and a loopback-only report viewer are implemented.
-
-Run reports record unique ID, seed, pinned source versions, observed environment/image identity, chain, ordered actions, assertions, verdicts and a reproducer. New reports also retain bounded allowlisted RPC projections with actual receipts, lifecycle fields, normalized failures and per-step completion-order cursors. Node observations remain separate from derived summaries. Payloads, signatures, logs and arbitrary server text are omitted; full raw transcripts and exact historical timing are unfinished. Private-state restoration currently requires a retained version-2 keyed-nonce checkpoint. Historical reports are not retroactively populated.
-
-Verdicts are PASS, FAIL, INCONCLUSIVE, BLOCKED and SPEC_DIFFERENCE. FAIL means a defined check failed in that environment, not an automatic exploit finding. Missing required evidence, history gaps or incompatible versions prevent conclusive source-specific PASS. Private image/source provenance is trusted local-build metadata, not cryptographic attestation. Public node source commit remains unknown.
-
-Offline check-evidence rechecks selected saved outputs and explicitly lists unsupported steps. CONSISTENT is scoped file consistency, never a new live PASS or full scenario revalidation. Redacted signatures, transfer values, account-query targets, fee/nonce semantics and simulation-to-transaction associations cannot be reconstructed. Fresh-state replay uses new keys/genesis; it is not exact historical replay.
-
-## Current scope
-
-- Implemented: doctor, inspect, versions, scenarios, run --local [--mine], report JSON/Markdown, replay planning/reruns, offline compare, evidence export and selected evidence consistency checks.
-- Verified: both original mined suites and fresh-state reruns have genuine scoped passing captures. The separate Cancelled case has complete genuine evidence of working reactivation guards and one upstream explorer consistency FAIL; it is not an all-PASS scenario. Current commands/results and historical live executions are recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
-- Baseline: the real upstream workshop transaction on chain 1337 executed in block 404438 with two successful frames. This is upstream functionality, not Aftershock originality.
-- Contract scope: no custom Solidity contracts or deployed contract-based paymaster fixture. The two original suites use fresh EOAs and attributed upstream protocol predeploys; the shared payer has a separate payment signature. The additional sponsor case deploys the existing upstream wallet/storage/registry artifacts. The declared suites work without custom contract deployment, and do not establish contract-based paymaster coverage.
-- Outside current MVP coverage: broader live OnChain/Finalized/Reverted and Submitted/Pending edges, live exact TTL-boundary evidence, mined reset for other scenarios and exact historical timing, and fuller raw evidence where safely exportable. Recording/submission remain user actions. The final implemented-MVP self-review and desktop/mobile manual results are recorded in TESTING_REPORT. Exact TTL/status/fee method boundaries are separately tested against the pinned sidecar image; this does not establish live admission/lifecycle coverage. Existing sidecar dependency advisories remain unresolved.
-- License: MIT, selected after the user delegated the choice.
-
-## Final sponsor demonstration and submission addendum
-
-Codex is the sole coding/review agent. No independent OpenCode audit or automatic Git operation is part of delivery. Intended ETHGlobal Mumbai 2026 Classic registration and the private-dashboard deadline remain NOT VERIFIED; routine implementation does not wait for them.
-
-The additional `staked-storage-boundary` scenario reuses pinned upstream wallet, storage-helper and staking-registry deployment artifacts. A genuine native integration run verified zero-stake rejection, a real mined stake transition, canonical rejection and alternative admission/inclusion of the same post-stake signed candidate, unwaived storage checks, successful frame receipts and an actual recipient balance/nonce transition. It introduces no new Solidity fixture. The recorded report remains immutable, including an older generic limitation string that incorrectly says manual bundling; its actual explorer environment records automatic bundling. New reports correct that label.
-
-DEMO_GUIDE, SPONSOR_COMPLIANCE, SUBMISSION and TESTING_REPORT describe evidence and remaining user actions. Final repository-wide self-audit and visual/mobile checks must not be marked complete without executed verification. Recording/upload, registered track/deadline confirmation and manual publication/submission remain user-owned.
+[Results](TESTING_REPORT.md) · [Protocol rules](PROTOCOL_COMPATIBILITY.md) · [Contract decision](CONTRACT_FIXTURES.md)
