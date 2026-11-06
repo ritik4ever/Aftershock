@@ -114,7 +114,18 @@ Reports use exclusive writes, validated IDs and SHA-256 integrity checks. Integr
 
 `replay --local --reset` supports newly recorded, complete admission-only `keyed-replacement-ttl` runs. It reads the original disposable keys from private Linux `.local/<run-id>/keys.json`, reconstructs the pinned genesis, requires identical cached image IDs, and starts new isolated containers with empty state. The comparison requires matching genesis, observed initial block and all five signed submission request digests. Missing/unsafe private inputs block the run; mismatched inputs cannot pass. Keep `.local/` private and out of Git. Historical reports without initial-state evidence are unsupported. This is initial-genesis reset, not mined database/consensus snapshot restoration or exact historical timing. Run `npm run test:reset` for the real isolated integration check.
 
-`npm run test:checkpoint` exercises the separate library-level mined checkpoint capability on a fresh Linux fixture. It stops and copies execution, beacon, validator and sidecar runtime directories together, rejects corrupted snapshot data, restores the saved block/balances/nonce, checks that a later control receipt disappears, and resumes mining a genuine frame transaction. Verified on 2026-11-06 in isolated run `01d55dbd-0479-4044-9674-7a7c0d81663f`: restored block `0x44` after a control transfer at `0x45`, then observed two successful frame receipts at the new `0x45`. Private snapshots and capability observations remain under ignored Linux `.local/`. This is a pre-scenario checkpoint primitive; mined CLI replay and exact historical timing are still unfinished.
+`npm run test:checkpoint` exercises in-place mined checkpoint restoration on a fresh Linux fixture. It stops and copies execution, beacon, validator and sidecar runtime directories together, rejects corrupted snapshot data, restores the saved block/balances/nonce, checks that a later control receipt disappears, and resumes mining a genuine frame transaction. Verified on 2026-11-06 in isolated run `01d55dbd-0479-4044-9674-7a7c0d81663f`: restored block `0x44` after a control transfer at `0x45`, then observed two successful frame receipts at the new `0x45`. Private snapshots and capability observations remain under ignored Linux `.local/`.
+
+Persistent mined reset currently supports the keyed-nonce scenario only:
+
+```sh
+npm run --silent aftershock -- run keyed-nonce-lifecycle --local --mine --checkpoint
+npm run --silent aftershock -- replay <baseline-run-id> --plan --mine --reset
+npm run --silent aftershock -- replay <baseline-run-id> --local --mine --reset
+npm run test:replay:checkpoint
+```
+
+Keep the baseline's private Linux `.local/` directory. New version-2 checkpoints include checksummed boot inputs and all four stopped runtime trees. Replay requires identical cached images, restores into new private containers/network and verifies the saved execution head before starting consensus. Comparison requires the same checkpoint/genesis/head, all 11 signed submission request digests and passing action verdicts. Explorer memory/boot IDs, elapsed time and later block hashes are new; this is not exact historical execution. Older captures without retained version-2 checkpoints are unsupported. The native test passed on 2026-11-06 for baseline `b90b3d75-55f7-4ad6-b40a-18f050513c7e` and restored run `de922d0f-3a90-4994-8df6-1a480d816174`; it also verified immutable original keys/manifest/report, offline comparison, negative manifest handling and teardown.
 
 The original dependency-free bootstrap probe is also available:
 
