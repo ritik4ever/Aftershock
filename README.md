@@ -16,12 +16,15 @@ nvm use
 npm ci --ignore-scripts
 npm run --silent aftershock -- help
 npm run --silent aftershock -- doctor
+npm run --silent aftershock -- doctor --local
 npm run --silent aftershock -- versions
 npm run --silent aftershock -- scenarios
 npm run --silent aftershock -- inspect 0x7fdbc4e04e6539bf4ef21c1876bb6a4e3a809c46319a1571fb61f1d0b8e1fa03 --save
 ```
 
 `.nvmrc` pins the tested Node version, 24.22.2. The implementation/test checkout for this session is `/home/ritik/aftershock-build`; the Windows IDE checkout retains reviewed source files for your manual commits. Dependencies and generated wallets stay in Linux. No application environment variables or signing keys are required by the read-only CLI.
+
+`doctor --local` checks Linux/Node, the installed dependency tree, the Linux Docker daemon, cached execution/sidecar/consensus/genesis images and pinned sponsor artifacts. It reports admission, mining and sponsor readiness separately. Exit 0 means all prerequisites were observed; exit 3 means at least one is blocked. It does not start containers, install packages, contact public RPCs or prove that a scenario passed. Image labels remain trusted local metadata. Plain `doctor` retains its public-gateway read checks.
 
 `inspect --save` creates an exclusive JSON observation under ignored `reports/`. It checks hashes, chain/payer/sender consistency, frame counts, history continuity, transaction status and each frame's receipt. Missing receipts or history are unavailable evidence, not proof of an invariant failure. Public node source identity remains unknown, so source-specific conclusions remain INCONCLUSIVE. The captured observation is a filtered projection, not a raw replay artifact.
 

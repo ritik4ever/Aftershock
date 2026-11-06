@@ -81,3 +81,22 @@ The rerun has 16 PASS steps and 96 complete projected journal entries, with no o
 | Exhaustive repository-wide self-audit, clean-machine install and visual/mobile QA | NOT VERIFIED; still remaining |
 
 Review scope included report/observation persistence, RPC parsing and projections, replay/checkpoint boundaries, scenario verdicts, private fixture setup/teardown and viewer APIs/script handling. This focused review does not claim every dependency, existing test and documentation statement has received a complete fresh audit. Existing upstream advisories and the Cancelled explorer finding remain disclosed. No custom Solidity was necessary; the native replay reused the same pinned upstream artifacts.
+
+## Clean setup and original-suite recheck, 2026-11-06
+
+After explicit user authorization, `npm ci --ignore-scripts --offline` succeeded in a separate disposable Linux source checkout using the existing lockfile/cache: 26 packages installed, 29 audited and zero advisories reported. No new dependency was added and the working installation was untouched. This verifies a fresh application dependency installation on the existing host, not provisioning Docker/WSL/images from an empty machine. The reviewed source changes were copied into that checkout before validation. Its typecheck, lint, formatting, `npm ls --all` and full default suite passed: **80 TypeScript + 10 JavaScript tests, zero failed/skipped**.
+
+The added `doctor --local` uses bounded fixed read commands to check runtime, dependencies, Linux Docker, cached image identities/revisions and pinned sponsor artifacts. It reports three readiness scopes and no scenario success. Its real CLI check passed in both Linux checkouts. Regression tests cover missing/duplicate prerequisites, failure redaction, malformed digests and mismatched revision metadata. Public `doctor` behavior is retained.
+
+`npm run test:lifecycle` passed both original native mined suites, with complete genuine journals and verified teardown:
+
+| Scenario | Run ID | Actual observations |
+| --- | --- | --- |
+| Shared-payer solvency | `1ac1c5da-0d40-497a-9ef3-361b95320654` | 16 PASS steps, 83 journal entries; completed `2026-11-06T08:10:28.539Z` |
+| Keyed-nonce lifecycle | `690f500b-9527-4cb6-b58e-1f10b2d96cb7` | 18 PASS steps, 79 journal entries; completed `2026-11-06T08:18:35.030Z` |
+
+These executions exercise the original stateful engine, not just the sponsor demo. Full validated reports remain in ignored Linux `reports/`; neither fresh keys nor raw logs were copied into the Windows checkout.
+
+Browser checks used the current viewer at loopback port 4322. Actual Chrome observations verified scenario/report rendering, run-search filtering, a compatible sponsor comparison returning VERDICTS MATCH and an incompatible pair returning the expected error. Desktop and narrow layouts were inspected. The mobile emulation showed clipping whose cause was not established; it is **not a passed mobile check**. The user stopped Computer Use with Escape, and browser automation stopped immediately. Complete mobile validation and current browser-download interaction remain NOT VERIFIED; export routes and script behavior are covered by the automated suite and prior user checks.
+
+Remaining: resolve mobile clipping, finish exhaustive review of all existing tests/dependencies/documentation claims, verify any remaining required browser actions, and complete user-owned recording/dashboard/publication steps. Broad optional protocol extensions remain explicitly outside the MVP scope. No new public-devnet mutation, custom Solidity or external deployment occurred.
