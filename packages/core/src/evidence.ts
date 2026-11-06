@@ -15,6 +15,7 @@ export const rpcMethod = z.enum([
   'eth_chainId',
   'web3_clientVersion',
   'eth_getBalance',
+  'eth_call',
   'eth_getCode',
   'eth_getStorageAt',
   'eth_getBlockByNumber',
@@ -76,6 +77,7 @@ const projections = {
     .max(256)
     .regex(/^[a-z0-9/._+:-]+$/i),
   eth_getBalance: quantity,
+  eth_call: z.string().regex(/^0x[a-f0-9]{192}$/i),
   eth_getCode: z.object({
     bytes: integer,
     sha256: z.string().regex(/^[a-f0-9]{64}$/),
@@ -92,6 +94,11 @@ const projections = {
       status: z.enum(['0x0', '0x1']),
       blockNumber: quantity,
       gasUsed: quantity,
+      contractAddress: z
+        .string()
+        .regex(/^0x[a-f0-9]{40}$/i)
+        .nullable()
+        .optional(),
     })
     .nullable(),
   eth_sendFrameTransaction: hash,
@@ -104,7 +111,15 @@ const projections = {
   }),
   skandha_explorer_info: explorerInfo,
   skandha_explorer_getTransaction: explorerProjection,
-  skandha_config: z.object({ useropsTTL: integer }),
+  skandha_config: z.object({
+    useropsTTL: integer,
+    stakingRegistryAddress: z
+      .string()
+      .regex(/^0x[a-f0-9]{40}$/i)
+      .optional(),
+    minStake: z.string().max(78).regex(/^\d+$/).optional(),
+    minUnstakeDelay: integer.optional(),
+  }),
   skandha_frameTransactionStatus: transactionStatus,
 } satisfies Record<RpcMethod, z.ZodType>;
 
@@ -115,6 +130,8 @@ const reason = z.enum([
   'DUPLICATE',
   'RECEIPT_UNAVAILABLE',
   'NONCE_MISMATCH',
+  'CANONICAL_FOREIGN_STORAGE',
+  'UNSTAKED_FOREIGN_STORAGE',
   'OTHER',
   'TRANSPORT_OR_SCHEMA',
   'PROJECTION_INVALID',

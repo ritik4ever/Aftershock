@@ -4,6 +4,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile, realpath, rename } from 'node:fs/promises';
 import { resolve, relative } from 'node:path';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { getContractAddress } from 'viem';
 import { z } from 'zod';
 import { UPSTREAM } from '../inspect.js';
 import { readResetKeys, resetSource, minedResetSource } from './reset.js';
@@ -53,9 +54,19 @@ export async function startFixture(
   reset?: ResetSource,
   checkpointMining = false,
   minedReset?: MinedResetSource,
+  stakingDemo = false,
 ) {
   z.uuid().parse(runId);
   z.number().int().min(10).max(300).parse(useropsTTL);
+  if (
+    stakingDemo &&
+    (!mining ||
+      bundlingMode !== 'auto' ||
+      reset ||
+      minedReset ||
+      checkpointMining)
+  )
+    throw new Error('Staking demo requires fresh automatic private mining');
   if (checkpointMining && (!mining || reset || process.platform !== 'linux'))
     throw new Error('Managed checkpoints require a fresh Linux mining fixture');
   if (minedReset) {
@@ -277,6 +288,14 @@ export async function startFixture(
         useropsTTL,
         rpcEndpoint: `http://${execution}:8545`,
         rpcEndpointSubmit: `http://${execution}:8545`,
+        ...(stakingDemo
+          ? {
+              stakingRegistryAddress: getContractAddress({
+                from: privateKeyToAccount(keys[2]!).address,
+                nonce: 0n,
+              }),
+            }
+          : {}),
       }),
       { mode: 0o600 },
     );

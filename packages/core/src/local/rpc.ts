@@ -97,25 +97,37 @@ export function decodeLocalResponse<T>(
     const admission =
       method === 'eth_sendFrameTransaction' && envelope.error.code === -32602;
     const reason =
-      admission && /cannot cover its pending frame transactions/.test(message)
-        ? 'BALANCE_OBLIGATIONS'
-        : admission && /nonce key .*already held/.test(message)
-          ? 'KEY_CONFLICT'
-          : admission && /cannot be replaced: fee too low/.test(message)
-            ? 'FEE_BUMP'
-            : admission && /Frame transaction already known/.test(message)
-              ? 'DUPLICATE'
-              : method === 'eth_getFrameTransactionReceipt' &&
-                  envelope.error.code === -32000 &&
-                  typeof params[0] === 'string' &&
-                  /^0x[0-9a-f]{64}$/i.test(params[0]) &&
-                  message === `transaction receipt not found for ${params[0]}`
-                ? 'RECEIPT_UNAVAILABLE'
-                : method === 'eth_sendFrameTransaction' &&
-                    envelope.error.code === -32500 &&
-                    /Nonce mismatch: expected \d+, got \d+/.test(message)
-                  ? 'NONCE_MISMATCH'
-                  : 'OTHER';
+      method === 'eth_sendRawTransaction' &&
+      envelope.error.code === -32000 &&
+      /^Invalid params: Frame transaction validation-prefix simulation failed: .*StorageReadNonSender/.test(
+        message,
+      )
+        ? 'CANONICAL_FOREIGN_STORAGE'
+        : method === 'eth_sendFrameTransaction' &&
+            envelope.error.code === -32502 &&
+            /^unstaked (sender|payer|factory) accessed .* slot /.test(message)
+          ? 'UNSTAKED_FOREIGN_STORAGE'
+          : admission &&
+              /cannot cover its pending frame transactions/.test(message)
+            ? 'BALANCE_OBLIGATIONS'
+            : admission && /nonce key .*already held/.test(message)
+              ? 'KEY_CONFLICT'
+              : admission && /cannot be replaced: fee too low/.test(message)
+                ? 'FEE_BUMP'
+                : admission && /Frame transaction already known/.test(message)
+                  ? 'DUPLICATE'
+                  : method === 'eth_getFrameTransactionReceipt' &&
+                      envelope.error.code === -32000 &&
+                      typeof params[0] === 'string' &&
+                      /^0x[0-9a-f]{64}$/i.test(params[0]) &&
+                      message ===
+                        `transaction receipt not found for ${params[0]}`
+                    ? 'RECEIPT_UNAVAILABLE'
+                    : method === 'eth_sendFrameTransaction' &&
+                        envelope.error.code === -32500 &&
+                        /Nonce mismatch: expected \d+, got \d+/.test(message)
+                      ? 'NONCE_MISMATCH'
+                      : 'OTHER';
     throw new LocalRpcError(envelope.error.code, reason);
   }
   if (!Object.hasOwn(envelope, 'result')) throw new Error('Missing RPC result');

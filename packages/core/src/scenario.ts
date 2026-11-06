@@ -27,6 +27,7 @@ export const scenarioId = z.enum([
   'keyed-nonce-lifecycle',
   'keyed-replacement-ttl',
   'cancelled-replacement',
+  'staked-storage-boundary',
 ]);
 export type ScenarioId = z.infer<typeof scenarioId>;
 export const verdict = z.enum([
@@ -223,9 +224,53 @@ export const scenarioCatalogue = [
       'Requires mining; OnChain/Finalized/Reverted and Submitted/Pending exceptions remain outside this case',
     ],
   },
+  {
+    id: 'staked-storage-boundary',
+    title:
+      'Staked validation storage: canonical rejection and alternative inclusion',
+    rule: 'FrameTxValidationService/storage; ReputationService/checkStake; ethrex StorageReadNonSender',
+    implemented: [
+      'Pinned upstream contract deployment',
+      'Real stake transition',
+      'Same signed staked candidate rejected canonically and admitted/included by the sidecar',
+    ],
+    blocked: [
+      'Requires --mine, cached images and pinned sibling workshop/sidecar Git sources; reset replay unsupported',
+    ],
+  },
 ] as const;
 
 export const definitions = {
+  'staked-storage-boundary': scenarioDefinition.parse({
+    id: 'staked-storage-boundary',
+    title: scenarioCatalogue[4].title,
+    sourceRule: scenarioCatalogue[4].rule,
+    sourceCommit: UPSTREAM.sidecar,
+    expectedInvariant:
+      'Foreign validation storage requires an actually staked entity at the sidecar; canonical rejection persists after staking, while the sidecar admits and executes the same signed staked candidate without waivers.',
+    preconditions: [
+      'Owned isolated mining fixture with automatic sidecar inclusion',
+      'Pinned upstream wallet, Foreign and registry deployment bytes; no new Solidity',
+      'Actual registry stake/delay and successful state-changing frame receipts',
+    ],
+    actions: [
+      'deploy-registry',
+      'deploy-foreign',
+      'deploy-wallet',
+      'verify-fixture-config',
+      'verify-initial-state',
+      'canonical-unstaked-reject',
+      'alt-unstaked-reject',
+      'stake-wallet',
+      'verify-stake-transition',
+      'canonical-staked-reject',
+      'alt-staked-admit',
+      'observe-alt-inclusion',
+      'verify-alt-state-change',
+      'explorer-continuity',
+      'mined-state-transition',
+    ],
+  }),
   'cancelled-replacement': scenarioDefinition.parse({
     id: 'cancelled-replacement',
     title: scenarioCatalogue[3].title,
@@ -419,10 +464,17 @@ async function executeScenario(
     result: 'INCONCLUSIVE',
     definition: definitions[id],
     limitations: [
+      ...(id === 'staked-storage-boundary'
+        ? [
+            'Reuses pinned upstream wallet/storage/registry deployment artifacts; no new Solidity or local contract compilation is claimed. Automatic inclusion is performed by the isolated upstream sidecar.',
+          ]
+        : []),
       checkpoint?.restore
         ? 'Restored pre-scenario mined fixture; new isolated processes and network.'
         : mining
-          ? 'Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.'
+          ? id === 'staked-storage-boundary'
+            ? 'Fresh staged-fork mining fixture; automatic sidecar inclusion after canonical rejection.'
+            : 'Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.'
           : 'Non-mining genesis fixture. No block-production/state-transition claims.',
       checkpoint?.restore
         ? 'Original disposable keys and checkpoint disk state reused; historical clock and explorer memory are not restored.'
@@ -460,15 +512,23 @@ async function executeScenario(
       evidenceThrough: evidencePosition(),
     });
   try {
+    const sponsor =
+      id === 'staked-storage-boundary'
+        ? await import('./local/sponsor.js')
+        : undefined;
+    const sponsorInputs = sponsor
+      ? await sponsor.sponsorArtifacts(root)
+      : undefined;
     fixture = await startFixture(
       root,
       report.runId,
       mining,
-      'manual',
+      id === 'staked-storage-boundary' ? 'auto' : 'manual',
       id === 'keyed-replacement-ttl' ? 30 : 300,
       reset,
       Boolean(checkpoint),
       checkpoint?.restore,
+      id === 'staked-storage-boundary',
     );
     report.runId = fixture.runId;
     report.environment = fixture.fingerprint;
@@ -563,7 +623,12 @@ async function executeScenario(
         return expected === error.reason;
       }
     };
-    if (id === 'cancelled-replacement') {
+    if (id === 'staked-storage-boundary') {
+      if (!mining) throw new Error('Staked storage demo requires mining');
+      if (!sponsor || !sponsorInputs || before.bundlingMode !== 'auto')
+        throw new Error('Staking demo prerequisites unavailable');
+      await sponsor.stakedStorageDemo(fixture, add, sponsorInputs);
+    } else if (id === 'cancelled-replacement') {
       if (configuration.useropsTTL !== 300)
         throw new Error('Cancellation TTL mismatch');
       if (!mining) throw new Error('Cancelled replacement requires mining');
@@ -750,9 +815,11 @@ async function executeScenario(
       reason:
         error instanceof FixtureSetupError
           ? error.stage
-          : error instanceof LocalRpcError
-            ? `RPC_${error.code}_${error.reason}`
-            : 'RPC_SCHEMA_OR_SCENARIO_PRECONDITION',
+          : error instanceof Error && error.name === 'SponsorInputError'
+            ? 'PINNED_SPONSOR_ARTIFACTS_UNAVAILABLE'
+            : error instanceof LocalRpcError
+              ? `RPC_${error.code}_${error.reason}`
+              : 'RPC_SCHEMA_OR_SCENARIO_PRECONDITION',
       successInferred: false,
     });
   } finally {

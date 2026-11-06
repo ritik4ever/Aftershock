@@ -1,0 +1,2534 @@
+{
+  "schemaVersion": 1,
+  "runId": "1d533d00-1d6c-411a-9131-5d4a242d3e0f",
+  "scenarioId": "staked-storage-boundary",
+  "seed": 0,
+  "endpointClass": "ISOLATED_LOCAL",
+  "startedAt": "2026-11-06T07:20:15.957Z",
+  "completedAt": "2026-11-06T07:28:38.920Z",
+  "sourcePins": {
+    "workshop": "bcfe02a196ca97b6fb0d1044db9d0b4c673831fc",
+    "sidecar": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "ethrex": "9aa3645d795945c64400f41a70aace0edfa7f383"
+  },
+  "environment": {
+    "network": "aftershock-1d533d00-1d6c-411a-9131-5d4a242d3e0f-net",
+    "executionImage": "sha256:c9a7770f892e02255999e1c0ffd596ecee704d9175c2480811ccdcfa1c2224c6",
+    "sidecarImage": "sha256:4ab8b95359280cad373ee09c07b59ee78e5685866a83487365babb2e6ae3697d",
+    "chainId": "0x9",
+    "networkInternal": "true",
+    "publishedPorts": "none",
+    "bundlingMode": "auto",
+    "genesisSha256": "062df33831d69195ce4e53809063438820618d76b753cbb1b466daecfae977bf",
+    "consensusImage": "ethpandaops/lighthouse@sha256:dd7e92e2e9c3127750e9bff5f8a0efec686f296445a44ef5d9c1eb750e8906b0",
+    "genesisGeneratorImage": "ethpandaops/ethereum-genesis-generator@sha256:51decce4284d8498dabfa38ae13ddce84cbf8c7be4f33a32b798ce10c9868e77",
+    "fixtureMode": "mining",
+    "readyBlock": "0x43",
+    "readyBlockHash": "0x39094e95f33f786d59969ed8954e170360a719f7ae36cacc1e62465195afe72d",
+    "clientVersion": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1",
+    "useropsTTL": "300"
+  },
+  "evidence": {
+    "format": "ALLOWLISTED_RPC_PROJECTIONS_V1",
+    "attempts": 96,
+    "omitted": 0,
+    "unavailable": 6,
+    "complete": true,
+    "entries": [
+      {
+        "seq": 1,
+        "at": "2026-11-06T07:20:21.886Z",
+        "channel": "EXECUTION",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": "0x9"
+      },
+      {
+        "seq": 2,
+        "at": "2026-11-06T07:20:22.133Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 3,
+        "at": "2026-11-06T07:20:22.878Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 4,
+        "at": "2026-11-06T07:20:23.785Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 5,
+        "at": "2026-11-06T07:20:24.561Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 6,
+        "at": "2026-11-06T07:20:25.345Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 7,
+        "at": "2026-11-06T07:20:26.128Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "UNAVAILABLE",
+        "reason": "TRANSPORT_OR_SCHEMA"
+      },
+      {
+        "seq": 8,
+        "at": "2026-11-06T07:20:26.746Z",
+        "channel": "SIDECAR",
+        "purpose": "READINESS",
+        "method": "eth_chainId",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": "0x9"
+      },
+      {
+        "seq": 9,
+        "at": "2026-11-06T07:20:26.856Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "5ce37a00f21a30938690a296bd4f9488055b18131ba904554542d10e81099360",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x0",
+          "timestamp": "0x6aed7fec",
+          "hash": "0x74b235eda0b8fbb6eb14e6e67113d960368609feb1320103ea9c41256769b6ef"
+        }
+      },
+      {
+        "seq": 10,
+        "at": "2026-11-06T07:20:26.974Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x0",
+          "timestamp": "0x6aed7fec",
+          "hash": "0x74b235eda0b8fbb6eb14e6e67113d960368609feb1320103ea9c41256769b6ef"
+        }
+      },
+      {
+        "seq": 11,
+        "at": "2026-11-06T07:20:42.246Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x0",
+          "timestamp": "0x6aed7fec",
+          "hash": "0x74b235eda0b8fbb6eb14e6e67113d960368609feb1320103ea9c41256769b6ef"
+        }
+      },
+      {
+        "seq": 12,
+        "at": "2026-11-06T07:20:57.384Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x0",
+          "timestamp": "0x6aed7fec",
+          "hash": "0x74b235eda0b8fbb6eb14e6e67113d960368609feb1320103ea9c41256769b6ef"
+        }
+      },
+      {
+        "seq": 13,
+        "at": "2026-11-06T07:21:12.601Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x0",
+          "timestamp": "0x6aed7fec",
+          "hash": "0x74b235eda0b8fbb6eb14e6e67113d960368609feb1320103ea9c41256769b6ef"
+        }
+      },
+      {
+        "seq": 14,
+        "at": "2026-11-06T07:21:27.740Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x1",
+          "timestamp": "0x6aed7ff2",
+          "hash": "0x6dd43b7caf4aa86514073253bb3021e6c4579b9be5885b456187bbdf6d4478ec"
+        }
+      },
+      {
+        "seq": 15,
+        "at": "2026-11-06T07:21:42.986Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x4",
+          "timestamp": "0x6aed8004",
+          "hash": "0xf14bf7838ddf45bc2d9d68fbfda7e0dc4d975956314feedca89bfda5b77d3174"
+        }
+      },
+      {
+        "seq": 16,
+        "at": "2026-11-06T07:21:58.151Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x7",
+          "timestamp": "0x6aed8016",
+          "hash": "0xa9cdc09cbae65a3d83d50043a86920a1c26433a26160d272b1086f9212e1525f"
+        }
+      },
+      {
+        "seq": 17,
+        "at": "2026-11-06T07:22:13.425Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x9",
+          "timestamp": "0x6aed8022",
+          "hash": "0x2f5fb49ba49aae9d636577082ab5021445a8d866d2e2cbdc25d8b5c16c1fd832"
+        }
+      },
+      {
+        "seq": 18,
+        "at": "2026-11-06T07:22:28.531Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0xc",
+          "timestamp": "0x6aed8034",
+          "hash": "0xf975482fa85496f6b73f838d21564c236d20728d3bd43254a4b9161361db222b"
+        }
+      },
+      {
+        "seq": 19,
+        "at": "2026-11-06T07:22:43.915Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0xe",
+          "timestamp": "0x6aed8040",
+          "hash": "0x4d544ba6ec46be16d52457631421f788ff539a92bc7f8ef9733468328acba111"
+        }
+      },
+      {
+        "seq": 20,
+        "at": "2026-11-06T07:22:59.045Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x11",
+          "timestamp": "0x6aed8052",
+          "hash": "0x268940824fcebab2a712e88aa99048fb0ee6509eb76b54779c66a87a875a1482"
+        }
+      },
+      {
+        "seq": 21,
+        "at": "2026-11-06T07:23:14.293Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x13",
+          "timestamp": "0x6aed805e",
+          "hash": "0x9b93933482ab1b512c7de89f9436858b8310cc7a26bf40c44964b3a2ea6ca54e"
+        }
+      },
+      {
+        "seq": 22,
+        "at": "2026-11-06T07:23:29.436Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x16",
+          "timestamp": "0x6aed8070",
+          "hash": "0x7b5ce4f3ba62a0afcd46352f015de469b7daaaaaad8da0011d54182418ef2841"
+        }
+      },
+      {
+        "seq": 23,
+        "at": "2026-11-06T07:23:44.704Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x18",
+          "timestamp": "0x6aed807c",
+          "hash": "0x034f0630dd863119aff2ff2617103af561ca1f231531758260d1b7fe079e40c5"
+        }
+      },
+      {
+        "seq": 24,
+        "at": "2026-11-06T07:23:59.855Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x1b",
+          "timestamp": "0x6aed808e",
+          "hash": "0xff0f879f15a66bd452137d01dd967eafd89cdc63271817d15bac164b8d513d4d"
+        }
+      },
+      {
+        "seq": 25,
+        "at": "2026-11-06T07:24:15.119Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x1d",
+          "timestamp": "0x6aed809a",
+          "hash": "0x75e535a6a889f202aad0a7823bc95c8669e967bfd574e24cf84d2c0939971e85"
+        }
+      },
+      {
+        "seq": 26,
+        "at": "2026-11-06T07:24:30.281Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x20",
+          "timestamp": "0x6aed80ac",
+          "hash": "0xf3b87c094390b2cba5c39636ff9e69dff09592d2b1b4f184c3ebc698c7a3808b"
+        }
+      },
+      {
+        "seq": 27,
+        "at": "2026-11-06T07:24:45.555Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x22",
+          "timestamp": "0x6aed80b8",
+          "hash": "0xdfc6860d663eba975717bade27182178a97c18892eb99871093b41f42e4486c2"
+        }
+      },
+      {
+        "seq": 28,
+        "at": "2026-11-06T07:25:00.691Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x25",
+          "timestamp": "0x6aed80ca",
+          "hash": "0xf331da3026478543c3b9ef8a2f93ca77d868e74764f77f2d31cd75395e7251e4"
+        }
+      },
+      {
+        "seq": 29,
+        "at": "2026-11-06T07:25:15.949Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x27",
+          "timestamp": "0x6aed80d6",
+          "hash": "0x599477cf84acaf42a3dd383a4256c275e3bee9f5a878cea8d81d69232acc3dc3"
+        }
+      },
+      {
+        "seq": 30,
+        "at": "2026-11-06T07:25:31.097Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x2a",
+          "timestamp": "0x6aed80e8",
+          "hash": "0x5e4b75d050ba2d1f1a562c0f76d91b8b696b5fbe8b3d076f112d80b7b5759dde"
+        }
+      },
+      {
+        "seq": 31,
+        "at": "2026-11-06T07:25:46.337Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x2d",
+          "timestamp": "0x6aed80fa",
+          "hash": "0xe058391c30a7fd5d9e2c14f034caf3318b125382e7c8c208cd14792ef997c7a1"
+        }
+      },
+      {
+        "seq": 32,
+        "at": "2026-11-06T07:26:01.474Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x2f",
+          "timestamp": "0x6aed8106",
+          "hash": "0x6a902bdbec16af618c3618f30f17c0591b089c4b992131ccfc5e0897e60ebda6"
+        }
+      },
+      {
+        "seq": 33,
+        "at": "2026-11-06T07:26:16.738Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x32",
+          "timestamp": "0x6aed8118",
+          "hash": "0xbad2e4bc0fc30d190878df2d68f14b7d4e937d62b930b410d43101d0d9c22254"
+        }
+      },
+      {
+        "seq": 34,
+        "at": "2026-11-06T07:26:31.845Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x34",
+          "timestamp": "0x6aed8124",
+          "hash": "0xefda9340b145cbadd7002af7225a3067ebd828868c9b373965f065ab44efbfcd"
+        }
+      },
+      {
+        "seq": 35,
+        "at": "2026-11-06T07:26:47.096Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x37",
+          "timestamp": "0x6aed8136",
+          "hash": "0xab9a7a50dc253164d82a0167dbbbd34430bcd24c0418263f462c4a51f4aad8da"
+        }
+      },
+      {
+        "seq": 36,
+        "at": "2026-11-06T07:27:02.226Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x39",
+          "timestamp": "0x6aed8142",
+          "hash": "0x3dd208368b808708183f8558a749646bc041a223293ae37bb67e29cb352fe9d4"
+        }
+      },
+      {
+        "seq": 37,
+        "at": "2026-11-06T07:27:17.496Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x3c",
+          "timestamp": "0x6aed8154",
+          "hash": "0xa37743ae9b7cac6cfb3cf9449914a2eab29eeba20ee8fb165f3452f61bfbc469"
+        }
+      },
+      {
+        "seq": 38,
+        "at": "2026-11-06T07:27:32.606Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x3e",
+          "timestamp": "0x6aed8160",
+          "hash": "0xbc8ab46805148604fbb1b705bb2f79ecf9fff374bcfbb62198d7662644a6963e"
+        }
+      },
+      {
+        "seq": 39,
+        "at": "2026-11-06T07:27:47.892Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x41",
+          "timestamp": "0x6aed8172",
+          "hash": "0xcbc2c9146c944506d80e09e0c71a8b22b91dda9a6431a1f312e826891e402130"
+        }
+      },
+      {
+        "seq": 40,
+        "at": "2026-11-06T07:28:03.024Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBlockByNumber",
+        "requestSha256": "521bef1a9a63bc6c6aaeac048c0cbb3b9e0791073108f59300f557179f08e340",
+        "outcome": "RESULT",
+        "result": {
+          "number": "0x43",
+          "timestamp": "0x6aed817e",
+          "hash": "0x39094e95f33f786d59969ed8954e170360a719f7ae36cacc1e62465195afe72d"
+        }
+      },
+      {
+        "seq": 41,
+        "at": "2026-11-06T07:28:03.137Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_info",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": {
+          "protocolVersion": 1,
+          "chainId": 9,
+          "version": "v4.1.1",
+          "commit": "",
+          "bundlingMode": "auto",
+          "p2pEnabled": true,
+          "oldestSeq": 0,
+          "latestSeq": 0,
+          "historyCapacity": 10000,
+          "bootId": "50e24d24bde10cd0"
+        }
+      },
+      {
+        "seq": 42,
+        "at": "2026-11-06T07:28:03.254Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "web3_clientVersion",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": "ethrex/v23.0.0-eip8141-tracer-9aa3645d795945c64400f41a70aace0edfa7f383/x86_64-unknown-linux-gnu/rustc-v1.93.1"
+      },
+      {
+        "seq": 43,
+        "at": "2026-11-06T07:28:03.422Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_config",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": {
+          "useropsTTL": 300,
+          "stakingRegistryAddress": "0x7703465274eAa5c03b5079e20F793b7e1F7632c0",
+          "minStake": "10000000000000000",
+          "minUnstakeDelay": 0
+        }
+      },
+      {
+        "seq": 44,
+        "at": "2026-11-06T07:28:03.530Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionCount",
+        "requestSha256": "533b4b002b5c4efc5374c9be165a97e3a3c486ea5fa278b741d0596f409d0eb6",
+        "outcome": "RESULT",
+        "result": "0x0"
+      },
+      {
+        "seq": 45,
+        "at": "2026-11-06T07:28:03.651Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_sendRawTransaction",
+        "requestSha256": "1a54b46a59db32d57efbfcee23e1ce58eb745b6aa364ffb2dac95977743736e6",
+        "outcome": "RESULT",
+        "result": "0xc5f53508a199d9520f2cf68eecf6c9b4e2481b4e0b200c1c4aec8430549807b7"
+      },
+      {
+        "seq": 46,
+        "at": "2026-11-06T07:28:03.783Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "75226e1b1bbba5f41da58f8fb833300ca7a427247285ebb34f16019ebe8885bd",
+        "requestHash": "0xc5f53508a199d9520f2cf68eecf6c9b4e2481b4e0b200c1c4aec8430549807b7",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 47,
+        "at": "2026-11-06T07:28:05.492Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "75226e1b1bbba5f41da58f8fb833300ca7a427247285ebb34f16019ebe8885bd",
+        "requestHash": "0xc5f53508a199d9520f2cf68eecf6c9b4e2481b4e0b200c1c4aec8430549807b7",
+        "outcome": "RESULT",
+        "result": {
+          "transactionHash": "0xc5f53508a199d9520f2cf68eecf6c9b4e2481b4e0b200c1c4aec8430549807b7",
+          "status": "0x1",
+          "blockNumber": "0x44",
+          "gasUsed": "0x20e04c",
+          "contractAddress": "0x7703465274eaa5c03b5079e20f793b7e1f7632c0"
+        }
+      },
+      {
+        "seq": 48,
+        "at": "2026-11-06T07:28:05.690Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getCode",
+        "requestSha256": "9fbc3804c9ad4edba70f70c52f1224451a2ab045bcc09dea7a6167e69efede74",
+        "outcome": "RESULT",
+        "result": {
+          "bytes": 1259,
+          "sha256": "cb31a5a8ffe96fe949d59060b531ac1326a92a6b42b66a9e288ef653bc57592e"
+        }
+      },
+      {
+        "seq": 49,
+        "at": "2026-11-06T07:28:05.808Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionCount",
+        "requestSha256": "533b4b002b5c4efc5374c9be165a97e3a3c486ea5fa278b741d0596f409d0eb6",
+        "outcome": "RESULT",
+        "result": "0x1"
+      },
+      {
+        "seq": 50,
+        "at": "2026-11-06T07:28:05.924Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_sendRawTransaction",
+        "requestSha256": "25df98598b7260477e5702bd86349fe66c73270549be97fcb92876a23a77c7d0",
+        "outcome": "RESULT",
+        "result": "0x76b9b6b950fe44abb5027a3eef0767fde43a2bf50fbd9f4c590a5e69f0bd2f91"
+      },
+      {
+        "seq": 51,
+        "at": "2026-11-06T07:28:06.028Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "5be3b76a08f080ac0fb82e34c9c03034479ed7af7d64f8f19d81bf196e06d797",
+        "requestHash": "0x76b9b6b950fe44abb5027a3eef0767fde43a2bf50fbd9f4c590a5e69f0bd2f91",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 52,
+        "at": "2026-11-06T07:28:07.796Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "5be3b76a08f080ac0fb82e34c9c03034479ed7af7d64f8f19d81bf196e06d797",
+        "requestHash": "0x76b9b6b950fe44abb5027a3eef0767fde43a2bf50fbd9f4c590a5e69f0bd2f91",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 53,
+        "at": "2026-11-06T07:28:09.432Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "5be3b76a08f080ac0fb82e34c9c03034479ed7af7d64f8f19d81bf196e06d797",
+        "requestHash": "0x76b9b6b950fe44abb5027a3eef0767fde43a2bf50fbd9f4c590a5e69f0bd2f91",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 54,
+        "at": "2026-11-06T07:28:11.088Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "5be3b76a08f080ac0fb82e34c9c03034479ed7af7d64f8f19d81bf196e06d797",
+        "requestHash": "0x76b9b6b950fe44abb5027a3eef0767fde43a2bf50fbd9f4c590a5e69f0bd2f91",
+        "outcome": "RESULT",
+        "result": {
+          "transactionHash": "0x76b9b6b950fe44abb5027a3eef0767fde43a2bf50fbd9f4c590a5e69f0bd2f91",
+          "status": "0x1",
+          "blockNumber": "0x45",
+          "gasUsed": "0x4f8d3",
+          "contractAddress": "0x667c13eb791ff5f0f6ef1c252f7249b824d750f2"
+        }
+      },
+      {
+        "seq": 55,
+        "at": "2026-11-06T07:28:11.203Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getCode",
+        "requestSha256": "6221e41ab2c938f48fe8625138e5e3f72e1e2ddb9467f0fc3da08feec69abfd2",
+        "outcome": "RESULT",
+        "result": {
+          "bytes": 76,
+          "sha256": "27b14631a2963d759f2f62f1cef53c4c090a5b0e061205a11d9e9b655736d901"
+        }
+      },
+      {
+        "seq": 56,
+        "at": "2026-11-06T07:28:11.314Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionCount",
+        "requestSha256": "533b4b002b5c4efc5374c9be165a97e3a3c486ea5fa278b741d0596f409d0eb6",
+        "outcome": "RESULT",
+        "result": "0x2"
+      },
+      {
+        "seq": 57,
+        "at": "2026-11-06T07:28:11.430Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_sendRawTransaction",
+        "requestSha256": "df7693a280ff8f6f9ff5ada1551d07de68d19b8210a6c3a6378c38e70efd9680",
+        "outcome": "RESULT",
+        "result": "0x355f94c317997587b29be45e7d3a6d6d00c3eccd1aacdcef364dd4f00dbce62e"
+      },
+      {
+        "seq": 58,
+        "at": "2026-11-06T07:28:11.539Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "102a7aa29e9190d8734daee31190707680f95a7f7840ba3cc95d9297c1969d4b",
+        "requestHash": "0x355f94c317997587b29be45e7d3a6d6d00c3eccd1aacdcef364dd4f00dbce62e",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 59,
+        "at": "2026-11-06T07:28:13.163Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "102a7aa29e9190d8734daee31190707680f95a7f7840ba3cc95d9297c1969d4b",
+        "requestHash": "0x355f94c317997587b29be45e7d3a6d6d00c3eccd1aacdcef364dd4f00dbce62e",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 60,
+        "at": "2026-11-06T07:28:14.803Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "102a7aa29e9190d8734daee31190707680f95a7f7840ba3cc95d9297c1969d4b",
+        "requestHash": "0x355f94c317997587b29be45e7d3a6d6d00c3eccd1aacdcef364dd4f00dbce62e",
+        "outcome": "RESULT",
+        "result": null
+      },
+      {
+        "seq": 61,
+        "at": "2026-11-06T07:28:16.417Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionReceipt",
+        "requestSha256": "102a7aa29e9190d8734daee31190707680f95a7f7840ba3cc95d9297c1969d4b",
+        "requestHash": "0x355f94c317997587b29be45e7d3a6d6d00c3eccd1aacdcef364dd4f00dbce62e",
+        "outcome": "RESULT",
+        "result": {
+          "transactionHash": "0x355f94c317997587b29be45e7d3a6d6d00c3eccd1aacdcef364dd4f00dbce62e",
+          "status": "0x1",
+          "blockNumber": "0x46",
+          "gasUsed": "0x4af818",
+          "contractAddress": "0xb91644c9acbed3645a0871ef79ad1f7cb73826a3"
+        }
+      },
+      {
+        "seq": 62,
+        "at": "2026-11-06T07:28:16.531Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getCode",
+        "requestSha256": "61c4333470baa8297014a43563be2ef1adde9455b22c9b93c892a621024613a0",
+        "outcome": "RESULT",
+        "result": {
+          "bytes": 2027,
+          "sha256": "b5cf68d46d90c0db3578c8f6ed9417105d8d2193aae1d10afb8514c13acffb62"
+        }
+      },
+      {
+        "seq": 63,
+        "at": "2026-11-06T07:28:16.642Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_config",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": {
+          "useropsTTL": 300,
+          "stakingRegistryAddress": "0x7703465274eAa5c03b5079e20F793b7e1F7632c0",
+          "minStake": "10000000000000000",
+          "minUnstakeDelay": 0
+        }
+      },
+      {
+        "seq": 64,
+        "at": "2026-11-06T07:28:16.749Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionCount",
+        "requestSha256": "61c4333470baa8297014a43563be2ef1adde9455b22c9b93c892a621024613a0",
+        "outcome": "RESULT",
+        "result": "0x8"
+      },
+      {
+        "seq": 65,
+        "at": "2026-11-06T07:28:16.864Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBalance",
+        "requestSha256": "61c4333470baa8297014a43563be2ef1adde9455b22c9b93c892a621024613a0",
+        "outcome": "RESULT",
+        "result": "0xb1a2bc2ec50000"
+      },
+      {
+        "seq": 66,
+        "at": "2026-11-06T07:28:16.979Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_call",
+        "requestSha256": "4840ecfe0dc564311a0248fee36622ea60d891285203e2627a4ed398469f0772",
+        "outcome": "RESULT",
+        "result": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      },
+      {
+        "seq": 67,
+        "at": "2026-11-06T07:28:17.092Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_sendRawTransaction",
+        "requestSha256": "64c4f4485d4caa249aeaf4172512c0c2c4d3777f6e7ef7737c07ce4101568d15",
+        "outcome": "RPC_ERROR",
+        "code": -32000,
+        "reason": "CANONICAL_FOREIGN_STORAGE"
+      },
+      {
+        "seq": 68,
+        "at": "2026-11-06T07:28:17.247Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_sendFrameTransaction",
+        "requestSha256": "e502ba9fcd0f00d25edcea7ba4cc44c0ba832a839d559795f8615d79b754e53f",
+        "outcome": "RPC_ERROR",
+        "code": -32502,
+        "reason": "UNSTAKED_FOREIGN_STORAGE"
+      },
+      {
+        "seq": 69,
+        "at": "2026-11-06T07:28:17.364Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBalance",
+        "requestSha256": "9fbc3804c9ad4edba70f70c52f1224451a2ab045bcc09dea7a6167e69efede74",
+        "outcome": "RESULT",
+        "result": "0x0"
+      },
+      {
+        "seq": 70,
+        "at": "2026-11-06T07:28:17.480Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_sendRawTransaction",
+        "requestSha256": "c52c08e4b82c7b499718732224f93e125a1bec7fb10438cb3be73a39daa57054",
+        "outcome": "RESULT",
+        "result": "0xf53996091f7b2f6c0d01afe92b40d419247fd3e1b2184eebc321c6c9e6d9740d"
+      },
+      {
+        "seq": 71,
+        "at": "2026-11-06T07:28:17.594Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionReceipt",
+        "requestSha256": "7e94603e2ac370d18a2bc0796f67f617f6f692b6df74dc749ebfdf94753b171e",
+        "requestHash": "0xf53996091f7b2f6c0d01afe92b40d419247fd3e1b2184eebc321c6c9e6d9740d",
+        "outcome": "RPC_ERROR",
+        "code": -32000,
+        "reason": "RECEIPT_UNAVAILABLE"
+      },
+      {
+        "seq": 72,
+        "at": "2026-11-06T07:28:19.212Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionReceipt",
+        "requestSha256": "7e94603e2ac370d18a2bc0796f67f617f6f692b6df74dc749ebfdf94753b171e",
+        "requestHash": "0xf53996091f7b2f6c0d01afe92b40d419247fd3e1b2184eebc321c6c9e6d9740d",
+        "outcome": "RPC_ERROR",
+        "code": -32000,
+        "reason": "RECEIPT_UNAVAILABLE"
+      },
+      {
+        "seq": 73,
+        "at": "2026-11-06T07:28:20.826Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionReceipt",
+        "requestSha256": "7e94603e2ac370d18a2bc0796f67f617f6f692b6df74dc749ebfdf94753b171e",
+        "requestHash": "0xf53996091f7b2f6c0d01afe92b40d419247fd3e1b2184eebc321c6c9e6d9740d",
+        "outcome": "RPC_ERROR",
+        "code": -32000,
+        "reason": "RECEIPT_UNAVAILABLE"
+      },
+      {
+        "seq": 74,
+        "at": "2026-11-06T07:28:22.455Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionReceipt",
+        "requestSha256": "7e94603e2ac370d18a2bc0796f67f617f6f692b6df74dc749ebfdf94753b171e",
+        "requestHash": "0xf53996091f7b2f6c0d01afe92b40d419247fd3e1b2184eebc321c6c9e6d9740d",
+        "outcome": "RESULT",
+        "result": {
+          "blockNumber": "0x47",
+          "status": "success",
+          "payer": "0xb91644c9acbed3645a0871ef79ad1f7cb73826a3",
+          "cumulativeGasUsed": "0x3ecf9",
+          "frameReceipts": [
+            {
+              "status": "success",
+              "gasUsed": {
+                "execution": "0x2761",
+                "state": "0x0"
+              }
+            },
+            {
+              "status": "success",
+              "gasUsed": {
+                "execution": "0x6d4a",
+                "state": "0x2fd00"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "seq": 75,
+        "at": "2026-11-06T07:28:22.580Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_call",
+        "requestSha256": "4840ecfe0dc564311a0248fee36622ea60d891285203e2627a4ed398469f0772",
+        "outcome": "RESULT",
+        "result": "0x000000000000000000000000000000000000000000000000002aa1efb94e000000000000000000000000000000000000000000000000000000000000000151800000000000000000000000000000000000000000000000000000000000000000"
+      },
+      {
+        "seq": 76,
+        "at": "2026-11-06T07:28:22.698Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBalance",
+        "requestSha256": "9fbc3804c9ad4edba70f70c52f1224451a2ab045bcc09dea7a6167e69efede74",
+        "outcome": "RESULT",
+        "result": "0x2aa1efb94e0000"
+      },
+      {
+        "seq": 77,
+        "at": "2026-11-06T07:28:22.817Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionCount",
+        "requestSha256": "61c4333470baa8297014a43563be2ef1adde9455b22c9b93c892a621024613a0",
+        "outcome": "RESULT",
+        "result": "0x9"
+      },
+      {
+        "seq": 78,
+        "at": "2026-11-06T07:28:22.930Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBalance",
+        "requestSha256": "61c4333470baa8297014a43563be2ef1adde9455b22c9b93c892a621024613a0",
+        "outcome": "RESULT",
+        "result": "0x852cd261ea0c00"
+      },
+      {
+        "seq": 79,
+        "at": "2026-11-06T07:28:23.051Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBalance",
+        "requestSha256": "c1af1546d3a6309349b1eee65a117cc9b776ed834ddd84b0abb98011967aae12",
+        "outcome": "RESULT",
+        "result": "0xde0b6b3a7640000"
+      },
+      {
+        "seq": 80,
+        "at": "2026-11-06T07:28:23.165Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_sendRawTransaction",
+        "requestSha256": "8f0fab65ff6f8457c500ccdc85d877a8076b8c5f76a31b0a78838ac90e322032",
+        "outcome": "RPC_ERROR",
+        "code": -32000,
+        "reason": "CANONICAL_FOREIGN_STORAGE"
+      },
+      {
+        "seq": 81,
+        "at": "2026-11-06T07:28:23.308Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_sendFrameTransaction",
+        "requestSha256": "5c109b32b1a6eb26649cfb6dc8559aa0f103c136670326d4c0609ff96f59da31",
+        "outcome": "RESULT",
+        "result": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102"
+      },
+      {
+        "seq": 82,
+        "at": "2026-11-06T07:28:23.431Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionReceipt",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RPC_ERROR",
+        "code": -32000,
+        "reason": "RECEIPT_UNAVAILABLE"
+      },
+      {
+        "seq": 83,
+        "at": "2026-11-06T07:28:25.069Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionReceipt",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RPC_ERROR",
+        "code": -32000,
+        "reason": "RECEIPT_UNAVAILABLE"
+      },
+      {
+        "seq": 84,
+        "at": "2026-11-06T07:28:26.711Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionReceipt",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RPC_ERROR",
+        "code": -32000,
+        "reason": "RECEIPT_UNAVAILABLE"
+      },
+      {
+        "seq": 85,
+        "at": "2026-11-06T07:28:28.316Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "eth_getFrameTransactionReceipt",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "blockNumber": "0x48",
+          "status": "success",
+          "payer": "0xb91644c9acbed3645a0871ef79ad1f7cb73826a3",
+          "cumulativeGasUsed": "0xa3e3",
+          "frameReceipts": [
+            {
+              "status": "success",
+              "gasUsed": {
+                "execution": "0x3dbd",
+                "state": "0x0"
+              }
+            },
+            {
+              "status": "success",
+              "gasUsed": {
+                "execution": "0xbb8",
+                "state": "0x0"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "seq": 86,
+        "at": "2026-11-06T07:28:28.435Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+          "admission": {
+            "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+            "outcome": "accepted",
+            "at": 1793950103256,
+            "sender": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+            "nonce": "0x9",
+            "nonceKeys": [
+              "0x0"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 2,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950103281,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 3,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950105773,
+              "kind": "statusChanged",
+              "status": "Submitted"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 87,
+        "at": "2026-11-06T07:28:29.572Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+          "admission": {
+            "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+            "outcome": "accepted",
+            "at": 1793950103256,
+            "sender": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+            "nonce": "0x9",
+            "nonceKeys": [
+              "0x0"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 2,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950103281,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 3,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950105773,
+              "kind": "statusChanged",
+              "status": "Submitted"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 88,
+        "at": "2026-11-06T07:28:30.689Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+          "admission": {
+            "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+            "outcome": "accepted",
+            "at": 1793950103256,
+            "sender": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+            "nonce": "0x9",
+            "nonceKeys": [
+              "0x0"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 2,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950103281,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 3,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950105773,
+              "kind": "statusChanged",
+              "status": "Submitted"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 89,
+        "at": "2026-11-06T07:28:31.799Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+          "admission": {
+            "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+            "outcome": "accepted",
+            "at": 1793950103256,
+            "sender": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+            "nonce": "0x9",
+            "nonceKeys": [
+              "0x0"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 2,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950103281,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 3,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950105773,
+              "kind": "statusChanged",
+              "status": "Submitted"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 90,
+        "at": "2026-11-06T07:28:32.936Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+          "admission": {
+            "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+            "outcome": "accepted",
+            "at": 1793950103256,
+            "sender": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+            "nonce": "0x9",
+            "nonceKeys": [
+              "0x0"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 2,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950103281,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 3,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950105773,
+              "kind": "statusChanged",
+              "status": "Submitted"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 91,
+        "at": "2026-11-06T07:28:34.062Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+          "admission": {
+            "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+            "outcome": "accepted",
+            "at": 1793950103256,
+            "sender": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+            "nonce": "0x9",
+            "nonceKeys": [
+              "0x0"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 2,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950103281,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 3,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950105773,
+              "kind": "statusChanged",
+              "status": "Submitted"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 92,
+        "at": "2026-11-06T07:28:35.214Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+          "admission": {
+            "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+            "outcome": "accepted",
+            "at": 1793950103256,
+            "sender": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+            "nonce": "0x9",
+            "nonceKeys": [
+              "0x0"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 2,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950103281,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 3,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950105773,
+              "kind": "statusChanged",
+              "status": "Submitted"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 93,
+        "at": "2026-11-06T07:28:36.363Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_getTransaction",
+        "requestSha256": "1ba2ad09649dbdd78535eff4f4534d4dbe4a34ea63040e9ce8fe72f9b73897e0",
+        "requestHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "outcome": "RESULT",
+        "result": {
+          "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+          "admission": {
+            "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+            "outcome": "included",
+            "at": 1793950103256,
+            "sender": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+            "nonce": "0x9",
+            "nonceKeys": [
+              "0x0"
+            ],
+            "frames": 2,
+            "checks": [
+              {
+                "rule": "gas-limit",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "recent-root",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "prefix",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "structure",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "signature",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "simulation",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "OP-061",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "execution",
+                "verdict": "pass",
+                "waived": false
+              },
+              {
+                "rule": "trace-alignment",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "out-of-gas",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "OP-011",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "create",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "storage",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "COD-010",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "entrypoint-access",
+                "verdict": "pass",
+                "frameIndex": 0,
+                "entity": "payer",
+                "waived": false
+              },
+              {
+                "rule": "mempool",
+                "verdict": "pass",
+                "waived": false
+              }
+            ]
+          },
+          "events": [
+            {
+              "seq": 2,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950103281,
+              "kind": "admitted",
+              "status": "New"
+            },
+            {
+              "seq": 3,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950105773,
+              "kind": "statusChanged",
+              "status": "Submitted"
+            },
+            {
+              "seq": 4,
+              "txHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+              "at": 1793950115616,
+              "kind": "included",
+              "status": "OnChain"
+            }
+          ]
+        }
+      },
+      {
+        "seq": 94,
+        "at": "2026-11-06T07:28:36.472Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getBalance",
+        "requestSha256": "c1af1546d3a6309349b1eee65a117cc9b776ed834ddd84b0abb98011967aae12",
+        "outcome": "RESULT",
+        "result": "0xde0b6b3a7640001"
+      },
+      {
+        "seq": 95,
+        "at": "2026-11-06T07:28:36.576Z",
+        "channel": "EXECUTION",
+        "purpose": "SCENARIO",
+        "method": "eth_getTransactionCount",
+        "requestSha256": "61c4333470baa8297014a43563be2ef1adde9455b22c9b93c892a621024613a0",
+        "outcome": "RESULT",
+        "result": "0xa"
+      },
+      {
+        "seq": 96,
+        "at": "2026-11-06T07:28:36.692Z",
+        "channel": "SIDECAR",
+        "purpose": "SCENARIO",
+        "method": "skandha_explorer_info",
+        "requestSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "outcome": "RESULT",
+        "result": {
+          "protocolVersion": 1,
+          "chainId": 9,
+          "version": "v4.1.1",
+          "commit": "",
+          "bundlingMode": "auto",
+          "p2pEnabled": true,
+          "oldestSeq": 1,
+          "latestSeq": 4,
+          "historyCapacity": 10000,
+          "bootId": "50e24d24bde10cd0"
+        }
+      }
+    ]
+  },
+  "steps": [
+    {
+      "id": "deploy-registry",
+      "at": "2026-11-06T07:28:05.692Z",
+      "result": "PASS",
+      "evidenceThrough": 48,
+      "observed": {
+        "address": "0x7703465274eAa5c03b5079e20F793b7e1F7632c0",
+        "hash": "0xc5f53508a199d9520f2cf68eecf6c9b4e2481b4e0b200c1c4aec8430549807b7",
+        "block": "0x44",
+        "runtimeBytes": 1259,
+        "initSha256": "203cfc1f8a010efd71082aa824ea4c5671c88e11de0123630faf0e3294a4b736"
+      }
+    },
+    {
+      "id": "deploy-foreign",
+      "at": "2026-11-06T07:28:11.203Z",
+      "result": "PASS",
+      "evidenceThrough": 55,
+      "observed": {
+        "address": "0x667c13eB791fF5F0F6ef1C252F7249b824D750f2",
+        "hash": "0x76b9b6b950fe44abb5027a3eef0767fde43a2bf50fbd9f4c590a5e69f0bd2f91",
+        "block": "0x45",
+        "runtimeBytes": 76,
+        "initSha256": "45811286b66f2c24d6f6d9c4db36b74adda16c5eda96d01bf3b27b73c7462db3"
+      }
+    },
+    {
+      "id": "deploy-wallet",
+      "at": "2026-11-06T07:28:16.532Z",
+      "result": "PASS",
+      "evidenceThrough": 62,
+      "observed": {
+        "address": "0xB91644C9ACbeD3645A0871Ef79Ad1f7CB73826a3",
+        "hash": "0x355f94c317997587b29be45e7d3a6d6d00c3eccd1aacdcef364dd4f00dbce62e",
+        "block": "0x46",
+        "runtimeBytes": 2027,
+        "initSha256": "15a9207c04af65a3f9cd3ef153660a8f1db5c3eb38457781d2f7f0e5a1925159"
+      }
+    },
+    {
+      "id": "verify-fixture-config",
+      "at": "2026-11-06T07:28:16.642Z",
+      "result": "PASS",
+      "evidenceThrough": 63,
+      "observed": {
+        "registry": "0x7703465274eAa5c03b5079e20F793b7e1F7632c0",
+        "minimumStake": "10000000000000000",
+        "minimumDelay": 0
+      }
+    },
+    {
+      "id": "verify-initial-state",
+      "at": "2026-11-06T07:28:16.980Z",
+      "result": "PASS",
+      "evidenceThrough": 66,
+      "observed": {
+        "walletNonce": "8",
+        "walletBalance": "50000000000000000",
+        "stake": "0"
+      }
+    },
+    {
+      "id": "canonical-unstaked-reject",
+      "at": "2026-11-06T07:28:17.092Z",
+      "result": "PASS",
+      "evidenceThrough": 67,
+      "observed": {
+        "hash": "0xe478e69f6cb6a39c65c1ea830e9f4b789031fe7835ae99fb59915ae997a49a4f",
+        "code": -32000,
+        "reason": "CANONICAL_FOREIGN_STORAGE"
+      }
+    },
+    {
+      "id": "alt-unstaked-reject",
+      "at": "2026-11-06T07:28:17.247Z",
+      "result": "PASS",
+      "evidenceThrough": 68,
+      "observed": {
+        "hash": "0xe478e69f6cb6a39c65c1ea830e9f4b789031fe7835ae99fb59915ae997a49a4f",
+        "code": -32502,
+        "reason": "UNSTAKED_FOREIGN_STORAGE"
+      }
+    },
+    {
+      "id": "stake-wallet",
+      "at": "2026-11-06T07:28:22.455Z",
+      "result": "PASS",
+      "evidenceThrough": 74,
+      "observed": {
+        "hash": "0xf53996091f7b2f6c0d01afe92b40d419247fd3e1b2184eebc321c6c9e6d9740d",
+        "block": "0x47",
+        "frameStatuses": "success,success"
+      }
+    },
+    {
+      "id": "verify-stake-transition",
+      "at": "2026-11-06T07:28:22.930Z",
+      "result": "PASS",
+      "evidenceThrough": 78,
+      "observed": {
+        "stake": "12000000000000000",
+        "delay": 86400,
+        "withdrawTime": "0",
+        "registryBalance": "12000000000000000",
+        "walletNonce": "9",
+        "walletBalance": "37485454000000000"
+      }
+    },
+    {
+      "id": "canonical-staked-reject",
+      "at": "2026-11-06T07:28:23.165Z",
+      "result": "PASS",
+      "evidenceThrough": 80,
+      "observed": {
+        "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "code": -32000,
+        "reason": "CANONICAL_FOREIGN_STORAGE"
+      }
+    },
+    {
+      "id": "alt-staked-admit",
+      "at": "2026-11-06T07:28:23.308Z",
+      "result": "PASS",
+      "evidenceThrough": 81,
+      "observed": {
+        "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "acceptedHash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "sameCanonicalCandidate": true
+      }
+    },
+    {
+      "id": "observe-alt-inclusion",
+      "at": "2026-11-06T07:28:36.364Z",
+      "result": "PASS",
+      "evidenceThrough": 93,
+      "observed": {
+        "hash": "0x4e03467ffc8a31514d97c631ab049809a3cc534248c7507dc9b38af7c062d102",
+        "block": "0x48",
+        "frameStatuses": "success,success",
+        "storagePassedWithoutWaiver": true,
+        "outcome": "included"
+      }
+    },
+    {
+      "id": "verify-alt-state-change",
+      "at": "2026-11-06T07:28:36.576Z",
+      "result": "PASS",
+      "evidenceThrough": 95,
+      "observed": {
+        "recipientBefore": "1000000000000000000",
+        "recipientAfter": "1000000000000000001",
+        "walletNonceBefore": "9",
+        "walletNonceAfter": "10"
+      }
+    },
+    {
+      "id": "explorer-continuity",
+      "at": "2026-11-06T07:28:36.693Z",
+      "result": "PASS",
+      "evidenceThrough": 96,
+      "observed": {
+        "bootId": "50e24d24bde10cd0",
+        "gaps": ""
+      }
+    },
+    {
+      "id": "mined-state-transition",
+      "at": "2026-11-06T07:28:36.693Z",
+      "result": "PASS",
+      "evidenceThrough": 96,
+      "observed": {
+        "fixtureMode": "mining",
+        "scope": "staked-storage-boundary"
+      }
+    },
+    {
+      "id": "fixture-cleanup",
+      "at": "2026-11-06T07:28:38.919Z",
+      "result": "PASS",
+      "evidenceThrough": 96,
+      "observed": {
+        "removedOwnedResources": true
+      }
+    }
+  ],
+  "result": "PASS",
+  "definition": {
+    "id": "staked-storage-boundary",
+    "title": "Staked validation storage: canonical rejection and alternative inclusion",
+    "sourceRule": "FrameTxValidationService/storage; ReputationService/checkStake; ethrex StorageReadNonSender",
+    "sourceCommit": "2e22ff0a2898e69ea4bf5275bce1be8581a8582a",
+    "expectedInvariant": "Foreign validation storage requires an actually staked entity at the sidecar; canonical rejection persists after staking, while the sidecar admits and executes the same signed staked candidate without waivers.",
+    "preconditions": [
+      "Owned isolated mining fixture with automatic sidecar inclusion",
+      "Pinned upstream wallet, Foreign and registry deployment bytes; no new Solidity",
+      "Actual registry stake/delay and successful state-changing frame receipts"
+    ],
+    "actions": [
+      "deploy-registry",
+      "deploy-foreign",
+      "deploy-wallet",
+      "verify-fixture-config",
+      "verify-initial-state",
+      "canonical-unstaked-reject",
+      "alt-unstaked-reject",
+      "stake-wallet",
+      "verify-stake-transition",
+      "canonical-staked-reject",
+      "alt-staked-admit",
+      "observe-alt-inclusion",
+      "verify-alt-state-change",
+      "explorer-continuity",
+      "mined-state-transition"
+    ]
+  },
+  "limitations": [
+    "Reuses pinned upstream wallet/storage/registry deployment artifacts; no new Solidity or local contract compilation is claimed. Automatic inclusion is performed by the isolated upstream sidecar.",
+    "Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.",
+    "Seed identifies action order, not private signing keys; fresh accounts are random.",
+    "Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run."
+  ],
+  "reproducer": "npm run --silent aftershock -- run staked-storage-boundary --local --mine"
+}

@@ -13,6 +13,7 @@ const samples = {
   payer: 'rpc-paymaster-solvency.json',
   ttl: 'keyed-replacement-ttl.json',
   cancelled: 'cancelled-replacement.json',
+  sponsor: 'staked-storage-boundary.json',
 } as const;
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 

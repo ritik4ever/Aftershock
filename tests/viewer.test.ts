@@ -39,6 +39,7 @@ async function fixture() {
     'rpc-paymaster-solvency',
     'keyed-replacement-ttl',
     'cancelled-replacement',
+    'staked-storage-boundary',
   ])
     await writeFile(
       join(root, 'docs/evidence', `${name}.json`),
@@ -62,10 +63,10 @@ test('viewer serves real saved reports, reviewed examples and immutable exports'
     for (const asset of ['/app.js', '/style.css'])
       assert.equal((await fetch(v.url + asset)).status, 200);
     const runs = await (await fetch(v.url + '/api/runs')).json();
-    assert.equal(runs.runs.length, 5);
+    assert.equal(runs.runs.length, 6);
     assert.equal(
       new Set(runs.runs.map((r: { runId: string }) => r.runId)).size,
-      5,
+      6,
     );
     assert.equal(
       runs.runs.find((r: { runId: string }) => r.runId === keyed.runId).source,
@@ -76,7 +77,7 @@ test('viewer serves real saved reports, reviewed examples and immutable exports'
       runs.runs.filter(
         (r: { source: string }) => r.source === 'Reviewed example',
       ).length,
-      3,
+      4,
     );
     const path = join(v.root, 'reports', `${keyed.runId}.scenario.json`);
     const before = await readFile(path);
@@ -91,6 +92,28 @@ test('viewer serves real saved reports, reviewed examples and immutable exports'
     assert.deepEqual(finding.report, cancelled);
     assert.equal(finding.report.result, 'FAIL');
     assert.equal(finding.checks.status, 'INSUFFICIENT');
+    const sponsor = await (
+      await fetch(v.url + '/api/run?key=sample:sponsor')
+    ).json();
+    assert.deepEqual(
+      sponsor.report,
+      runReport.parse(
+        JSON.parse(
+          await readFile('docs/evidence/staked-storage-boundary.json', 'utf8'),
+        ),
+      ),
+    );
+    assert.equal(sponsor.report.result, 'PASS');
+    assert.equal(
+      sponsor.report.steps.find(
+        (step: { id: string }) => step.id === 'observe-alt-inclusion',
+      ).observed.storagePassedWithoutWaiver,
+      true,
+    );
+    const sponsorDownload = await fetch(
+      v.url + '/api/download?key=sample:sponsor&format=md',
+    );
+    assert.equal(await sponsorDownload.text(), markdownReport(sponsor.report));
     const download = await fetch(
       `${v.url}/api/download?key=local:${keyed.runId}&format=report`,
     );
@@ -283,7 +306,7 @@ test('an empty workspace gets a truthful empty listing', async () => {
   try {
     const data = await (await fetch(v.url + '/api/runs')).json();
     assert.deepEqual(data.runs, []);
-    assert.equal(data.unavailable, 4);
+    assert.equal(data.unavailable, 5);
   } finally {
     await v.close();
   }
