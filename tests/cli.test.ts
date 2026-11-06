@@ -56,6 +56,7 @@ test('invalid commands, arguments and paths are rejected before network work', (
     ['run', 'unknown', '--local', '--mine'],
     ['run', 'keyed-nonce-lifecycle', '--local', '--mine', '--extra'],
     ['doctor', '--force'],
+    ['doctor', '--local', '--force'],
     ['inspect', '../escape'],
     ['inspect'],
     ['inspect', '--save'],

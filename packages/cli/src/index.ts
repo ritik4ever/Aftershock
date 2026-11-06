@@ -1,5 +1,6 @@
 import {
   doctor,
+  localDoctor,
   inspectTransaction,
   RpcFailure,
   UPSTREAM,
@@ -22,6 +23,7 @@ import {
 
 const help = `Aftershock core integration
   npm run aftershock -- doctor
+  npm run aftershock -- doctor --local
   npm run aftershock -- inspect <transaction-hash> [--save]
   npm run aftershock -- versions
   npm run aftershock -- scenarios
@@ -48,6 +50,11 @@ Receipt absence is unavailable evidence, not proof that execution failed.
 
 async function main(args: string[]): Promise<number> {
   const [command, ...rest] = args;
+  if (command === 'doctor' && rest.length === 1 && rest[0] === '--local') {
+    const result = await localDoctor(process.cwd());
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return result.result === 'PASS' ? 0 : 3;
+  }
   if (command === 'serve') {
     if (
       rest.length &&
