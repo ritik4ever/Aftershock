@@ -56,6 +56,7 @@ export function checkEvidence(input: RunReport) {
     'Request signatures, keys, nonce/fee semantics, transfer amounts, account-query targets and simulation-to-transaction associations cannot be reconstructed from redacted request digests.',
     'Checksums and matching saved fields do not authenticate the report author or node; coordinated forgery is outside this check.',
     'Step cursors group completion-order responses; they do not provide atomic state snapshots.',
+    'Covered steps have selected fields only; cancellation receipt checks exclude balance/cost boundaries and transfer values.',
   ];
   const requirements = {
     isolatedLocal: report.endpointClass === 'ISOLATED_LOCAL',
@@ -107,11 +108,17 @@ export function checkEvidence(input: RunReport) {
     step: Step,
     name: string,
     action: (source: Entry[], used: Set<number>) => void,
+    allowRecordedFailure = false,
   ) {
     unsupportedSteps.delete(step.id);
     const used = new Set<number>();
     let status: Status = 'INSUFFICIENT';
-    if (eligible && report.evidence && step.result === 'PASS') {
+    if (
+      eligible &&
+      report.evidence &&
+      (step.result === 'PASS' ||
+        (allowRecordedFailure && step.result === 'FAIL'))
+    ) {
       try {
         action(ranges.get(step.id) ?? [], used);
         status = 'CONSISTENT';
@@ -165,8 +172,255 @@ export function checkEvidence(input: RunReport) {
       throw new Missing();
   }
 
+  function absent(source: Entry[], txHash: string, used: Set<number>) {
+    const entry = source
+      .filter(
+        (item) =>
+          item.purpose === 'SCENARIO' &&
+          item.method === 'eth_getFrameTransactionByHash' &&
+          item.outcome === 'RESULT' &&
+          item.requestHash !== undefined &&
+          same(item.requestHash, txHash),
+      )
+      .at(-1);
+    if (!entry) throw new Missing();
+    used.add(entry.seq);
+    expect(entry.result === null);
+  }
+  function entryAt(source: Entry[], txHash: string, used: Set<number>) {
+    const value = latest(
+      source,
+      'eth_getFrameTransactionByHash',
+      metadata.extend({ lastUpdatedTime: quantity }),
+      used,
+      txHash,
+    );
+    expect(same(value.txHash, txHash));
+    return value.lastUpdatedTime;
+  }
+  function lifecycleAt(
+    source: Entry[],
+    txHash: string,
+    outcome: string,
+    used: Set<number>,
+  ) {
+    const value = latest(
+      source,
+      'skandha_explorer_getTransaction',
+      lifecycle,
+      used,
+      txHash,
+    );
+    if (!value.admission) throw new Missing();
+    expect(
+      same(value.hash, txHash) &&
+        same(value.admission.txHash, txHash) &&
+        value.admission.outcome === outcome,
+    );
+    expect(
+      value.events.some(
+        (event) =>
+          same(event.txHash, txHash) &&
+          event.kind === outcome &&
+          (outcome !== 'dropped' || event.status === 'Cancelled'),
+      ),
+    );
+  }
+  function ttl(used: Set<number>, claimed: number) {
+    const value = latest(
+      ranges.get('admit-base') ?? [],
+      'skandha_config',
+      z.object({ useropsTTL: z.number().int().positive() }),
+      used,
+    );
+    expect(
+      value.useropsTTL ===
+        (report.scenarioId === 'keyed-replacement-ttl' ? 30 : 300) &&
+        value.useropsTTL === claimed &&
+        String(value.useropsTTL) === report.environment.useropsTTL,
+    );
+    return BigInt(value.useropsTTL) * 1000n;
+  }
+
   for (const step of report.steps) {
-    if (['observe-inclusion', 'observe-next-inclusion'].includes(step.id)) {
+    if (
+      [
+        'confirm-live-predecessor',
+        'observe-cancelled',
+        'observe-recancelled',
+      ].includes(step.id)
+    ) {
+      check(step, 'recorded-entry-time-and-status', (source, used) => {
+        const claim = z
+          .object({ hash, lastUpdatedTime: quantity, status: text })
+          .parse(step.observed);
+        const at = entryAt(source, claim.hash, used);
+        const value = latest(
+          source,
+          'skandha_frameTransactionStatus',
+          transactionStatus,
+          used,
+          claim.hash,
+        );
+        const expected =
+          step.id === 'confirm-live-predecessor' ? 'New' : 'Cancelled';
+        expect(
+          value.status === expected &&
+            claim.status === value.status &&
+            BigInt(at) === BigInt(claim.lastUpdatedTime),
+        );
+        if (expected === 'Cancelled') {
+          expect(step.observed.outcome === 'dropped');
+          lifecycleAt(source, claim.hash, 'dropped', used);
+        } else
+          ttl(
+            used,
+            z.number().int().positive().parse(step.observed.ttlSeconds),
+          );
+      });
+    } else if (
+      ['verify-ttl-replacement', 'verify-terminal-replacement'].includes(
+        step.id,
+      )
+    ) {
+      check(step, 'recorded-replacement-window-and-history', (source, used) => {
+        const claim = z
+          .object({
+            oldHash: hash,
+            newHash: hash,
+            elapsedMilliseconds: decimal,
+            ttlSeconds: z.number().int().positive(),
+            oldEntryRemoved: z.boolean(),
+          })
+          .parse(step.observed);
+        const expired = step.id === 'verify-ttl-replacement';
+        const previous =
+          ranges.get(
+            expired ? 'confirm-live-predecessor' : 'observe-cancelled',
+          ) ?? [];
+        const oldAt = entryAt(previous, claim.oldHash, used);
+        const newAt = entryAt(source, claim.newHash, used);
+        const claimedOld = quantity.parse(
+          step.observed[expired ? 'oldLastUpdatedTime' : 'cancelledAt'],
+        );
+        const claimedNew = quantity.parse(
+          step.observed[expired ? 'newLastUpdatedTime' : 'acceptedAt'],
+        );
+        const elapsed = BigInt(newAt) - BigInt(oldAt),
+          limit = ttl(used, claim.ttlSeconds);
+        expect(
+          !same(claim.oldHash, claim.newHash) &&
+            claim.oldEntryRemoved &&
+            BigInt(claimedOld) === BigInt(oldAt) &&
+            BigInt(claimedNew) === BigInt(newAt) &&
+            BigInt(claim.elapsedMilliseconds) === elapsed &&
+            (expired ? elapsed > limit : elapsed >= 0n && elapsed < limit),
+        );
+        absent(source, claim.oldHash, used);
+        lifecycleAt(source, claim.oldHash, 'replaced', used);
+      });
+    } else if (
+      step.id === 'verify-active-replacement' ||
+      step.id === 'verify-reactivation'
+    ) {
+      check(step, 'recorded-active-entry-state', (source, used) => {
+        const claim = z.object({ hash, status: text }).parse(step.observed);
+        const at = entryAt(source, claim.hash, used);
+        const value = latest(
+          source,
+          'skandha_frameTransactionStatus',
+          transactionStatus,
+          used,
+          claim.hash,
+        );
+        expect(value.status === 'New' && claim.status === value.status);
+        if (step.id === 'verify-reactivation') {
+          const oldAt = entryAt(
+            ranges.get('observe-recancelled') ?? [],
+            claim.hash,
+            used,
+          );
+          const elapsed = BigInt(at) - BigInt(oldAt);
+          const limit = ttl(
+            used,
+            z.number().int().positive().parse(step.observed.ttlSeconds),
+          );
+          expect(
+            BigInt(quantity.parse(step.observed.cancelledAt)) ===
+              BigInt(oldAt) &&
+              BigInt(quantity.parse(step.observed.acceptedAt)) === BigInt(at) &&
+              BigInt(decimal.parse(step.observed.elapsedMilliseconds)) ===
+                elapsed &&
+              elapsed >= 0n &&
+              elapsed < limit,
+          );
+        } else {
+          const acceptedAt = entryAt(
+            ranges.get('verify-ttl-replacement') ?? [],
+            claim.hash,
+            used,
+          );
+          expect(
+            BigInt(quantity.parse(step.observed.lastUpdatedTime)) ===
+              BigInt(at) &&
+              BigInt(at) === BigInt(acceptedAt) &&
+              step.observed.rejectedEntryAbsent === true,
+          );
+          const rejected = report.steps.find(
+            (item) => item.id === 'reject-fee-after-refresh',
+          );
+          if (!rejected) throw new Missing();
+          absent(source, hash.parse(rejected.observed.hash), used);
+        }
+      });
+    } else if (step.id === 'explorer-reactivation-consistency') {
+      check(
+        step,
+        'recorded-reactivation-verdict-and-responses',
+        (_source, used) => {
+          // This assertion shares the preceding step's RPCs; the failed verdict
+          // itself must be preserved, not upgraded to an invariant PASS.
+          const source = ranges.get('verify-reactivation') ?? [];
+          const claim = z
+            .object({
+              hash,
+              activeStatus: text,
+              explorerOutcome: text,
+              expectedOutcome: z.literal('accepted'),
+            })
+            .parse(step.observed);
+          const active = latest(
+            source,
+            'skandha_frameTransactionStatus',
+            transactionStatus,
+            used,
+            claim.hash,
+          );
+          const history = latest(
+            source,
+            'skandha_explorer_getTransaction',
+            lifecycle,
+            used,
+            claim.hash,
+          );
+          if (!history.admission) throw new Missing();
+          expect(
+            same(history.hash, claim.hash) &&
+              same(history.admission.txHash, claim.hash) &&
+              active.status === 'New' &&
+              claim.activeStatus === active.status &&
+              claim.explorerOutcome === history.admission.outcome,
+          );
+          expect(
+            (history.admission.outcome === claim.expectedOutcome) ===
+              (step.result === 'PASS'),
+          );
+        },
+        true,
+      );
+    } else if (
+      ['observe-inclusion', 'observe-next-inclusion'].includes(step.id)
+    ) {
       check(step, 'frame-receipt-and-inclusion', (source, used) => {
         const claim = z
           .object({ hash, blockNumber: quantity, frameStatuses: text })
@@ -204,7 +458,15 @@ export function checkEvidence(input: RunReport) {
         }
       });
     } else if (
-      ['top-up-payer', 'balance-control', 'drain-payer'].includes(step.id)
+      [
+        'top-up-payer',
+        'balance-control',
+        'drain-payer',
+        'drain-for-cancellation',
+        'restore-payer',
+        'drain-for-recancel',
+        'restore-payer-again',
+      ].includes(step.id)
     ) {
       check(step, 'canonical-receipt-status-block-and-gas', (source, used) => {
         const claim = canonicalReceipt.parse(step.observed);

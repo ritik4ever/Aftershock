@@ -104,8 +104,16 @@ test(
     assert.equal(checked.status, 3, checked.stderr);
     const consistency = JSON.parse(checked.stdout);
     assert.equal(consistency.status, 'INSUFFICIENT');
-    assert.equal(consistency.checks.length, 0);
-    assert.equal(consistency.notReevaluatedSteps.length, report.steps.length);
+    assert.equal(consistency.checks.length, 9);
+    assert.ok(
+      consistency.checks.every(
+        (item: { status: string }) => item.status === 'CONSISTENT',
+      ),
+    );
+    assert.equal(
+      consistency.notReevaluatedSteps.length,
+      report.steps.length - 9,
+    );
     const plan = cli('replay', report.runId, '--plan');
     assert.equal(plan.status, 0, plan.stderr);
     assert.equal(JSON.parse(plan.stdout).mining, true);

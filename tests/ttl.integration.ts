@@ -70,11 +70,14 @@ test(
     assert.equal(saved.status, 0, saved.stderr);
     assert.deepEqual(JSON.parse(saved.stdout), report);
     const checked = cli('check-evidence', report.runId);
-    assert.equal(checked.status, 3, checked.stderr);
+    assert.equal(checked.status, 0, checked.stderr);
     const consistency = JSON.parse(checked.stdout);
-    assert.equal(consistency.status, 'INSUFFICIENT');
-    assert.equal(consistency.checks.length, 0);
-    assert.equal(consistency.notReevaluatedSteps.length, report.steps.length);
+    assert.equal(consistency.status, 'CONSISTENT');
+    assert.equal(consistency.checks.length, 3);
+    assert.equal(
+      consistency.notReevaluatedSteps.length,
+      report.steps.length - 3,
+    );
     const plan = cli('replay', report.runId, '--plan');
     assert.equal(plan.status, 0, plan.stderr);
     assert.equal(JSON.parse(plan.stdout).mining, false);
