@@ -55,5 +55,9 @@ export function createExecutionJobs(
       const job = jobs.get(id);
       return job ? { ...job } : null;
     },
+    current() {
+      const job = [...jobs.values()].find((job) => job.state === 'RUNNING');
+      return job ? { ...job } : null;
+    },
   };
 }

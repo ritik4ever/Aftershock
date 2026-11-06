@@ -84,6 +84,7 @@ const report = runReport.parse(
 async function app(
   unavailableReports: Array<{ key: string; reason: string }> = [],
   published = false,
+  existingJob = false,
 ) {
   const elements = new Map(
     [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => [
@@ -123,7 +124,7 @@ async function app(
     ...(published ? { aftershockStatic: routes } : {}),
     matchMedia: () => ({ matches: true }),
     fetch: async (path: string, options: RequestInit) => {
-      if (path === '/api/execute') {
+      if (path === '/api/execute' && options.method === 'POST') {
         assert.equal(options.method, 'POST');
         assert.deepEqual(JSON.parse(String(options.body)), {
           scenarioId: 'keyed-nonce-lifecycle',
@@ -135,6 +136,10 @@ async function app(
           'read endpoints only issue GET requests',
         );
       requests.push(path);
+      if (path === '/api/execute' && !options.method)
+        return Response.json({
+          job: existingJob ? { id: 'unit-job', state: 'RUNNING' } : null,
+        });
       if (path === '/api/execute')
         return Response.json(
           { id: 'unit-job', state: 'RUNNING' },
@@ -308,6 +313,16 @@ test('published viewer performs explicit live checks and shows failures without 
     new RegExp(report.runId),
   );
   assert.equal(ui.el('live-network').disabled, false);
+});
+
+test('local UI resumes an active run after reload without starting a second run', async () => {
+  const ui = await app([], false, true);
+  for (let i = 0; i < 20 && ui.el('execute-start').disabled; i++)
+    await setImmediate();
+  assert.equal(ui.requests.filter((path) => path === '/api/execute').length, 1);
+  assert.ok(ui.requests.includes('/api/execute?job=unit-job'));
+  assert.match(ui.el('execute-result').textContent, /Fresh run/);
+  assert.equal(ui.el('execute-start').disabled, false);
 });
 
 test('local UI starts and polls a fresh execution job while published UI only links to the local companion', async () => {

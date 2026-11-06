@@ -29,7 +29,12 @@ test('local execution jobs serialize real-engine calls and expose only newly sav
     await gate;
     return report;
   });
+  assert.equal(jobs.current(), null);
   const job = jobs.start('keyed-nonce-lifecycle')!;
+  assert.deepEqual(jobs.current(), job);
+  const snapshot = jobs.current()!;
+  snapshot.state = 'ERROR';
+  assert.equal(jobs.current()?.state, 'RUNNING');
   assert.equal(job.state, 'RUNNING');
   assert.equal(job.runId, undefined);
   assert.equal(jobs.start('paymaster-solvency'), null);
@@ -38,6 +43,7 @@ test('local execution jobs serialize real-engine calls and expose only newly sav
     await delay(10);
   const finished = jobs.get(job.id)!;
   assert.equal(finished.state, 'COMPLETED');
+  assert.equal(jobs.current(), null);
   assert.equal(finished.runId, report.runId);
   assert.equal(
     (await readRun(root, report.runId)).endpointClass,

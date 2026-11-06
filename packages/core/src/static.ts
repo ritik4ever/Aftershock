@@ -184,7 +184,7 @@ export async function buildStaticViewer(root: string) {
     `globalThis.aftershockStatic = Object.freeze(${JSON.stringify(routes)});\n`,
     { flag: 'wx' },
   );
-  for (const asset of ['app.js', 'style.css'])
+  for (const asset of ['app.js', 'style.css', 'favicon.svg'])
     await writeFile(
       resolve(stage, asset),
       await readFile(new URL(`./viewer/${asset}`, import.meta.url)),

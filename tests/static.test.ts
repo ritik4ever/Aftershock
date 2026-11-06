@@ -54,7 +54,9 @@ test('static export publishes only reviewed evidence with working reports, downl
     context,
   );
   const routes = context.aftershockStatic!;
-  assert.ok(!Object.keys(routes).some((route) => route.startsWith('/api/execute')));
+  assert.ok(
+    !Object.keys(routes).some((route) => route.startsWith('/api/execute')),
+  );
   const data = async (route: string) => {
     const url = new URL(route, 'http://localhost');
     url.searchParams.sort();
@@ -108,7 +110,7 @@ test('static export publishes only reviewed evidence with working reports, downl
   for (const name of await readdir(output.directory)) {
     assert.match(
       name,
-      /^(index\.html|app\.js|style\.css|static-config\.js|public-baseline\.json|data-\d+\.(json|md))$/,
+      /^(index\.html|app\.js|style\.css|favicon\.svg|static-config\.js|public-baseline\.json|data-\d+\.(json|md))$/,
     );
     assert.doesNotMatch(
       await readFile(join(output.directory, name), 'utf8'),

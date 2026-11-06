@@ -28,6 +28,7 @@ export async function startViewer(root: string, port = 4318) {
         ['/', 'index.html', 'text/html'],
         ['/app.js', 'app.js', 'text/javascript'],
         ['/style.css', 'style.css', 'text/css'],
+        ['/favicon.svg', 'favicon.svg', 'image/svg+xml'],
       ].map(
         async ([route, file, type]) =>
           [
@@ -162,6 +163,10 @@ export async function startViewer(root: string, port = 4318) {
               error: 'A scenario is already running in this viewer process',
             },
           );
+          return;
+        }
+        if (!url.search) {
+          json(200, { job: execution.current() });
           return;
         }
         const id = url.searchParams.get('job');

@@ -32,7 +32,9 @@ async function request(path, options = {}) {
   });
   const data = await response.json();
   if (!response.ok || data.error)
-    throw new Error(data.error || 'Request unavailable');
+    throw Object.assign(new Error(data.error || 'Request unavailable'), {
+      status: response.status,
+    });
   return data;
 }
 function notice(text) {
@@ -620,16 +622,28 @@ if (globalThis.aftershockStatic) {
   $('execute-controls').hidden = true;
   $('local-runner-link').hidden = false;
 }
-$('execute-start').addEventListener('click', async () => {
-  if (globalThis.aftershockStatic) return;
+let trackingExecution = false;
+async function trackExecution(start = false) {
+  if (globalThis.aftershockStatic || trackingExecution) return;
+  trackingExecution = true;
   const target = $('execute-result');
   $('execute-start').disabled = true;
   try {
-    let job = await request('/api/execute', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ scenarioId: $('execute-scenario').value }),
-    });
+    let job = (await request('/api/execute')).job;
+    if (!job && !start) return;
+    if (!job) {
+      try {
+        job = await request('/api/execute', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ scenarioId: $('execute-scenario').value }),
+        });
+      } catch (error) {
+        if (error.status !== 409) throw error;
+        job = (await request('/api/execute')).job;
+        if (!job) throw error;
+      }
+    }
     while (job.state === 'RUNNING') {
       target.replaceChildren(
         node(
@@ -657,6 +671,9 @@ $('execute-start').addEventListener('click', async () => {
       node('p', `Fresh execution unavailable: ${error.message}`, 'error-text'),
     );
   } finally {
+    trackingExecution = false;
     $('execute-start').disabled = false;
   }
-});
+}
+$('execute-start').addEventListener('click', () => trackExecution(true));
+if (!globalThis.aftershockStatic) void trackExecution();

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <path
+    fill="none"
+    stroke="#f45d3b"
+    stroke-width="3"
+    d="M16 2v28M2 16h28M6 6l20 20M6 26 26 6"
+  />
+</svg>

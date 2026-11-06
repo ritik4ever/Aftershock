@@ -53,6 +53,9 @@ test('viewer serves real saved reports, reviewed examples and immutable exports'
   const v = await fixture();
   try {
     const html = await fetch(v.url);
+    assert.deepEqual(await (await fetch(v.url + '/api/execute')).json(), {
+      job: null,
+    });
     assert.equal(html.status, 200);
     assert.match(await html.text(), /Find the failures/);
     assert.match(
