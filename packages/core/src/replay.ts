@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { definitions, runReport } from './scenario.js';
 import type { RunReport } from './scenario.js';
+import { resetSource } from './local/reset.js';
 
 const fingerprintFields = [
   'executionImage',
@@ -63,7 +64,7 @@ export function replayPlan(input: RunReport) {
   };
 }
 
-export function compareRuns(baselineInput: RunReport, rerunInput: RunReport) {
+function compareFreshRuns(baselineInput: RunReport, rerunInput: RunReport) {
   const baseline = runReport.parse(baselineInput);
   const rerun = runReport.parse(rerunInput);
   const plan = replayPlan(baseline);
@@ -111,4 +112,125 @@ export function compareRuns(baselineInput: RunReport, rerunInput: RunReport) {
       baseline.result === 'PASS' &&
       rerun.result === 'PASS',
   };
+}
+
+function initialStateObserved(report: RunReport) {
+  const firstSubmission =
+    report.evidence?.entries.find(
+      (entry) => entry.method === 'eth_sendFrameTransaction',
+    )?.seq ?? 0;
+  return (
+    report.evidence?.entries.some((entry) => {
+      const value = entry.result as { number?: unknown; hash?: unknown } | null;
+      return (
+        entry.seq < firstSubmission &&
+        entry.method === 'eth_getBlockByNumber' &&
+        entry.channel === 'EXECUTION' &&
+        entry.outcome === 'RESULT' &&
+        value?.number === '0x0' &&
+        value.hash === report.environment.initialBlockHash
+      );
+    }) ?? false
+  );
+}
+
+export function genesisResetPlan(input: RunReport) {
+  const report = runReport.parse(input);
+  const plan = replayPlan(report);
+  if (
+    plan.mining ||
+    report.scenarioId !== 'keyed-replacement-ttl' ||
+    !report.evidence?.complete ||
+    !['PASS', 'FAIL'].includes(report.result) ||
+    report.environment.initialBlockNumber !== '0x0' ||
+    !initialStateObserved(report) ||
+    report.environment.useropsTTL !== '30' ||
+    !report.steps.some(
+      (step) => step.id === 'fixture-cleanup' && step.result === 'PASS',
+    )
+  )
+    throw new Error(
+      'Genesis reset requires a complete admission-only TTL run with recorded initial state',
+    );
+  const fixtureSource = resetSource.parse({
+    runId: report.runId,
+    genesisSha256: report.environment.genesisSha256,
+    executionImage: report.environment.executionImage,
+    sidecarImage: report.environment.sidecarImage,
+    initialBlockHash: report.environment.initialBlockHash,
+  });
+  return {
+    ...plan,
+    mode: 'GENESIS_RESET_RERUN' as const,
+    fixtureSource,
+    command: `npm run --silent aftershock -- replay ${report.runId} --local --reset`,
+    requirements: [
+      'Cached identical pinned images',
+      'Local Docker engine',
+      'Original private .local/<run-id>/keys.json with restrictive Linux permissions',
+      'Reconstructed pinned genesis and empty disposable node/sidecar state',
+    ],
+    limitations: [
+      'Admission-only TTL scenario; mined chain snapshots are unsupported.',
+      'Restores initial genesis and signing inputs, not historical timestamps, explorer boot IDs or exact execution.',
+      'Private keys remain local and are never included in reports or commands.',
+      'Digests establish stored input consistency, not independent authorship or node attestation.',
+    ],
+  };
+}
+
+export function compareGenesisResetRuns(
+  baselineInput: RunReport,
+  rerunInput: RunReport,
+) {
+  const baseline = runReport.parse(baselineInput);
+  const rerun = runReport.parse(rerunInput);
+  const plan = genesisResetPlan(baseline);
+  const basic = compareFreshRuns(baseline, rerun);
+  const requests = (report: RunReport) =>
+    report.evidence?.entries
+      .filter(
+        (entry) =>
+          entry.method === 'eth_sendFrameTransaction' &&
+          entry.channel === 'SIDECAR' &&
+          entry.purpose === 'SCENARIO',
+      )
+      .map((entry) => entry.requestSha256) ?? [];
+  const originalRequests = requests(baseline);
+  const resetChecks = {
+    linkedBaseline:
+      rerun.environment.fixtureInputMode === 'GENESIS_RESET' &&
+      rerun.environment.resetBaselineRunId === baseline.runId,
+    sameGenesis:
+      rerun.environment.genesisSha256 === baseline.environment.genesisSha256,
+    sameInitialBlock:
+      rerun.environment.initialBlockNumber === '0x0' &&
+      rerun.environment.initialBlockHash ===
+        baseline.environment.initialBlockHash &&
+      initialStateObserved(rerun),
+    sameSignedRequests:
+      baseline.evidence?.complete === true &&
+      rerun.evidence?.complete === true &&
+      originalRequests.length === 5 &&
+      isDeepStrictEqual(originalRequests, requests(rerun)),
+  };
+  const resetInputsMatch = Object.values(resetChecks).every(Boolean);
+  return {
+    ...basic,
+    ...plan,
+    resetChecks,
+    resetInputsMatch,
+    comparison:
+      !basic.environmentDifferences.length && !resetInputsMatch
+        ? 'RESET_INPUTS_DIFFER'
+        : basic.comparison,
+    bothRunsPassed: basic.bothRunsPassed && resetInputsMatch,
+  };
+}
+
+export function compareRuns(baseline: RunReport, rerun: RunReport) {
+  const parsed = runReport.parse(rerun);
+  return parsed.environment.fixtureInputMode === 'GENESIS_RESET'
+    ? compareGenesisResetRuns(baseline, parsed)
+    : compareFreshRuns(baseline, parsed);
 }

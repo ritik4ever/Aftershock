@@ -6,6 +6,8 @@ import { resolve, relative } from 'node:path';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { z } from 'zod';
 import { UPSTREAM } from '../inspect.js';
+import { readResetKeys, resetSource } from './reset.js';
+import type { ResetSource } from './reset.js';
 import {
   generateMiningGenesis,
   LIGHTHOUSE_IMAGE,
@@ -45,9 +47,15 @@ export async function startFixture(
   mining = false,
   bundlingMode: 'auto' | 'manual' = mining ? 'auto' : 'manual',
   useropsTTL = 300,
+  reset?: ResetSource,
 ) {
   z.uuid().parse(runId);
   z.number().int().min(10).max(300).parse(useropsTTL);
+  if (reset) {
+    resetSource.parse(reset);
+    if (mining || bundlingMode !== 'manual' || useropsTTL !== 30)
+      throw new Error('Genesis reset supports the admission-only TTL fixture');
+  }
   const prefix = `aftershock-${runId}`;
   const directory = resolve(root, '.local', runId);
   await mkdir(resolve(root, '.local'), { recursive: true, mode: 0o700 });
@@ -121,6 +129,19 @@ export async function startFixture(
     ) {
       throw new Error('Pinned image source revision mismatch');
     }
+    if (reset) {
+      stage = 'reset-image-identity';
+      for (const [image, expected] of [
+        [ETHREX_IMAGE, reset.executionImage],
+        [SIDECAR_IMAGE, reset.sidecarImage],
+      ]) {
+        if (
+          (await docker('image', 'inspect', image!, '--format', '{{.Id}}')) !==
+          expected
+        )
+          throw new Error('Reset image differs from baseline');
+      }
+    }
     stage = 'genesis-template';
     await docker(
       'create',
@@ -151,7 +172,10 @@ export async function startFixture(
     let genesis = JSON.parse(template) as Genesis;
     if (genesis.config.chainId !== 9)
       throw new Error('Unexpected fixture chain');
-    const keys = Array.from({ length: 5 }, () => generatePrivateKey());
+    stage = reset ? 'reset-private-inputs' : 'fresh-private-inputs';
+    const keys = reset
+      ? await readResetKeys(root, reset)
+      : Array.from({ length: 5 }, () => generatePrivateKey());
     // Preserve protocol predeploys, remove every shared funded EOA from the upstream template.
     genesis.alloc = Object.fromEntries(
       Object.entries(genesis.alloc).filter(
@@ -170,6 +194,14 @@ export async function startFixture(
           owned.push(name),
         )
       ).genesis;
+    }
+    if (reset) {
+      stage = 'reset-genesis-identity';
+      if (
+        createHash('sha256').update(JSON.stringify(genesis)).digest('hex') !==
+        reset.genesisSha256
+      )
+        throw new Error('Reset genesis differs from baseline');
     }
     await writeFile(`${directory}/genesis.json`, JSON.stringify(genesis), {
       mode: 0o600,
@@ -323,7 +355,7 @@ export async function startFixture(
       ...common,
       '-v',
       `${directory}/sidecar.json:/aftershock/config.json:ro`,
-      SIDECAR_IMAGE,
+      reset?.sidecarImage ?? SIDECAR_IMAGE,
       'node',
       '--configFile',
       '/aftershock/config.json',
@@ -413,6 +445,9 @@ export async function startFixture(
       genesisSha256: createHash('sha256')
         .update(JSON.stringify(genesis))
         .digest('hex'),
+      ...(reset
+        ? { fixtureInputMode: 'GENESIS_RESET', resetBaselineRunId: reset.runId }
+        : {}),
       ...(mining
         ? {
             consensusImage: LIGHTHOUSE_IMAGE,

@@ -12,6 +12,8 @@ import { UPSTREAM, historyGaps } from './inspect.js';
 import { hash, quantity, explorerInfo } from './schema.js';
 import { fixtureTransaction } from './local/codec.js';
 import { startFixture, FixtureSetupError } from './local/fixture.js';
+import { resetSource } from './local/reset.js';
+import type { ResetSource } from './local/reset.js';
 import { localRpc, LocalRpcError, waitForRpc } from './local/rpc.js';
 import { waitForMining } from './local/lifecycle.js';
 import { keyedReplacementTTL } from './local/ttl.js';
@@ -359,8 +361,14 @@ export function runScenario(
   root: string,
   seed = 0,
   mining = false,
+  reset?: ResetSource,
 ): Promise<RunReport> {
-  return withRpcEvidence(() => executeScenario(id, root, seed, mining));
+  if (reset) {
+    resetSource.parse(reset);
+    if (id !== 'keyed-replacement-ttl' || mining)
+      throw new Error('Unsupported reset scenario');
+  }
+  return withRpcEvidence(() => executeScenario(id, root, seed, mining, reset));
 }
 
 async function executeScenario(
@@ -368,6 +376,7 @@ async function executeScenario(
   root: string,
   seed = 0,
   mining = false,
+  reset?: ResetSource,
 ): Promise<RunReport> {
   scenarioId.parse(id);
   z.number().int().nonnegative().parse(seed);
@@ -380,7 +389,9 @@ async function executeScenario(
     startedAt: new Date().toISOString(),
     completedAt: new Date().toISOString(),
     sourcePins: UPSTREAM,
-    environment: {},
+    environment: reset
+      ? { fixtureInputMode: 'GENESIS_RESET', resetBaselineRunId: reset.runId }
+      : {},
     steps: [],
     result: 'INCONCLUSIVE',
     definition: definitions[id],
@@ -388,14 +399,18 @@ async function executeScenario(
       mining
         ? 'Fresh staged-fork mining fixture; manual sidecar bundling and ordinary canonical transfers.'
         : 'Non-mining genesis fixture. No block-production/state-transition claims.',
-      'Seed identifies action order, not private signing keys; fresh accounts are random.',
+      reset
+        ? 'Private disposable keys and pinned genesis reused; timestamps and explorer history are new.'
+        : 'Seed identifies action order, not private signing keys; fresh accounts are random.',
       id === 'cancelled-replacement'
         ? 'Cancelled predecessor only; no OnChain/Finalized/Reverted, exact TTL-boundary or Submitted/Pending claims.'
         : id === 'keyed-replacement-ttl'
           ? 'Admission-only TTL expiry/refresh case; no exact boundary, inclusion or terminal/submitted-entry claim.'
           : 'Only the explicitly defined actions are checked; terminal/TTL and submitted-entry exceptions are outside this run.',
     ],
-    reproducer: `npm run --silent aftershock -- run ${id} --local${mining ? ' --mine' : ''}`,
+    reproducer: reset
+      ? `npm run --silent aftershock -- replay ${reset.runId} --local --reset`
+      : `npm run --silent aftershock -- run ${id} --local${mining ? ' --mine' : ''}`,
   };
   let fixture: Awaited<ReturnType<typeof startFixture>> | undefined;
   const add = (
@@ -417,12 +432,28 @@ async function executeScenario(
       mining,
       'manual',
       id === 'keyed-replacement-ttl' ? 30 : 300,
+      reset,
     );
     report.runId = fixture.runId;
     report.environment = fixture.fingerprint;
     const { keys, executionUrl, sidecarUrl } = fixture;
     await waitForRpc(executionUrl);
     await waitForRpc(sidecarUrl);
+    if (id === 'keyed-replacement-ttl' && !mining) {
+      const initial = await localRpc(
+        executionUrl,
+        'eth_getBlockByNumber',
+        ['latest', false],
+        z.object({ number: quantity, hash, timestamp: quantity }),
+      );
+      if (
+        BigInt(initial.number) !== 0n ||
+        (reset && initial.hash !== reset.initialBlockHash)
+      )
+        throw new Error('Reset requires matching genesis block state');
+      report.environment.initialBlockNumber = initial.number;
+      report.environment.initialBlockHash = initial.hash;
+    }
     if (mining) {
       const ready = await waitForMining(executionUrl);
       report.environment.readyBlock = ready.number;

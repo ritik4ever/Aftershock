@@ -445,11 +445,16 @@ $('compare-button').addEventListener('click', async () => {
       keyValues({
         'Baseline verdict': result.baselineResult,
         'Rerun verdict': result.rerunResult,
-        'Exact historical replay': 'No / fresh-state comparison',
+        'Exact historical replay':
+          result.mode === 'GENESIS_RESET_RERUN'
+            ? 'No / genesis-reset comparison'
+            : 'No / fresh-state comparison',
         'Environment differences':
           result.environmentDifferences.join(', ') || 'None in compared fields',
       }),
     );
+    if (result.resetChecks)
+      card.append(details('Genesis reset input checks', result.resetChecks));
     const header = node('div', undefined, 'comparison-row');
     header.append(
       node('strong', 'Action'),

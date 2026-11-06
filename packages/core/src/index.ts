@@ -16,7 +16,12 @@ export {
 } from './scenario.js';
 export { saveRun, readRun, markdownReport } from './report.js';
 
-export { replayPlan, compareRuns } from './replay.js';
+export {
+  replayPlan,
+  compareRuns,
+  genesisResetPlan,
+  compareGenesisResetRuns,
+} from './replay.js';
 
 export { checkEvidence } from './evidence-check.js';
 
