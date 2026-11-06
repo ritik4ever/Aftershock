@@ -4,7 +4,7 @@ Status: core CLI, both declared private mined suites, fresh-state reruns, projec
 
 Requirements now follow the user-approved Version 2 master specification. The source-based [contract audit](CONTRACT_FIXTURES.md) maps every declared action and records why no new Solidity is required for current coverage. A future contract-based sponsorship predicate needs its own justified scenario and integration evidence; contract count is not a milestone.
 
-Aftershock will run reproducible multi-step Frame Transaction scenarios, check version-specific invariants and export evidence through a CLI. A local read-only report UI comes last. The contribution is lifecycle automation, explicit assertions and reproducible reports; transaction sending, admission debugging, keyed nonces and recent roots already exist upstream.
+Aftershock will run reproducible multi-step Frame Transaction scenarios, check version-specific invariants and export evidence through a CLI. A local read-only report UI comes last. The user supplied a visual reference with a light background, dark typography, orange accents and rounded controls. Use that style for the later Aftershock report viewer; the screenshot does not change its read-only product scope. The contribution is lifecycle automation, explicit assertions and reproducible reports; transaction sending, admission debugging, keyed nonces and recent roots already exist upstream.
 
 ## Proposed source-backed invariants
 
