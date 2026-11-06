@@ -4,7 +4,7 @@ Find the failures before they reach Ethereum.
 
 [GitHub repository](https://github.com/ritik4ever/Aftershock)
 
-Aftershock is a stateful scenario runner for Ethereum Frame Transactions and alternative-mempool lifecycle rules. It runs original shared-payer and keyed-nonce scenarios against private ethrex/sidecar processes and inspects public admission/receipt evidence. Use `--local --mine` for mined lifecycle checks; there is no UI yet. Current verified coverage and remaining limits are recorded in [TEST_SCENARIOS](docs/TEST_SCENARIOS.md).
+Aftershock is a stateful scenario runner for Ethereum Frame Transactions and alternative-mempool lifecycle rules. It runs original shared-payer and keyed-nonce scenarios against private ethrex/sidecar processes and inspects public admission/receipt evidence. Use `--local --mine` for mined lifecycle checks; a local read-only report viewer is available. Current verified coverage and remaining limits are recorded in [TEST_SCENARIOS](docs/TEST_SCENARIOS.md).
 
 ## Run the CLI
 
@@ -42,6 +42,15 @@ npm run test:cancelled
 ```
 
 It drains/restores a fresh EOA payer through mined transfers and checks Cancelled fee exemptions, identical reactivation and live guards. It also checks explorer metadata against the active entry. A scenario FAIL remains a finding even when its regression test successfully reproduces the pinned behavior. See [compatibility notes](docs/PROTOCOL_COMPATIBILITY.md) and [actual results](docs/ENVIRONMENT.md).
+
+## Local report viewer
+
+```sh
+npm run --silent aftershock -- serve
+# Optional: serve --port 4320
+```
+
+Open http://127.0.0.1:4318 from the Linux-home checkout. The loopback-only viewer reads validated local reports and four clearly labeled reviewed examples. It supports filtering, action timelines, RPC journals, JSON exports, selected evidence checks and compatible-run comparison. It exposes no transaction, shell, file-write or Docker controls. Stop with Ctrl+C. API/security tests pass; visual browser verification is still pending because computer-use could not verify the browser URL. Exact snapshot replay and the remaining protocol edge cases are still unfinished.
 
 ## Real transaction evidence
 
