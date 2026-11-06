@@ -1,6 +1,6 @@
 # Aftershock project spec
 
-Status: core CLI, both declared private mined suites, fresh-state reruns, projected RPC evidence and selected offline consistency checks and a separate keyed TTL expiry/refresh case are implemented. UI and exact snapshot replay remain planned. PASS covers the declared live checks, not every protocol edge case. The original lifecycle suites remain BLOCKED without mining; the admission-only TTL case has no mined actions.
+Status: core CLI, both declared private mined suites, fresh-state reruns, projected RPC evidence, selected offline consistency checks, a separate keyed TTL expiry/refresh case and the local read-only report viewer are implemented. Exact snapshot replay and automated visual/mobile QA remain unfinished. PASS covers the declared live checks, not every protocol edge case. The original lifecycle suites remain BLOCKED without mining; the admission-only TTL case has no mined actions.
 
 Requirements now follow the user-approved Version 2 master specification. The source-based [contract audit](CONTRACT_FIXTURES.md) maps every declared action and records why no new Solidity is required for current coverage. A future contract-based sponsorship predicate needs its own justified scenario and integration evidence; contract count is not a milestone.
 
@@ -34,7 +34,7 @@ The separate cancelled-replacement case requires mining and targets Cancelled on
 
 ## Delivery and evidence
 
-Current layout: packages/core, packages/cli, tests, scripts and docs. Strict TypeScript, Zod schemas, the official-codec signing adapter, private Docker orchestration and one npm lockfile are implemented. No alternate codec or web UI exists.
+Current layout: packages/core, packages/cli, tests, scripts and docs. Strict TypeScript, Zod schemas, the official-codec signing adapter, private Docker orchestration, one npm lockfile and a loopback-only report viewer are implemented.
 
 Run reports record unique ID, seed, pinned source versions, observed environment/image identity, chain, ordered actions, assertions, verdicts and a reproducer. New reports also retain bounded allowlisted RPC projections with actual receipts, lifecycle fields, normalized failures and per-step completion-order cursors. Node observations remain separate from derived summaries. Payloads, signatures, logs and arbitrary server text are omitted; full raw transcripts and private-state snapshot restoration are unfinished. Historical reports are not retroactively populated.
 
@@ -48,5 +48,5 @@ Offline check-evidence rechecks selected saved outputs and explicitly lists unsu
 - Verified: both original mined suites and fresh-state reruns have genuine scoped passing captures. The separate Cancelled case has complete genuine evidence of working reactivation guards and one upstream explorer consistency FAIL; it is not an all-PASS scenario. Current commands/results and historical live executions are recorded in ENVIRONMENT.md and TEST_SCENARIOS.md.
 - Baseline: the real upstream workshop transaction on chain 1337 executed in block 404438 with two successful frames. This is upstream functionality, not Aftershock originality.
 - Contract scope: no custom Solidity contracts or deployed contract-based paymaster fixture. Current scenarios use fresh EOAs and attributed upstream protocol predeploys; the shared payer has a separate payment signature. The declared suites work without custom contract deployment, and do not establish contract-based paymaster coverage.
-- Remaining: OnChain/Finalized/Reverted and Submitted/Pending edges, the exact TTL boundary, exact snapshot/reset replay, fuller raw evidence where safely exportable, local read-only UI, independent review and judge demo/submission documents. Existing sidecar dependency advisories remain unresolved.
+- Remaining: live OnChain/Finalized/Reverted and Submitted/Pending edges, live exact TTL-boundary evidence, exact snapshot/reset replay, fuller raw evidence where safely exportable, automated visual/mobile QA, independent review and judge demo/submission documents. Exact TTL/status/fee method boundaries are separately tested against the pinned sidecar image; this does not establish live admission/lifecycle coverage. Existing sidecar dependency advisories remain unresolved.
 - License: MIT, selected after the user delegated the choice.

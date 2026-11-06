@@ -50,7 +50,7 @@ npm run --silent aftershock -- serve
 # Optional: serve --port 4320
 ```
 
-Open http://127.0.0.1:4318 from the Linux-home checkout. The loopback-only viewer reads validated local reports and four clearly labeled reviewed examples. It supports filtering, action timelines, RPC journals, JSON exports, selected evidence checks and compatible-run comparison. It exposes no transaction, shell, file-write or Docker controls. Stop with Ctrl+C. API/security tests pass; visual browser verification is still pending because computer-use could not verify the browser URL. Exact snapshot replay and the remaining protocol edge cases are still unfinished.
+Open http://127.0.0.1:4318 from the Linux-home checkout. The loopback-only viewer reads validated local reports and four clearly labeled reviewed examples, counting each run ID once. It supports filtering, scenario prerequisites, action timelines, RPC journals, JSON/Markdown exports, selected evidence checks, fresh-state replay guidance and compatible-run comparison. It exposes no transaction, shell, file-write or Docker controls and does not check live node connectivity. Stop with Ctrl+C. API/security and script interaction tests pass; the user manually verified Scenarios, Runs, Compare and Markdown downloads. Automated visual/mobile QA remains unverified. Exact snapshot replay and the remaining live protocol edge cases are still unfinished. `npm run test:upstream-rules` separately exercises exact TTL, status and integer fee boundaries in the cached pinned sidecar image with networking disabled; these are source-method tests, not live admission evidence.
 
 ## Real transaction evidence
 
