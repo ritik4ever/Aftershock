@@ -83,6 +83,7 @@ const report = runReport.parse(
 
 async function app(
   unavailableReports: Array<{ key: string; reason: string }> = [],
+  published = false,
 ) {
   const elements = new Map(
     [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => [
@@ -96,12 +97,26 @@ async function app(
     return value;
   };
   const key = `local:${report.runId}`;
+  const routes = Object.fromEntries(
+    [
+      '/api/runs',
+      '/api/scenarios',
+      `/api/run?key=${encodeURIComponent(key)}`,
+      `/api/replay?key=${encodeURIComponent(key)}`,
+      ...['report', 'md', 'evidence'].map(
+        (format) =>
+          `/api/download?format=${format}&key=${encodeURIComponent(key)}`,
+      ),
+    ].map((path, index) => [path, `/snapshot-${index}.json`]),
+  );
   let empty = false;
   let finishCompare: ((response: Response) => void) | undefined;
   const requests: string[] = [];
   const completion = runInNewContext(source, {
     document: { getElementById: el, createElement: () => new Element() },
     AbortSignal,
+    URL,
+    ...(published ? { aftershockStatic: routes } : {}),
     matchMedia: () => ({ matches: true }),
     fetch: async (path: string, options: RequestInit) => {
       assert.equal(
@@ -110,7 +125,11 @@ async function app(
         'viewer only issues default GET requests',
       );
       requests.push(path);
-      const url = new URL(path, 'http://127.0.0.1');
+      const original = published
+        ? Object.keys(routes).find((route) => routes[route] === path)
+        : path;
+      assert.ok(original, 'snapshot requests must resolve to an exported file');
+      const url = new URL(original, 'http://127.0.0.1');
       if (url.pathname === '/api/runs')
         return Response.json({
           runs: empty
@@ -204,6 +223,23 @@ test('shipped viewer script loads real report data, filters, exports and replay 
   await ui.el('run-list').children[0]!.trigger('click');
   assert.ok(ui.el('detail-content').textContent.includes(report.runId));
   assert.ok(ui.requests.every((path) => path.startsWith('/api/')));
+});
+
+test('published viewer loads exported snapshot files and maps download links without local APIs', async () => {
+  const ui = await app([], true);
+  assert.equal(ui.el('stat-total').textContent, '1');
+  assert.ok(ui.el('detail-content').textContent.includes(report.runId));
+  assert.ok(ui.requests.length >= 4);
+  assert.ok(ui.requests.every((path) => path.startsWith('/snapshot-')));
+  const descendants = (el: Element): Element[] => [
+    el,
+    ...el.children.flatMap(descendants),
+  ];
+  assert.ok(
+    descendants(ui.el('detail-content'))
+      .filter((el) => el.href)
+      .every((el) => !el.href.startsWith('/api/')),
+  );
 });
 
 test('refreshing an empty listing clears a previously selected report', async () => {

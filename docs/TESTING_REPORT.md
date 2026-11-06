@@ -4,7 +4,7 @@ Last executed checkpoint: 2026-11-06. Results describe tested scope, not a zero-
 
 | Check | Result |
 | --- | --- |
-| Default suite, working and separate clean-installed Linux checkouts | PASS: 93 tests, zero failures/skips |
+| Default suite, working and separate clean-installed Linux checkouts | PASS: 96 tests, zero failures/skips |
 | Typecheck, lint, formatting, dependency tree and JS/shell syntax | PASS |
 | Aftershock full/production npm audits | Zero advisories at check time; upstream sidecar is separate |
 | Native CLI/API workflow over genuine reports | PASS: 21 assertions |
@@ -34,3 +34,9 @@ Thirteen historical private reports have matching checksums but fail current val
 Sponsor offline checking returns INSUFFICIENT because it cannot reconstruct the full scenario from redacted data. Other selected checks also list unsupported steps. Complete journals/checksums are not independent authenticity proofs.
 
 The implementing agent performed self-review; no independent audit/formal verification is claimed. Sidecar dependency advisories, unknown public source identity, broader protocol edges and exact historical replay remain limitations. Empty-host OS/WSL/Docker provisioning, dashboard eligibility/deadline, recording and submission acceptance are NOT VERIFIED. See [scope](PROJECT_SPEC.md) and [submission checklist](SUBMISSION.md).
+
+## Static hosting preparation
+
+`npm run build:static` passed in both Linux checkouts. It exports seven fixed reviewed real captures, precomputed checks/comparisons, JSON/Markdown/evidence downloads, replay guidance and the recorded public receipt. New regressions verify route mapping, compatible/invalid comparisons, retention of the known FAIL, exclusion of unreviewed/private files, and rejection of mocked/symlinked input. The local server retains its existing security boundary.
+
+The generated artifact passed HTTP checks for all 84 data resources plus page/assets/public receipt; private paths returned 404. Sensitive-field scanning found no credentials or signing payloads. Typecheck, lint, formatting, 96 default tests, dependency/syntax checks and the full application audit (zero advisories) passed. No new dependencies, public transactions or contracts were needed; stateful chain suites were not rerun for this export change. Vercel configuration is prepared, but actual deployment, hosted security headers and hosted desktop/mobile navigation remain NOT VERIFIED until the deployed URL is checked.
