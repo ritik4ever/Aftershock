@@ -4,7 +4,7 @@ Last executed checkpoint: 2026-11-06. Results describe tested scope, not a zero-
 
 | Check | Result |
 | --- | --- |
-| Default suite | PASS: 109 tests in the working Linux checkout; earlier 105-test checkpoint also passed in a separate clean-installed checkout |
+| Default suite | PASS: 119 tests in the working Linux checkout; earlier 105-test checkpoint also passed in a separate clean-installed checkout |
 | Typecheck, lint, formatting, dependency tree and JS/shell syntax | PASS |
 | Aftershock full/production npm audits | Zero advisories at check time; upstream sidecar is separate |
 | Native CLI/API workflow over genuine reports | PASS: 21 assertions |
@@ -63,3 +63,9 @@ Actual engine stage changes and completed assertions now reach job polling and t
 `npm run test:progress` passed both real HTTP-triggered scenarios, each observing SETUP, EXECUTING, CLEANUP and REPORT phases: TTL `918a1579-cc01-4c3d-a975-be45eef2126e` (11 PASS steps) and mined payer `8b9e7c4e-a844-49cb-8274-50d497c7e009` (16 PASS steps). Both saved new isolated reports and verified cleanup. The default suite passed 109 tests; typecheck, lint, formatting, dependency checks, JavaScript syntax and npm audit passed. Static export passed. These are API/script checks; the new progress rendering still needs manual visual confirmation.
 
 The main-push/manual GitHub workflow uses pinned actions, read-only repository permission and the locked Node/dependency setup. It runs the standard gates and static export; native Docker suites remain explicit local integration checks. GitHub-hosted execution is NOT VERIFIED until the workflow is pushed and its first run completes.
+
+## Optional GitHub-hosted scenario runner
+
+The browser/Vercel integration now dispatches only a fixed workflow on `main`, protected by a separate demo access code. Tests cover input/origin checks, busy and rate guards, retry identity, cancellation, secret handling, provenance, bounded ZIP/digest validation, stalled-body cancellation, failure preservation and browser start/resume/report flows. The final default suite passed 119 tests; typecheck, lint, formatting, dependency checks, syntax checks and npm audit passed.
+
+The exact publisher command ran locally against the real cached isolated stack: TTL run `cf499169-fbfb-4d23-87be-4f4e1a6272c8` passed all 11 steps and cleanup. Its real exported result passed status/detail/JSON/Markdown/evidence round trips through the artifact reader and API using a test GitHub transport. This proves local execution/export and the adapter contract, not GitHub-hosted execution. The GitHub provisioning workflow, deployed dispatch function, artifact delivery and new visual controls remain NOT VERIFIED until manual push/configuration and actual hosted runs. No new local packages, public transactions or cloud deployments were performed. See [remote setup](REMOTE_RUNNER.md).
