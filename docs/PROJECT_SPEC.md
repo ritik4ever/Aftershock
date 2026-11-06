@@ -1,6 +1,6 @@
 # Scope and scenarios
 
-Aftershock is a fixed-scenario runner, invariant checker and evidence viewer for pinned EIP-8141 infrastructure. It does not implement a new wallet protocol or transaction codec.
+Aftershock provides user-supplied transaction/contract dry runs, fixed lifecycle scenarios, invariant checks and evidence viewing for EIP-8141 infrastructure. It does not implement a new wallet protocol or transaction codec.
 
 | Scenario | Real actions and assertions | Coverage limit |
 | --- | --- | --- |

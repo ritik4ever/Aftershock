@@ -1,0 +1,63 @@
+{
+  "endpoint": "https://altmempool.forshtat.com",
+  "sourceIdentity": "NOT_VERIFIED",
+  "mode": "USER_SUPPLIED_DRY_RUN",
+  "kind": "contract",
+  "observedAt": "2026-11-06T18:40:38.863Z",
+  "chainId": "0x539",
+  "block": {
+    "number": "0x1c94",
+    "hash": "0x83768539723d1f712beab0f865ea3346ab1ad404eaa2dc294b2c3fafefa1c3e3"
+  },
+  "summary": {
+    "address": "0x1b7d32025F7cA633943BbCC9Ec61a98ef66187b6",
+    "caller": "0x0000000000000000000000000000000000000001",
+    "calldata": "0x95d89b41",
+    "value": "0x0",
+    "gas": "0xf4240",
+    "expectedReturn": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045745544800000000000000000000000000000000000000000000000000000000"
+  },
+  "checks": [
+    {
+      "name": "deployed-code",
+      "result": "PASS",
+      "observed": {
+        "bytes": 3124,
+        "hash": "0xd0a06b12ac47863b5c7be4185c2deaad1c61557033f56c7d4ea74429cbb25e23"
+      }
+    },
+    {
+      "name": "contract-call",
+      "result": "PASS",
+      "observed": {
+        "returned": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045745544800000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "expected-return",
+      "result": "PASS",
+      "observed": {
+        "expected": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045745544800000000000000000000000000000000000000000000000000000000",
+        "returned": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045745544800000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "snapshot-continuity",
+      "result": "PASS",
+      "observed": {
+        "before": {
+          "number": "0x1c94",
+          "hash": "0x83768539723d1f712beab0f865ea3346ab1ad404eaa2dc294b2c3fafefa1c3e3"
+        },
+        "after": {
+          "number": "0x1c94",
+          "hash": "0x83768539723d1f712beab0f865ea3346ab1ad404eaa2dc294b2c3fafefa1c3e3"
+        }
+      }
+    }
+  ],
+  "result": "PASS",
+  "alternativeMempoolAdmission": "NOT_TESTED",
+  "broadcast": false,
+  "scope": "One eth_call against deployed code with optional exact return-data assertion. This does not certify EIP-8141 account compatibility, security or lifecycle behavior."
+}

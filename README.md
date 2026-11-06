@@ -4,6 +4,8 @@ Find the failures before they reach Ethereum.
 
 Aftershock runs stateful EIP-8141 Frame Transaction tests against a real isolated ethrex/sidecar stack. It checks payer solvency, keyed nonces, replacement and lifecycle behavior through a CLI and browser workspace, with fresh execution and live public inspection separated from recorded reports.
 
+Test your own signed Frame Transaction or deployed sponsor-devnet contract through **Test yours**. These are live, bounded dry runs with downloadable assertions, separate from the isolated lifecycle suites. [Input format and limits](docs/USER_INPUT.md).
+
 ## Run
 
 Use Linux or WSL, Node from `.nvmrc` and the locked npm dependencies:
