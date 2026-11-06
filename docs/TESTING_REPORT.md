@@ -100,3 +100,54 @@ These executions exercise the original stateful engine, not just the sponsor dem
 Browser checks used the current viewer at loopback port 4322. Actual Chrome observations verified scenario/report rendering, run-search filtering, a compatible sponsor comparison returning VERDICTS MATCH and an incompatible pair returning the expected error. Desktop and narrow layouts were inspected. The mobile emulation showed clipping whose cause was not established; it is **not a passed mobile check**. The user stopped Computer Use with Escape, and browser automation stopped immediately. Complete mobile validation and current browser-download interaction remain NOT VERIFIED; export routes and script behavior are covered by the automated suite and prior user checks.
 
 Remaining: resolve mobile clipping, finish exhaustive review of all existing tests/dependencies/documentation claims, verify any remaining required browser actions, and complete user-owned recording/dashboard/publication steps. Broad optional protocol extensions remain explicitly outside the MVP scope. No new public-devnet mutation, custom Solidity or external deployment occurred.
+
+## Final implemented-MVP checkpoint, 2026-11-06
+
+This section supersedes earlier pending mobile/setup statuses. The user explicitly confirmed that lower scenario cards, run details, JSON/Markdown/evidence downloads and compatible-run comparison pass on desktop and mobile, with no whole-page sideways scrolling. After refreshing the updated viewer, the user also confirmed no red Console error. These are **user-reported manual checks**, not automated visual tests. The earlier automation clipping was not reproduced by the user; no speculative CSS fix was made.
+
+Two final application fixes were implemented and regression-tested:
+
+- An occupied viewer port now reports the port, the existing loopback URL and how to select another port. It does not terminate or replace another listener.
+- Unavailable reports now expose bounded safe IDs and static reason categories. The UI explains the diagnostic without rendering file contents, filesystem paths, parser errors or HTML. Valid runs remain usable and original files are never rewritten. Tests cover malformed JSON, integrity failure, missing samples, safe rendering and refresh behavior.
+
+The actual private report directory contained 74 valid reports and 13 reports rejected by current validation. A direct per-file recheck found nine captures missing required step timestamps (seven also missing the scenario definition), two keyed-nonce captures with actions out of declared order, and two captures missing RPC-purpose labels. All 13 stored SHA-256 checksums match their report contents; this establishes file consistency, not independently proven execution authenticity. Their recorded verdicts are 11 BLOCKED and two INCONCLUSIVE, with no PASS verdicts. The current keyed-nonce declaration matches its execution order, and 29 report/evidence/viewer regression tests passed on recheck. No correction, deletion or fabricated migration was applied to those captures. The warning is an honest historical-data diagnostic, not a failed current scenario.
+
+### Final checks
+
+| Check | Observed result |
+| --- | --- |
+| `npm test`, working Linux checkout | PASS: 83 TypeScript + 10 JavaScript tests; zero failed/skipped |
+| Same suite in the separate clean-installed checkout | PASS: 93 tests; zero failed/skipped |
+| Typecheck, Oxlint, formatting in both checkouts | PASS |
+| Pinned upstream TTL/status/integer-fee source-method test | PASS: 1 test; distinct from live execution |
+| JavaScript syntax, setup-shell syntax and installed dependency tree | PASS |
+| Aftershock production and full npm audits | PASS: zero advisories at check time; upstream container dependencies are separate |
+| Actual CLI/API workflow against genuine payer, keyed and sponsor reports | PASS: 21 assertions across JSON/Markdown/evidence exports, replay plans, selected evidence checks, compatible comparison, occupied-port error and report diagnostics |
+| Desktop/mobile flows and Console after refresh | PASS, user-reported manual verification |
+| Genuine state-changing integration | PASS within the declared cases; native original-suite and sponsor/replay IDs are recorded above |
+
+The sponsor offline evidence checker correctly returns INSUFFICIENT/native 3 because it does not reconstruct that full scenario from redacted inputs. That expected limit is not converted to CONSISTENT or a new live PASS. The CLI/API workflow verifies this classification explicitly.
+
+### Self-review and boundaries
+
+The implemented-MVP self-review checkpoint is complete. It covered first-party source/static checks, test assertions and executed results, CLI arguments/exits, public/private transport separation, report persistence/integrity/limits, scenario verdicts, fixed signing paths, Docker ownership/isolation/cleanup, checkpoint/reset inputs, frontend text rendering/origin controls, dependency/lock metadata, source attribution and current documentation claims. Confirmed defects were fixed and checks rerun. Dependency metadata was inspected across the lockfile; the three runtime dependencies are used, versions are pinned, and the listed licenses are MIT/Apache-2.0. Install scripts remain disabled for the reproduced application install.
+
+This is Codex reviewing its own implementation, not an external independent audit, formal verification, source-to-container attestation or a guarantee that no bugs exist. The separate pinned sidecar dependency advisories remain disclosed and prohibit treating isolation as a claim of production safety. Older failed/unsupported evidence remains preserved. The latest UI/status documentation now distinguishes completed MVP coverage from optional unimplemented protocol extensions.
+
+| Final addendum requirement | Assessment |
+| --- | --- |
+| Genuine signed Frame Transaction through the actual alternative interface | PASS, native evidence above |
+| Admission/explorer evidence or working submission code | PASS, technical evidence; sponsor approval NOT VERIFIED |
+| At least two original stateful scenarios with real assertions/observations | PASS, both native original suites |
+| Actual EIP-8141-aware ethrex and sidecar state integration | PASS |
+| Honest classification and reproducible evidence | PASS within documented scope; exact historical timing not claimed |
+| Working CLI attached to the engine | PASS |
+| Functional frontend with genuine data | PASS, API/script tests plus user desktop/mobile checks |
+| Tested error handling, boundaries and redaction | PASS for reviewed/executed coverage; independent security certification NOT VERIFIED |
+| Setup and submission materials | PASS for application setup/docs; provisioning a completely empty OS/WSL/Docker host NOT VERIFIED |
+| Sponsor necessity demonstration | PASS: same-candidate canonical rejection and alternative inclusion after real staking |
+| Known Cancelled explorer invariant | FAIL retained as an upstream finding; reproducer behavior is expected and disclosed |
+| Registered track, exact dashboard deadline and eligibility approval | NOT VERIFIED, user/dashboard action |
+| Public Git publication, prompt disclosure decision, recording/upload and submission acceptance | NOT VERIFIED, user action |
+
+The implemented MVP is ready for manual Git review and submission preparation. Optional recent-root coverage, broader terminal/Submitted/Pending edges, reset for every scenario, full raw request reconstruction and exact historical clocks remain outside verified coverage. No public deployment is required for the local read-only product, and no custom Solidity is necessary for the implemented cases.

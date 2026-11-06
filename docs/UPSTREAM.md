@@ -30,7 +30,7 @@ Ethrex `crates/common/types/transaction.rs` defines keyed fields, strictly incre
 
 ## Workshop baseline and locked versions
 
-The Version 2 [contract audit](CONTRACT_FIXTURES.md) inventories actual interfaces, creation artifacts, builders, licenses and the main vanilla-solc/Foundry path. No custom Solidity is required for the current EOA suites. Workshop contract deployment, compilation and contract-specific sponsorship are not claimed by that audit.
+The Version 2 [contract audit](CONTRACT_FIXTURES.md) inventories actual interfaces, creation artifacts, builders, licenses and the main vanilla-solc/Foundry path. No custom Solidity is required for the current EOA suites. The additional sponsor scenario deploys the pinned wallet, Foreign and registry artifacts. No local contract compilation or custom paymaster policy is claimed.
 
 Read [AGENTS.md](https://github.com/forshtat/mempool-workshop/blob/bcfe02a196ca97b6fb0d1044db9d0b4c673831fc/AGENTS.md), README, package.json, workshop.config.json5 and yarn.lock. The checkout has steps 1 through 13. Use the package scripts directly, keep config in workshop.config.json5 and generated private state in .workshop-state.json. Funding uses the faucet. Do not run the reputation mutation steps on shared endpoints under Aftershock's stricter boundary.
 

@@ -30,7 +30,7 @@ Codex authored and revised application code, tests and documentation, researched
 - Review all diffs, source attribution, license and genuine evidence. Keep reported limitations visible.
 - Manually commit/push the reviewed milestones; inspect the public repository afterwards. Codex does not do this.
 - Exclude `.local/`, `.env`, private keys, wallet/generator state, raw logs, dependencies and unredacted reports. The report directory is not safe to publish wholesale.
-- Reproduce the documented setup on a clean suitable environment. Latest changes were tested with the existing locked installation; a new clean-machine install has not been rerun without installation approval.
+- A clean application dependency installation was verified offline in a separate Linux checkout after user approval; the final suite also passes there. Provisioning an empty OS/WSL/Docker host remains unverified.
 - Confirm registered track, private-dashboard deadline, team eligibility and required submission fields.
 - Record/upload the human-narrated demo; confirm its actual duration and access permissions.
 - Complete dashboard AI disclosure and decide how to publish the deferred prompts.
@@ -38,4 +38,4 @@ Codex authored and revised application code, tests and documentation, researched
 
 ## Limitations
 
-Pinned research rule variants; local-build metadata is trusted rather than cryptographically attested; public node commit is unknown. Current payer suites use EOAs and do not establish contract-paymaster policy coverage. Mined reset supports checkpoint-enabled keyed-nonce baselines; exact wall-clock replay and wider protocol edges remain out of scope. The upstream Cancelled explorer FAIL and separate sidecar dependency advisories remain disclosed. Visual/mobile QA and a final repository-wide Codex self-audit remain unverified until recorded as executed.
+Pinned research rule variants; local-build metadata is trusted rather than cryptographically attested; public node commit is unknown. Current payer suites use EOAs and do not establish contract-paymaster policy coverage. Mined reset supports checkpoint-enabled keyed-nonce baselines; exact wall-clock replay and wider protocol edges remain out of scope. The upstream Cancelled explorer FAIL and separate sidecar dependency advisories remain disclosed. The implemented MVP passed the Codex self-review/quality checks recorded in TESTING_REPORT, and the user confirmed desktop/mobile flows. These are self-review and manual QA, not an independent security audit or automated visual test.
